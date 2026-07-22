@@ -1,0 +1,53 @@
+﻿DIAGNOSTIC LOG - takeover velocity signal is garbage (PRIORITY 1 evidence)
+===========================================================================
+Firmware: continuous per-tick closed loop (attempt b). Debug enabled with 'D'.
+The wheel was hand-spun; these are the # TK takeover-loop debug lines.
+
+KEY OBSERVATION: `omega` (wheel rev/s) flips sign and spikes to +/-4 rev/s between
+consecutive samples ~100-180 ms apart. Physically impossible for a 0.9 kg wheel.
+The `ang` (angle) column moves smoothly/monotonically in the SAME samples.
+=> raw angle looks OK; velocity derivation and/or intermittent angle glitch is broken.
+
+--- Run 1 (dir=-1, spun CCW) ---
+# TK dir=-1 ang=179.1 tgt=20.0 remain=159.1 omega=0.759  vTgt=0.407
+# TK dir=-1 ang=169.6 tgt=20.0 remain=149.6 omega=-0.610 vTgt=0.395
+# TK dir=-1 ang=165.5 tgt=20.0 remain=145.5 omega=-0.138 vTgt=0.188
+# TK dir=-1 ang=155.8 tgt=20.0 remain=135.8 omega=-0.615 vTgt=0.376
+# TK dir=-1 ang=149.2 tgt=20.0 remain=129.2 omega=-0.687 vTgt=0.367
+# TK dir=-1 ang=139.7 tgt=20.0 remain=119.6 omega=-0.084 vTgt=0.134
+# TK dir=-1 ang=129.0 tgt=20.0 remain=109.0 omega=-0.539 vTgt=0.337
+# TK dir=-1 ang=112.1 tgt=20.0 remain=92.1  omega=-3.126 vTgt=0.310   <-- spike
+# TK dir=-1 ang=97.5  tgt=20.0 remain=77.5  omega=-4.395 vTgt=0.284   <-- spike
+# TK dir=-1 ang=93.1  tgt=20.0 remain=73.1  omega=-0.901 vTgt=0.276
+# TK dir=-1 ang=57.7  tgt=20.0 remain=37.7  omega=1.266  vTgt=0.198   <-- SIGN FLIP
+# TK dir=-1 ang=45.9  tgt=20.0 remain=25.9  omega=0.291  vTgt=0.164
+# TK dir=-1 ang=28.0  tgt=20.0 remain=8.0   omega=-3.836 vTgt=0.091   <-- spike
+
+--- Run 2 (dir=1, spun CW) ---
+# TK-START dir=1 w0=0.53 tgt=194.4 runway=545.0 cur=9.4
+# TK dir=1 ang=9.0   tgt=194.4 remain=185.5 omega=0.426  vTgt=0.440
+# TK dir=1 ang=6.3   tgt=194.4 remain=188.1 omega=1.696  vTgt=0.443   <-- ang went DOWN but dir=1?
+# TK dir=1 ang=9.8   tgt=194.4 remain=184.6 omega=0.593  vTgt=0.438
+# TK dir=1 ang=16.2  tgt=194.4 remain=178.3 omega=1.160  vTgt=0.431
+# TK dir=1 ang=19.9  tgt=194.4 remain=174.6 omega=2.630  vTgt=0.426   <-- spike
+# TK dir=1 ang=18.7  tgt=194.4 remain=175.7 omega=-2.852 vTgt=0.428   <-- SIGN FLIP + ang down
+# TK dir=1 ang=30.1  tgt=194.4 remain=164.4 omega=-0.265 vTgt=0.315
+# TK dir=1 ang=30.8  tgt=194.4 remain=163.7 omega=-3.541 vTgt=0.413   <-- spike
+# TK dir=1 ang=50.2  tgt=194.4 remain=144.2 omega=0.132  vTgt=0.182
+
+NOTE: In Run 2, angle sometimes DECREASES (9.0 -> 6.3) even though dir=1 (CW,
+angle should increase). Small backward jitter of a few degrees between samples,
+which the velocity calc turns into large sign-flipping omega. This points at either
+encoder read jitter under motor activity, or dt instability, or the loop reacting to
+its own motor lurching (attempt b re-commanded the planner every tick).
+
+SEPARATE EARLIER SYMPTOM (attempt a, open-loop moveTo):
+"LANDED wedge 0" printed while wheel was still drifting; pressing 's' at the SAME
+physical rest position then showed the CORRECT wedge. => LANDED was sampled before
+the wheel truly stopped. Encoder is accurate at rest; the read timing was the issue.
+
+BENCH BASELINE (for reference - these worked cleanly):
+- Standalone motor test at 1450 mA SpreadCycle: smooth spin, holds wheel, motor warms.
+- AS5600 standalone test: angle tracks smoothly 0-360 by hand, magnet OK, no glitches
+  observed AT REST or at low hand-spin speeds WITHOUT the motor stepping.
+- Skipping appeared only with aggressive accel; gentle accel (~1000-1200 sps^2) clean.
