@@ -2,21 +2,24 @@
  * Powered always-capture controller.
  *
  * Unlike the electronic-drag experiment, this controller is allowed to drive
- * the wheel forward after takeover. Encoder position remains authoritative:
+ * the wheel forward after takeover.  Encoder position remains authoritative:
  * the motor starts near the measured wheel speed, follows a distance-based
  * forward velocity profile, and decelerates toward a random safe wedge center.
- * It never commands a reversal. If a target is materially crossed before the
+ * It never commands a reversal.  If a target is materially crossed before the
  * stop request, the controller chooses another safe target farther ahead.
  */
 
 static const float POWERED_DECISION_REV_S = 0.28f;
 static const uint16_t POWERED_PRECHARGE_MS = 50;
-static const uint16_t POWERED_ENTRY_CURRENT_MA = 350;
-static const uint16_t POWERED_RUN_CURRENT_MA = 700;
+static const uint16_t POWERED_ENTRY_CURRENT_CCW_MA = 350;
+static const uint16_t POWERED_ENTRY_CURRENT_CW_MA = 450;
+static const uint16_t POWERED_RUN_CURRENT_CCW_MA = 700;
+static const uint16_t POWERED_RUN_CURRENT_CW_MA = 950;
 static const uint16_t POWERED_CURRENT_RISE_MS = 160;
 static const uint32_t POWERED_SLEW_SPS2 = 800;
 static const float POWERED_ENTRY_FRACTION = 0.97f;
-static const float POWERED_CRUISE_REV_S = 0.22f;
+static const float POWERED_CRUISE_CCW_REV_S = 0.22f;
+static const float POWERED_CRUISE_CW_REV_S = 0.16f;
 static const float POWERED_MAX_REV_S = 0.30f;
 static const float POWERED_MIN_REV_S = 0.025f;
 static const uint16_t POWERED_CONTROL_PERIOD_MS = 10;
@@ -34,6 +37,22 @@ static uint32_t poweredProgressStartedMs = 0;
 static int32_t poweredProgressStartCounts = 0;
 static float poweredEntryRevS = 0.0f;
 static uint8_t poweredRetargetCount = 0;
+static int poweredFasSign = 0;
+
+static uint16_t poweredEntryCurrentMa() {
+  return dragDirection > 0 ? POWERED_ENTRY_CURRENT_CW_MA
+                           : POWERED_ENTRY_CURRENT_CCW_MA;
+}
+
+static uint16_t poweredRunCurrentMa() {
+  return dragDirection > 0 ? POWERED_RUN_CURRENT_CW_MA
+                           : POWERED_RUN_CURRENT_CCW_MA;
+}
+
+static float poweredCruiseRevS() {
+  return dragDirection > 0 ? POWERED_CRUISE_CW_REV_S
+                           : POWERED_CRUISE_CCW_REV_S;
+}
 
 static float poweredMinimumRunwayDeg(float speedRevS) {
   float accelRevS2 = (float)POWERED_SLEW_SPS2 / WHEEL_USTEPS_PER_REV;
@@ -44,6 +63,7 @@ static float poweredMinimumRunwayDeg(float speedRevS) {
 
 static bool startPoweredStepper(int encoderDirection, uint32_t startHz) {
   int fasSign = fasSignForEncoderDirection(encoderDirection);
+  poweredFasSign = fasSign;
   if (fasSign == 0 || !stepper || startHz == 0) return false;
 
   stepper->forceStopAndNewPosition(0);
@@ -98,7 +118,7 @@ static bool launchDrag() {
   uint32_t startHz = (uint32_t)lroundf(
       poweredEntryRevS * WHEEL_USTEPS_PER_REV);
 
-  driverActive(POWERED_ENTRY_CURRENT_MA);
+  driverActive(poweredEntryCurrentMa());
   if (!startPoweredStepper(dragDirection, startHz)) {
     driverFreewheel();
     return false;
@@ -111,10 +131,12 @@ static bool launchDrag() {
   poweredProgressStartCounts = encoderCountsMT;
   mode = DRAG_ACTIVE;
 
-  Serial.printf("SPIN#%lu POWER_START dir=%+d wheelRevS=%.3f commandRevS=%.3f hz=%lu targetAngle=%.1f targetWedge=%d\n",
-                (unsigned long)spinRecord.number, dragDirection, forwardSpeed,
-                poweredEntryRevS, (unsigned long)startHz, dragTargetAngle,
-                wedgeAtAngle(dragTargetAngle));
+  Serial.printf("SPIN#%lu POWER_START dir=%+d fasDir=%+d wheelRevS=%.3f commandRevS=%.3f hz=%lu targetAngle=%.1f targetWedge=%d entryMa=%u runMa=%u cruiseRevS=%.3f\n",
+                (unsigned long)spinRecord.number, dragDirection,
+                poweredFasSign, forwardSpeed, poweredEntryRevS,
+                (unsigned long)startHz, dragTargetAngle,
+                wedgeAtAngle(dragTargetAngle), poweredEntryCurrentMa(),
+                poweredRunCurrentMa(), poweredCruiseRevS());
   return true;
 }
 
@@ -208,7 +230,7 @@ static void serviceDrag() {
 
   if (!dragCurrentRaised &&
       millis() - dragStartedMs >= POWERED_CURRENT_RISE_MS) {
-    driver.rms_current(POWERED_RUN_CURRENT_MA, 1.0);
+    driver.rms_current(poweredRunCurrentMa(), 1.0);
     dragCurrentRaised = true;
   }
 
@@ -238,10 +260,10 @@ static void serviceDrag() {
   float elapsedBlend = fminf(1.0f,
       (float)(nowMs - dragStartedMs) / (float)POWERED_ENTRY_BLEND_MS);
   float entryBlendLimit = poweredEntryRevS + elapsedBlend *
-      (POWERED_CRUISE_REV_S - poweredEntryRevS);
+      (poweredCruiseRevS() - poweredEntryRevS);
   float commandRevS = fminf(brakingLimitRevS,
                             fmaxf(POWERED_MIN_REV_S, entryBlendLimit));
-  commandRevS = fminf(commandRevS, POWERED_CRUISE_REV_S);
+  commandRevS = fminf(commandRevS, poweredCruiseRevS());
   commandRevS = fminf(commandRevS, POWERED_MAX_REV_S);
 
   if (commandRevS < POWERED_MIN_REV_S) {
@@ -265,8 +287,8 @@ static void serviceDrag() {
       Serial.printf("# POWER angle=%.1f target=%.1f remaining=%.1f omega=%.3f commandRevS=%.3f hz=%lu currentMa=%u\n",
                     wheelAngleDeg(), dragTargetAngle, remainingDeg, omega,
                     commandRevS, (unsigned long)dragCurrentHz,
-                    dragCurrentRaised ? POWERED_RUN_CURRENT_MA
-                                      : POWERED_ENTRY_CURRENT_MA);
+                    dragCurrentRaised ? poweredRunCurrentMa()
+                                      : poweredEntryCurrentMa());
     }
   }
 }
