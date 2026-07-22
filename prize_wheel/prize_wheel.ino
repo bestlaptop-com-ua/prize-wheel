@@ -35,11 +35,13 @@
 #define minimumRunwayDeg poweredMinimumRunwayDeg
 #define DECISION_REV_S POWERED_DECISION_REV_S
 #define DECISION_MIN_PEAK_REV_S 0.0f
+#define PRECHARGE_MS POWERED_PRECHARGE_MS
 #define recordDecision recordAlwaysCaptureDecision
 #define setup setupV2Base
 #include "firmware_v2_runtime.inc"
 #undef setup
 #undef recordDecision
+#undef PRECHARGE_MS
 #undef DECISION_MIN_PEAK_REV_S
 #undef DECISION_REV_S
 #undef minimumRunwayDeg
