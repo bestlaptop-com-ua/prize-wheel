@@ -1,0 +1,283 @@
+15:22:12.411 -> # ZERO saved logicalCount=196
+15:22:37.672 -> SPIN#2 START dir=+1 omegaAtConfirm=0.162
+15:22:37.672 -> SPIN#2 DECISION omega=0.162 peak=0.162 curWedge=0 predStopAngle=93.1 predStopWedge=3 action=LEAVE reason=predicted-safe
+15:22:38.202 -> SPIN#2 PRED speed=0.200 angle=59.1 curWedge=1 predAngle=166.4 predWedge=5
+15:22:38.479 -> SPIN#2 PRED speed=0.150 angle=75.9 curWedge=2 predAngle=140.8 predWedge=4
+15:22:38.889 -> SPIN#2 PRED speed=0.100 angle=90.8 curWedge=3 predAngle=122.1 predWedge=4
+15:22:39.995 -> SPIN#2 PRIMARY_STOP source=NATURAL wedge=3 angle=104.2 isDare=0
+15:22:39.995 -> SPIN#2 LANDED wedge=3 angle=104.2 isDare=0 peak=0.218 predictedWedge=3 predictedAngle=93.1 drag=0 recovery=0 primaryWedge=3 targetWedge=-1 targetErrorDeg=0.0
+15:23:02.166 -> SPIN#3 START dir=+1 omegaAtConfirm=0.153
+15:23:02.166 -> SPIN#3 DECISION omega=0.160 peak=0.160 curWedge=3 predStopAngle=192.3 predStopWedge=6 action=LEAVE reason=predicted-safe
+15:23:03.235 -> SPIN#3 PRED speed=0.150 angle=188.3 curWedge=6 predAngle=253.3 predWedge=8
+15:23:03.316 -> SPIN#3 PRED speed=0.099 angle=193.1 curWedge=6 predAngle=224.0 predWedge=7
+15:23:04.011 -> SPIN#3 PRIMARY_STOP source=NATURAL wedge=6 angle=193.8 isDare=0
+15:23:04.011 -> SPIN#3 LANDED wedge=6 angle=193.8 isDare=0 peak=0.198 predictedWedge=6 predictedAngle=192.3 drag=0 recovery=0 primaryWedge=6 targetWedge=-1 targetErrorDeg=0.0
+15:23:20.076 -> # DIR_PROBE refused: calibrate z, then use center of safe wedge 3 or 7-11
+15:23:26.098 -> SPIN#4 START dir=-1 omegaAtConfirm=0.231
+15:23:27.165 -> SPIN#4 PRED speed=0.350 angle=10.7 curWedge=0 predAngle=97.6 predWedge=3
+15:23:27.295 -> SPIN#4 PRED speed=0.300 angle=0.5 curWedge=0 predAngle=147.8 predWedge=4
+15:23:27.340 -> SPIN#4 PRED speed=0.260 angle=352.9 curWedge=11 predAngle=185.2 predWedge=6
+15:23:27.414 -> SPIN#4 DECISION omega=-0.220 peak=0.513 curWedge=11 predStopAngle=220.6 predStopWedge=7 action=LEAVE reason=predicted-safe
+15:23:27.498 -> SPIN#4 PRED speed=0.200 angle=344.4 curWedge=11 predAngle=236.9 predWedge=7
+15:23:27.590 -> SPIN#4 PRED speed=0.150 angle=338.9 curWedge=11 predAngle=274.1 predWedge=9
+15:23:27.668 -> SPIN#4 PRED speed=0.100 angle=335.5 curWedge=11 predAngle=304.3 predWedge=10
+15:23:29.814 -> SPIN#4 PRIMARY_STOP source=NATURAL wedge=0 angle=0.9 isDare=0
+15:23:29.846 -> SPIN#4 LANDED wedge=0 angle=0.9 isDare=0 peak=0.513 predictedWedge=7 predictedAngle=220.6 drag=0 recovery=0 primaryWedge=0 targetWedge=-1 targetErrorDeg=0.0
+15:23:32.295 -> # ZERO saved logicalCount=203
+15:23:35.192 -> SPIN#5 START dir=+1 omegaAtConfirm=0.174
+15:23:35.192 -> SPIN#5 DECISION omega=0.174 peak=0.174 curWedge=0 predStopAngle=96.1 predStopWedge=3 action=LEAVE reason=predicted-safe
+15:23:36.164 -> SPIN#5 PRED speed=0.150 angle=73.6 curWedge=2 predAngle=138.5 predWedge=4
+15:23:36.619 -> SPIN#5 PRED speed=0.100 angle=92.3 curWedge=3 predAngle=123.4 predWedge=4
+15:23:37.942 -> SPIN#5 PRIMARY_STOP source=NATURAL wedge=3 angle=104.1 isDare=0
+15:23:37.942 -> SPIN#5 LANDED wedge=3 angle=104.1 isDare=0 peak=0.199 predictedWedge=3 predictedAngle=96.1 drag=0 recovery=0 primaryWedge=3 targetWedge=-1 targetErrorDeg=0.0
+15:23:40.770 -> # DIR_PROBE moving FAS+ by 9 wheel degrees; keep hands clear
+15:23:42.609 -> # DIR_PROBE PASS FAS+ encoderDirection=-1
+15:23:56.983 -> # STATUS mode=IDLE angle=96.68 wedge=3 omega=-0.0000 posFresh=1 velocityValid=1 zero=1 dir=-1 tmc=1 observeOnly=0 recovery=1 predAngle=96.7 predWedge=3
+15:24:12.536 -> # observeOnly=1
+15:24:25.550 -> SPIN#6 START dir=-1 omegaAtConfirm=0.311
+15:24:35.449 -> SPIN#6 PRED speed=0.350 angle=158.8 curWedge=5 predAngle=245.5 predWedge=8
+15:24:35.883 -> SPIN#6 PRED speed=0.300 angle=105.6 curWedge=3 predAngle=252.9 predWedge=8
+15:24:36.196 -> SPIN#6 PRED speed=0.260 angle=79.3 curWedge=2 predAngle=271.5 predWedge=9
+15:24:36.506 -> SPIN#6 DECISION omega=-0.220 peak=1.326 curWedge=1 predStopAngle=282.5 predStopWedge=9 action=LEAVE reason=predicted-safe
+15:24:37.659 -> SPIN#6 PRED speed=0.100 angle=349.2 curWedge=11 predAngle=318.1 predWedge=10
+15:24:39.540 -> SPIN#6 PRIMARY_STOP source=NATURAL wedge=10 angle=320.8 isDare=0
+15:24:39.540 -> SPIN#6 LANDED wedge=10 angle=320.8 isDare=0 peak=1.326 predictedWedge=9 predictedAngle=282.5 drag=0 recovery=0 primaryWedge=10 targetWedge=-1 targetErrorDeg=0.0
+15:24:41.606 -> SPIN#7 START dir=-1 omegaAtConfirm=0.404
+15:24:50.352 -> SPIN#7 PRED speed=0.350 angle=114.6 curWedge=3 predAngle=201.3 predWedge=6
+15:24:50.708 -> SPIN#7 PRED speed=0.300 angle=75.1 curWedge=2 predAngle=222.6 predWedge=7
+15:24:51.079 -> SPIN#7 PRED speed=0.260 angle=37.0 curWedge=1 predAngle=229.3 predWedge=7
+15:24:51.405 -> SPIN#7 DECISION omega=-0.220 peak=1.189 curWedge=0 predStopAngle=244.0 predStopWedge=8 action=LEAVE reason=predicted-safe
+15:24:51.592 -> SPIN#7 PRED speed=0.200 angle=355.8 curWedge=11 predAngle=248.3 predWedge=8
+15:24:52.575 -> SPIN#7 PRED speed=0.150 angle=296.8 curWedge=9 predAngle=231.8 predWedge=7
+15:24:54.250 -> SPIN#7 PRED speed=0.100 angle=220.8 curWedge=7 predAngle=189.5 predWedge=6
+15:24:56.509 -> SPIN#7 PRIMARY_STOP source=NATURAL wedge=6 angle=181.8 isDare=0
+15:24:56.552 -> SPIN#7 LANDED wedge=6 angle=181.8 isDare=0 peak=1.189 predictedWedge=8 predictedAngle=244.0 drag=0 recovery=0 primaryWedge=6 targetWedge=-1 targetErrorDeg=0.0
+15:24:58.898 -> SPIN#8 START dir=-1 omegaAtConfirm=0.294
+15:25:09.000 -> SPIN#8 PRED speed=0.350 angle=24.9 curWedge=0 predAngle=111.6 predWedge=3
+15:25:09.405 -> SPIN#8 PRED speed=0.300 angle=338.0 curWedge=11 predAngle=125.6 predWedge=4
+15:25:10.212 -> SPIN#8 PRED speed=0.260 angle=254.5 curWedge=8 predAngle=86.7 predWedge=2
+15:25:11.076 -> SPIN#8 DECISION omega=-0.220 peak=1.376 curWedge=5 predStopAngle=53.0 predStopWedge=1 action=LEAVE reason=observe-only
+15:25:11.400 -> SPIN#8 PRED speed=0.200 angle=158.0 curWedge=5 predAngle=50.5 predWedge=1
+15:25:11.898 -> SPIN#8 PRED speed=0.150 angle=125.7 curWedge=4 predAngle=60.7 predWedge=2
+15:25:12.317 -> SPIN#8 PRED speed=0.100 angle=108.5 curWedge=3 predAngle=77.2 predWedge=2
+15:25:13.409 -> SPIN#8 PRIMARY_STOP source=NATURAL wedge=3 angle=97.6 isDare=0
+15:25:13.409 -> SPIN#8 LANDED wedge=3 angle=97.6 isDare=0 peak=1.376 predictedWedge=1 predictedAngle=53.0 drag=0 recovery=0 primaryWedge=3 targetWedge=-1 targetErrorDeg=0.0
+15:25:17.554 -> SPIN#9 START dir=-1 omegaAtConfirm=0.343
+15:25:27.428 -> SPIN#9 PRED speed=0.350 angle=118.0 curWedge=3 predAngle=204.8 predWedge=6
+15:25:27.780 -> SPIN#9 PRED speed=0.300 angle=80.5 curWedge=2 predAngle=227.8 predWedge=7
+15:25:28.147 -> SPIN#9 PRED speed=0.260 angle=41.6 curWedge=1 predAngle=233.9 predWedge=7
+15:25:28.452 -> SPIN#9 DECISION omega=-0.220 peak=1.315 curWedge=0 predStopAngle=249.1 predStopWedge=8 action=LEAVE reason=predicted-safe
+15:25:28.626 -> SPIN#9 PRED speed=0.200 angle=4.1 curWedge=0 predAngle=256.7 predWedge=8
+15:25:29.346 -> SPIN#9 PRED speed=0.150 angle=320.5 curWedge=10 predAngle=255.6 predWedge=8
+15:25:30.944 -> SPIN#9 PRED speed=0.100 angle=250.8 curWedge=8 predAngle=219.5 predWedge=7
+15:25:33.881 -> SPIN#9 PRIMARY_STOP source=NATURAL wedge=6 angle=192.3 isDare=0
+15:25:33.928 -> SPIN#9 LANDED wedge=6 angle=192.3 isDare=0 peak=1.315 predictedWedge=8 predictedAngle=249.1 drag=0 recovery=0 primaryWedge=6 targetWedge=-1 targetErrorDeg=0.0
+15:25:36.642 -> SPIN#10 START dir=-1 omegaAtConfirm=0.300
+15:25:49.880 -> SPIN#10 PRED speed=0.350 angle=10.2 curWedge=0 predAngle=97.0 predWedge=3
+15:25:50.478 -> SPIN#10 PRED speed=0.300 angle=299.8 curWedge=9 predAngle=87.3 predWedge=2
+15:25:51.546 -> SPIN#10 PRED speed=0.260 angle=194.5 curWedge=6 predAngle=26.9 predWedge=0
+15:25:52.137 -> SPIN#10 DECISION omega=-0.220 peak=1.788 curWedge=4 predStopAngle=18.0 predStopWedge=0 action=LEAVE reason=predicted-safe
+15:25:52.312 -> SPIN#10 PRED speed=0.200 angle=128.8 curWedge=4 predAngle=21.3 predWedge=0
+15:25:52.727 -> SPIN#10 PRED speed=0.150 angle=105.2 curWedge=3 predAngle=40.2 predWedge=1
+15:25:53.071 -> SPIN#10 PRED speed=0.100 angle=89.3 curWedge=2 predAngle=58.2 predWedge=1
+15:25:54.133 -> SPIN#10 PRIMARY_STOP source=NATURAL wedge=2 angle=79.4 isDare=0
+15:25:54.173 -> SPIN#10 LANDED wedge=2 angle=79.4 isDare=0 peak=1.788 predictedWedge=0 predictedAngle=18.0 drag=0 recovery=0 primaryWedge=2 targetWedge=-1 targetErrorDeg=0.0
+15:25:58.858 -> SPIN#11 START dir=-1 omegaAtConfirm=0.357
+15:26:09.314 -> SPIN#11 PRED speed=0.350 angle=99.9 curWedge=3 predAngle=186.7 predWedge=6
+15:26:09.775 -> SPIN#11 PRED speed=0.300 angle=51.5 curWedge=1 predAngle=199.0 predWedge=6
+15:26:10.054 -> SPIN#11 PRED speed=0.260 angle=20.1 curWedge=0 predAngle=212.4 predWedge=7
+15:26:10.460 -> SPIN#11 DECISION omega=-0.220 peak=1.402 curWedge=11 predStopAngle=222.5 predStopWedge=7 action=LEAVE reason=predicted-safe
+15:26:10.709 -> SPIN#11 PRED speed=0.200 angle=327.9 curWedge=10 predAngle=220.4 predWedge=7
+15:26:12.270 -> SPIN#11 PRED speed=0.150 angle=235.0 curWedge=7 predAngle=170.0 predWedge=5
+15:26:13.488 -> SPIN#11 PRED speed=0.100 angle=178.7 curWedge=5 predAngle=147.4 predWedge=4
+15:26:15.186 -> SPIN#11 PRIMARY_STOP source=NATURAL wedge=5 angle=153.2 isDare=1
+15:26:15.186 -> SPIN#11 LANDED wedge=5 angle=153.2 isDare=1 peak=1.402 predictedWedge=7 predictedAngle=222.5 drag=0 recovery=0 primaryWedge=5 targetWedge=-1 targetErrorDeg=0.0
+15:26:17.149 -> SPIN#12 START dir=-1 omegaAtConfirm=0.336
+15:26:27.845 -> SPIN#12 PRED speed=0.350 angle=26.0 curWedge=0 predAngle=112.8 predWedge=3
+15:26:28.264 -> SPIN#12 PRED speed=0.300 angle=339.6 curWedge=11 predAngle=127.0 predWedge=4
+15:26:29.181 -> SPIN#12 PRED speed=0.260 angle=246.7 curWedge=8 predAngle=79.0 predWedge=2
+15:26:30.026 -> SPIN#12 DECISION omega=-0.220 peak=1.448 curWedge=5 predStopAngle=45.4 predStopWedge=1 action=LEAVE reason=observe-only
+15:26:30.354 -> SPIN#12 PRED speed=0.200 angle=149.4 curWedge=4 predAngle=42.0 predWedge=1
+15:26:30.809 -> SPIN#12 PRED speed=0.150 angle=119.4 curWedge=3 predAngle=54.3 predWedge=1
+15:26:31.225 -> SPIN#12 PRED speed=0.100 angle=103.4 curWedge=3 predAngle=72.2 predWedge=2
+15:26:32.270 -> SPIN#12 PRIMARY_STOP source=NATURAL wedge=3 angle=93.4 isDare=0
+15:26:32.270 -> SPIN#12 LANDED wedge=3 angle=93.4 isDare=0 peak=1.448 predictedWedge=1 predictedAngle=45.4 drag=0 recovery=0 primaryWedge=3 targetWedge=-1 targetErrorDeg=0.0
+15:26:36.061 -> SPIN#13 START dir=-1 omegaAtConfirm=0.343
+15:26:47.259 -> SPIN#13 PRED speed=0.350 angle=75.5 curWedge=2 predAngle=162.3 predWedge=5
+15:26:47.761 -> SPIN#13 PRED speed=0.300 angle=20.7 curWedge=0 predAngle=168.0 predWedge=5
+15:26:48.105 -> SPIN#13 PRED speed=0.260 angle=347.7 curWedge=11 predAngle=180.0 predWedge=6
+15:26:48.743 -> SPIN#13 DECISION omega=-0.220 peak=1.492 curWedge=9 predStopAngle=164.1 predStopWedge=5 action=LEAVE reason=observe-only
+15:26:49.555 -> SPIN#13 PRED speed=0.200 angle=231.9 curWedge=7 predAngle=124.4 predWedge=4
+15:26:50.564 -> SPIN#13 PRED speed=0.150 angle=168.0 curWedge=5 predAngle=103.1 predWedge=3
+15:26:51.169 -> SPIN#13 PRED speed=0.100 angle=141.7 curWedge=4 predAngle=110.4 predWedge=3
+15:26:52.432 -> SPIN#13 PRIMARY_STOP source=NATURAL wedge=4 angle=126.2 isDare=0
+15:26:52.432 -> SPIN#13 LANDED wedge=4 angle=126.2 isDare=0 peak=1.492 predictedWedge=5 predictedAngle=164.1 drag=0 recovery=0 primaryWedge=4 targetWedge=-1 targetErrorDeg=0.0
+15:26:54.189 -> SPIN#14 START dir=-1 omegaAtConfirm=0.282
+15:27:01.199 -> SPIN#14 PRED speed=0.350 angle=250.0 curWedge=8 predAngle=337.0 predWedge=11
+15:27:02.059 -> SPIN#14 PRED speed=0.300 angle=151.1 curWedge=5 predAngle=298.5 predWedge=9
+15:27:02.433 -> SPIN#14 PRED speed=0.260 angle=114.8 curWedge=3 predAngle=307.2 predWedge=10
+15:27:02.698 -> SPIN#14 DECISION omega=-0.220 peak=1.011 curWedge=3 predStopAngle=325.8 predStopWedge=10 action=LEAVE reason=predicted-safe
+15:27:02.829 -> SPIN#14 PRED speed=0.200 angle=80.4 curWedge=2 predAngle=332.9 predWedge=11
+15:27:03.230 -> SPIN#14 PRED speed=0.150 angle=56.1 curWedge=1 predAngle=351.1 predWedge=11
+15:27:03.675 -> SPIN#14 PRED speed=0.100 angle=38.9 curWedge=1 predAngle=7.7 predWedge=0
+15:27:04.824 -> SPIN#14 PRIMARY_STOP source=NATURAL wedge=0 angle=26.8 isDare=0
+15:27:04.824 -> SPIN#14 LANDED wedge=0 angle=26.8 isDare=0 peak=1.011 predictedWedge=10 predictedAngle=325.8 drag=0 recovery=0 primaryWedge=0 targetWedge=-1 targetErrorDeg=0.0
+15:27:06.787 -> SPIN#15 START dir=-1 omegaAtConfirm=0.279
+15:27:12.916 -> SPIN#15 PRED speed=0.350 angle=124.9 curWedge=4 predAngle=211.6 predWedge=7
+15:27:13.215 -> SPIN#15 PRED speed=0.300 angle=85.3 curWedge=2 predAngle=232.7 predWedge=7
+15:27:13.618 -> SPIN#15 PRED speed=0.260 angle=50.0 curWedge=1 predAngle=242.2 predWedge=8
+15:27:13.890 -> SPIN#15 DECISION omega=-0.220 peak=0.887 curWedge=0 predStopAngle=256.9 predStopWedge=8 action=LEAVE reason=predicted-safe
+15:27:14.067 -> SPIN#15 PRED speed=0.200 angle=13.0 curWedge=0 predAngle=265.8 predWedge=8
+15:27:14.579 -> SPIN#15 PRED speed=0.150 angle=341.3 curWedge=11 predAngle=276.4 predWedge=9
+15:27:15.589 -> SPIN#15 PRED speed=0.100 angle=298.3 curWedge=9 predAngle=267.0 predWedge=8
+15:27:19.682 -> SPIN#15 PRIMARY_STOP source=NATURAL wedge=7 angle=221.7 isDare=0
+15:27:19.682 -> SPIN#15 LANDED wedge=7 angle=221.7 isDare=0 peak=0.887 predictedWedge=8 predictedAngle=256.9 drag=0 recovery=0 primaryWedge=7 targetWedge=-1 targetErrorDeg=0.0
+15:27:21.847 -> SPIN#16 START dir=-1 omegaAtConfirm=0.248
+15:27:22.800 -> SPIN#16 PRED speed=0.350 angle=64.6 curWedge=2 predAngle=151.5 predWedge=5
+15:27:23.297 -> SPIN#16 PRED speed=0.300 angle=10.3 curWedge=0 predAngle=157.8 predWedge=5
+15:27:23.700 -> SPIN#16 PRED speed=0.260 angle=329.2 curWedge=10 predAngle=161.4 predWedge=5
+15:27:24.558 -> SPIN#16 DECISION omega=-0.220 peak=0.446 curWedge=8 predStopAngle=131.0 predStopWedge=4 action=LEAVE reason=predicted-safe
+15:27:25.199 -> SPIN#16 PRED speed=0.200 angle=209.4 curWedge=6 predAngle=101.9 predWedge=3
+15:27:26.023 -> SPIN#16 PRED speed=0.150 angle=156.3 curWedge=5 predAngle=91.2 predWedge=3
+15:27:26.553 -> SPIN#16 PRED speed=0.100 angle=133.0 curWedge=4 predAngle=101.9 predWedge=3
+15:27:27.748 -> SPIN#16 PRIMARY_STOP source=NATURAL wedge=3 angle=119.1 isDare=0
+15:27:27.785 -> SPIN#16 LANDED wedge=3 angle=119.1 isDare=0 peak=0.446 predictedWedge=4 predictedAngle=131.0 drag=0 recovery=0 primaryWedge=3 targetWedge=-1 targetErrorDeg=0.0
+15:27:32.207 -> SPIN#17 START dir=-1 omegaAtConfirm=0.498
+15:27:45.805 -> SPIN#17 PRED speed=0.350 angle=9.8 curWedge=0 predAngle=96.5 predWedge=3
+15:27:46.378 -> SPIN#17 PRED speed=0.300 angle=308.0 curWedge=10 predAngle=95.4 predWedge=3
+15:27:47.374 -> SPIN#17 PRED speed=0.260 angle=204.9 curWedge=6 predAngle=37.2 predWedge=1
+15:27:48.030 -> SPIN#17 DECISION omega=-0.220 peak=1.885 curWedge=5 predStopAngle=24.5 predStopWedge=0 action=LEAVE reason=observe-only
+15:27:48.261 -> SPIN#17 PRED speed=0.200 angle=135.0 curWedge=4 predAngle=27.5 predWedge=0
+15:27:48.682 -> SPIN#17 PRED speed=0.150 angle=108.5 curWedge=3 predAngle=43.6 predWedge=1
+15:27:49.039 -> SPIN#17 PRED speed=0.100 angle=92.5 curWedge=3 predAngle=61.2 predWedge=2
+15:27:50.099 -> SPIN#17 PRIMARY_STOP source=NATURAL wedge=2 angle=82.8 isDare=0
+15:27:50.099 -> SPIN#17 LANDED wedge=2 angle=82.8 isDare=0 peak=1.885 predictedWedge=0 predictedAngle=24.5 drag=0 recovery=0 primaryWedge=2 targetWedge=-1 targetErrorDeg=0.0
+15:27:55.853 -> SPIN#18 START dir=+1 omegaAtConfirm=0.347
+15:28:13.176 -> SPIN#18 PRED speed=0.350 angle=167.4 curWedge=5 predAngle=80.6 predWedge=2
+15:28:13.680 -> SPIN#18 PRED speed=0.300 angle=222.2 curWedge=7 predAngle=74.8 predWedge=2
+15:28:13.934 -> SPIN#18 PRED speed=0.260 angle=250.2 curWedge=8 predAngle=57.9 predWedge=1
+15:28:14.230 -> SPIN#18 DECISION omega=0.220 peak=2.326 curWedge=9 predStopAngle=41.9 predStopWedge=1 action=LEAVE reason=observe-only
+15:28:14.355 -> SPIN#18 PRED speed=0.200 angle=284.5 curWedge=9 predAngle=32.0 predWedge=1
+15:28:14.802 -> SPIN#18 PRED speed=0.150 angle=310.1 curWedge=10 predAngle=15.0 predWedge=0
+15:28:15.303 -> SPIN#18 PRED speed=0.100 angle=331.1 curWedge=11 predAngle=2.4 predWedge=0
+15:28:16.842 -> SPIN#18 PRIMARY_STOP source=NATURAL wedge=11 angle=351.6 isDare=0
+15:28:16.842 -> SPIN#18 LANDED wedge=11 angle=351.6 isDare=0 peak=2.326 predictedWedge=1 predictedAngle=41.9 drag=0 recovery=0 primaryWedge=11 targetWedge=-1 targetErrorDeg=0.0
+15:28:22.608 -> SPIN#19 START dir=+1 omegaAtConfirm=0.231
+15:28:41.088 -> SPIN#19 PRED speed=0.350 angle=46.1 curWedge=1 predAngle=319.3 predWedge=10
+15:28:42.035 -> SPIN#19 PRED speed=0.300 angle=156.6 curWedge=5 predAngle=9.4 predWedge=0
+15:28:42.455 -> SPIN#19 PRED speed=0.260 angle=198.2 curWedge=6 predAngle=5.7 predWedge=0
+15:28:42.780 -> SPIN#19 DECISION omega=0.220 peak=2.492 curWedge=7 predStopAngle=352.5 predStopWedge=11 action=LEAVE reason=predicted-safe
+15:28:42.899 -> SPIN#19 PRED speed=0.200 angle=236.7 curWedge=7 predAngle=344.0 predWedge=11
+15:28:43.250 -> SPIN#19 PRED speed=0.150 angle=258.0 curWedge=8 predAngle=323.0 predWedge=10
+15:28:43.652 -> SPIN#19 PRED speed=0.100 angle=273.8 curWedge=9 predAngle=304.9 predWedge=10
+15:28:44.737 -> SPIN#19 PRIMARY_STOP source=NATURAL wedge=9 angle=285.3 isDare=0
+15:28:44.773 -> SPIN#19 LANDED wedge=9 angle=285.3 isDare=0 peak=2.492 predictedWedge=11 predictedAngle=352.5 drag=0 recovery=0 primaryWedge=9 targetWedge=-1 targetErrorDeg=0.0
+15:34:25.967 ->                                                                 irm=0.436
+15:34:40.902 -> SPIN#20 PRED speed=0.350 angle=307.4 curWedge=10 predAngle=220.7 predWedge=7
+15:34:41.485 -> SPIN#20 PRED speed=0.300 angle=9.4 curWedge=0 predAngle=222.0 predWedge=7
+15:34:42.249 -> SPIN#20 PRED speed=0.260 angle=90.7 curWedge=3 predAngle=258.4 predWedge=8
+15:34:43.212 -> SPIN#20 DECISION omega=0.220 peak=2.058 curWedge=5 predStopAngle=299.7 predStopWedge=9 action=LEAVE reason=predicted-safe
+15:34:43.378 -> SPIN#20 PRED speed=0.200 angle=188.9 curWedge=6 predAngle=296.4 predWedge=9
+15:34:43.823 -> SPIN#20 PRED speed=0.150 angle=216.4 curWedge=7 predAngle=281.4 predWedge=9
+15:34:44.235 -> SPIN#20 PRED speed=0.100 angle=232.8 curWedge=7 predAngle=264.1 predWedge=8
+15:34:45.308 -> SPIN#20 PRIMARY_STOP source=NATURAL wedge=8 angle=244.0 isDare=0
+15:34:45.308 -> SPIN#20 LANDED wedge=8 angle=244.0 isDare=0 peak=2.058 predictedWedge=9 predictedAngle=299.7 drag=0 recovery=0 primaryWedge=8 targetWedge=-1 targetErrorDeg=0.0
+15:34:46.694 -> SPIN#21 START dir=+1 omegaAtConfirm=0.283
+15:34:59.883 -> SPIN#21 PRED speed=0.350 angle=168.8 curWedge=5 predAngle=82.2 predWedge=2
+15:35:00.346 -> SPIN#21 PRED speed=0.300 angle=222.9 curWedge=7 predAngle=75.5 predWedge=2
+15:35:00.610 -> SPIN#21 PRED speed=0.260 angle=250.9 curWedge=8 predAngle=58.6 predWedge=1
+15:35:00.887 -> SPIN#21 DECISION omega=0.220 peak=1.731 curWedge=9 predStopAngle=41.1 predStopWedge=1 action=LEAVE reason=observe-only
+15:35:01.060 -> SPIN#21 PRED speed=0.200 angle=285.1 curWedge=9 predAngle=32.6 predWedge=1
+15:35:01.478 -> SPIN#21 PRED speed=0.150 angle=310.8 curWedge=10 predAngle=15.7 predWedge=0
+15:35:01.959 -> SPIN#21 PRED speed=0.100 angle=331.7 curWedge=11 predAngle=2.9 predWedge=0
+15:35:03.394 -> SPIN#21 PRIMARY_STOP source=NATURAL wedge=11 angle=351.3 isDare=0
+15:35:03.442 -> SPIN#21 LANDED wedge=11 angle=351.3 isDare=0 peak=1.731 predictedWedge=1 predictedAngle=41.1 drag=0 recovery=0 primaryWedge=11 targetWedge=-1 targetErrorDeg=0.0
+
+15:35:04.907 -> SPIN#22 START dir=+1 omegaAtConfirm=0.223
+15:35:20.597 -> SPIN#22 PRED speed=0.350 angle=176.0 curWedge=5 predAngle=89.2 predWedge=2
+15:35:21.072 -> SPIN#22 PRED speed=0.300 angle=227.9 curWedge=7 predAngle=80.5 predWedge=2
+15:35:21.340 -> SPIN#22 PRED speed=0.260 angle=256.1 curWedge=8 predAngle=63.7 predWedge=2
+15:35:21.616 -> SPIN#22 DECISION omega=0.220 peak=2.047 curWedge=9 predStopAngle=46.7 predStopWedge=1 action=LEAVE reason=observe-only
+15:35:21.778 -> SPIN#22 PRED speed=0.200 angle=290.7 curWedge=9 predAngle=38.2 predWedge=1
+15:35:22.232 -> SPIN#22 PRED speed=0.150 angle=317.8 curWedge=10 predAngle=22.8 predWedge=0
+15:35:22.728 -> SPIN#22 PRED speed=0.100 angle=339.9 curWedge=11 predAngle=11.1 predWedge=0
+15:35:24.367 -> SPIN#22 PRIMARY_STOP source=NATURAL wedge=0 angle=2.5 isDare=0
+15:35:24.367 -> SPIN#22 LANDED wedge=0 angle=2.5 isDare=0 peak=2.047 predictedWedge=1 predictedAngle=46.7 drag=0 recovery=0 primaryWedge=0 targetWedge=-1 targetErrorDeg=0.0
+15:35:25.758 -> SPIN#23 START dir=+1 omegaAtConfirm=0.222
+15:35:42.922 -> SPIN#23 PRED speed=0.350 angle=70.8 curWedge=2 predAngle=344.0 predWedge=11
+15:35:43.859 -> SPIN#23 PRED speed=0.300 angle=177.5 curWedge=5 predAngle=30.1 predWedge=1
+15:35:44.229 -> SPIN#23 PRED speed=0.260 angle=213.7 curWedge=7 predAngle=21.4 predWedge=0
+15:35:44.492 -> SPIN#23 DECISION omega=0.220 peak=2.323 curWedge=7 predStopAngle=5.5 predStopWedge=0 action=LEAVE reason=predicted-safe
+15:35:44.626 -> SPIN#23 PRED speed=0.200 angle=248.9 curWedge=8 predAngle=356.4 predWedge=11
+15:35:45.019 -> SPIN#23 PRED speed=0.150 angle=270.7 curWedge=9 predAngle=335.7 predWedge=11
+15:35:45.362 -> SPIN#23 PRED speed=0.100 angle=287.0 curWedge=9 predAngle=318.2 predWedge=10
+15:35:46.561 -> SPIN#23 PRIMARY_STOP source=NATURAL wedge=9 angle=299.6 isDare=0
+15:35:46.561 -> SPIN#23 LANDED wedge=9 angle=299.6 isDare=0 peak=2.323 predictedWedge=0 predictedAngle=5.5 drag=0 recovery=0 primaryWedge=9 targetWedge=-1 targetErrorDeg=0.0
+15:35:55.309 -> SPIN#24 START dir=+1 omegaAtConfirm=0.236
+15:36:11.991 -> SPIN#24 PRED speed=0.350 angle=34.6 curWedge=1 predAngle=307.7 predWedge=10
+15:36:13.045 -> SPIN#24 PRED speed=0.300 angle=154.1 curWedge=5 predAngle=6.5 predWedge=0
+15:36:13.409 -> SPIN#24 PRED speed=0.260 angle=194.3 curWedge=6 predAngle=2.1 predWedge=0
+15:36:13.788 -> SPIN#24 DECISION omega=0.220 peak=2.236 curWedge=7 predStopAngle=349.5 predStopWedge=11 action=LEAVE reason=predicted-safe
+15:36:13.898 -> SPIN#24 PRED speed=0.200 angle=234.1 curWedge=7 predAngle=341.5 predWedge=11
+15:36:14.272 -> SPIN#24 PRED speed=0.150 angle=254.8 curWedge=8 predAngle=319.8 predWedge=10
+15:36:14.602 -> SPIN#24 PRED speed=0.100 angle=269.9 curWedge=8 predAngle=301.1 predWedge=10
+15:36:15.744 -> SPIN#24 PRIMARY_STOP source=NATURAL wedge=9 angle=280.8 isDare=0
+15:36:15.744 -> SPIN#24 LANDED wedge=9 angle=280.8 isDare=0 peak=2.236 predictedWedge=11 predictedAngle=349.5 drag=0 recovery=0 primaryWedge=9 targetWedge=-1 targetErrorDeg=0.0
+15:36:18.569 -> SPIN#25 START dir=+1 omegaAtConfirm=0.254
+15:36:34.889 -> SPIN#25 PRED speed=0.350 angle=43.5 curWedge=1 predAngle=316.8 predWedge=10
+15:36:35.883 -> SPIN#25 PRED speed=0.300 angle=156.5 curWedge=5 predAngle=9.0 predWedge=0
+15:36:36.238 -> SPIN#25 PRED speed=0.260 angle=196.0 curWedge=6 predAngle=3.7 predWedge=0
+15:36:36.606 -> SPIN#25 DECISION omega=0.220 peak=2.177 curWedge=7 predStopAngle=351.2 predStopWedge=11 action=LEAVE reason=predicted-safe
+15:36:36.732 -> SPIN#25 PRED speed=0.200 angle=236.1 curWedge=7 predAngle=343.6 predWedge=11
+15:36:37.079 -> SPIN#25 PRED speed=0.150 angle=257.3 curWedge=8 predAngle=322.2 predWedge=10
+15:36:37.468 -> SPIN#25 PRED speed=0.100 angle=272.5 curWedge=9 predAngle=303.7 predWedge=10
+15:36:38.572 -> SPIN#25 PRIMARY_STOP source=NATURAL wedge=9 angle=283.8 isDare=0
+15:36:38.572 -> SPIN#25 LANDED wedge=9 angle=283.8 isDare=0 peak=2.177 predictedWedge=11 predictedAngle=351.2 drag=0 recovery=0 primaryWedge=9 targetWedge=-1 targetErrorDeg=0.0
+15:36:42.332 -> SPIN#26 START dir=+1 omegaAtConfirm=0.304
+15:36:59.333 -> SPIN#26 PRED speed=0.350 angle=246.0 curWedge=8 predAngle=159.1 predWedge=5
+15:36:59.710 -> SPIN#26 PRED speed=0.300 angle=284.1 curWedge=9 predAngle=136.7 predWedge=4
+15:37:00.040 -> SPIN#26 PRED speed=0.260 angle=317.9 curWedge=10 predAngle=125.6 predWedge=4
+15:37:00.403 -> SPIN#26 DECISION omega=0.220 peak=2.269 curWedge=11 predStopAngle=117.6 predStopWedge=3 action=LEAVE reason=predicted-safe
+15:37:00.716 -> SPIN#26 PRED speed=0.200 angle=14.4 curWedge=0 predAngle=121.8 predWedge=4
+15:37:02.471 -> SPIN#26 PRED speed=0.150 angle=120.8 curWedge=4 predAngle=185.8 predWedge=6
+15:37:03.322 -> SPIN#26 PRED speed=0.100 angle=159.8 curWedge=5 predAngle=191.0 predWedge=6
+15:37:04.697 -> SPIN#26 PRIMARY_STOP source=NATURAL wedge=5 angle=178.0 isDare=1
+15:37:04.697 -> SPIN#26 LANDED wedge=5 angle=178.0 isDare=1 peak=2.269 predictedWedge=3 predictedAngle=117.6 drag=0 recovery=0 primaryWedge=5 targetWedge=-1 targetErrorDeg=0.0
+15:37:05.767 -> SPIN#27 START dir=+1 omegaAtConfirm=0.252
+15:37:15.680 -> SPIN#27 PRED speed=0.350 angle=253.7 curWedge=8 predAngle=166.9 predWedge=5
+15:37:16.031 -> SPIN#27 PRED speed=0.300 angle=293.8 curWedge=9 predAngle=146.5 predWedge=4
+15:37:16.391 -> SPIN#27 PRED speed=0.260 angle=327.3 curWedge=10 predAngle=134.9 predWedge=4
+15:37:16.895 -> SPIN#27 DECISION omega=0.220 peak=1.352 curWedge=0 predStopAngle=134.8 predStopWedge=4 action=LEAVE reason=predicted-safe
+15:37:17.380 -> SPIN#27 PRED speed=0.200 angle=47.5 curWedge=1 predAngle=154.7 predWedge=5
+15:37:18.943 -> SPIN#27 PRED speed=0.150 angle=145.6 curWedge=4 predAngle=210.7 predWedge=7
+15:37:19.597 -> SPIN#27 PRED speed=0.100 angle=174.8 curWedge=5 predAngle=205.9 predWedge=6
+15:37:20.875 -> SPIN#27 PRIMARY_STOP source=NATURAL wedge=6 angle=190.4 isDare=0
+15:37:20.875 -> SPIN#27 LANDED wedge=6 angle=190.4 isDare=0 peak=1.352 predictedWedge=4 predictedAngle=134.8 drag=0 recovery=0 primaryWedge=6 targetWedge=-1 targetErrorDeg=0.0
+15:37:23.674 -> SPIN#28 START dir=+1 omegaAtConfirm=0.268
+15:37:23.856 -> SPIN#28 PRED speed=0.300 angle=225.5 curWedge=7 predAngle=78.1 predWedge=2
+15:37:24.157 -> SPIN#28 PRED speed=0.260 angle=255.8 curWedge=8 predAngle=63.4 predWedge=2
+15:37:24.468 -> SPIN#28 DECISION omega=0.220 peak=0.333 curWedge=9 predStopAngle=46.4 predStopWedge=1 action=LEAVE reason=observe-only
+15:37:24.642 -> SPIN#28 PRED speed=0.200 angle=295.0 curWedge=9 predAngle=42.3 predWedge=1
+15:37:25.058 -> SPIN#28 PRED speed=0.150 angle=319.0 curWedge=10 predAngle=24.0 predWedge=0
+15:37:25.544 -> SPIN#28 PRED speed=0.100 angle=341.4 curWedge=11 predAngle=12.6 predWedge=0
+15:37:27.144 -> SPIN#28 PRIMARY_STOP source=NATURAL wedge=0 angle=4.0 isDare=0
+15:37:27.144 -> SPIN#28 LANDED wedge=0 angle=4.0 isDare=0 peak=0.333 predictedWedge=1 predictedAngle=46.4 drag=0 recovery=0 primaryWedge=0 targetWedge=-1 targetErrorDeg=0.0
+15:37:29.506 -> SPIN#29 START dir=+1 omegaAtConfirm=0.275
+15:37:29.641 -> SPIN#29 PRED speed=0.350 angle=33.5 curWedge=1 predAngle=306.5 predWedge=10
+15:37:30.563 -> SPIN#29 PRED speed=0.300 angle=135.1 curWedge=4 predAngle=347.7 predWedge=11
+15:37:31.020 -> SPIN#29 PRED speed=0.260 angle=183.3 curWedge=6 predAngle=351.1 predWedge=11
+15:37:31.384 -> SPIN#29 DECISION omega=0.220 peak=0.356 curWedge=7 predStopAngle=338.5 predStopWedge=11 action=LEAVE reason=predicted-safe
+15:37:31.556 -> SPIN#29 PRED speed=0.200 angle=224.7 curWedge=7 predAngle=332.2 predWedge=11
+15:37:31.914 -> SPIN#29 PRED speed=0.150 angle=246.2 curWedge=8 predAngle=311.1 predWedge=10
+15:37:32.272 -> SPIN#29 PRED speed=0.100 angle=261.6 curWedge=8 predAngle=292.8 predWedge=9
+15:37:33.378 -> SPIN#29 PRIMARY_STOP source=NATURAL wedge=9 angle=273.1 isDare=0
+15:37:33.378 -> SPIN#29 LANDED wedge=9 angle=273.1 isDare=0 peak=0.356 predictedWedge=11 predictedAngle=338.5 drag=0 recovery=0 primaryWedge=9 targetWedge=-1 targetErrorDeg=0.0
+15:37:35.236 -> SPIN#30 START dir=+1 omegaAtConfirm=0.259
+15:37:35.487 -> SPIN#30 PRED speed=0.300 angle=307.0 curWedge=10 predAngle=159.5 predWedge=5
+15:37:35.985 -> SPIN#30 PRED speed=0.260 angle=355.0 curWedge=11 predAngle=162.8 predWedge=5
+15:37:36.791 -> SPIN#30 DECISION omega=0.220 peak=0.331 curWedge=2 predStopAngle=190.4 predStopWedge=6 action=LEAVE reason=predicted-safe
+15:37:37.322 -> SPIN#30 PRED speed=0.200 angle=105.7 curWedge=3 predAngle=213.3 predWedge=7
+15:37:38.296 -> SPIN#30 PRED speed=0.150 angle=166.5 curWedge=5 predAngle=231.4 predWedge=7
+15:37:38.807 -> SPIN#30 PRED speed=0.100 angle=189.1 curWedge=6 predAngle=220.4 predWedge=7
+15:37:39.990 -> SPIN#30 PRIMARY_STOP source=NATURAL wedge=6 angle=202.5 isDare=0
+15:37:40.031 -> SPIN#30 LANDED wedge=6 angle=202.5 isDare=0 peak=0.331 predictedWedge=6 predictedAngle=190.4 drag=0 recovery=0 primaryWedge=6 targetWedge=-1 targetErrorDeg=0.0
