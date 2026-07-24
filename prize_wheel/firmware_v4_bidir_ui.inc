@@ -29,6 +29,25 @@ static const float DECISION_FALLING_DROP_REV_S = 0.004f;
 static const float DECISION_RISING_RESET_REV_S = 0.004f;
 static const float DECISION_PEAK_DROP_REV_S = 0.045f;
 
+// V5 keeps the successful moving takeover for encoder direction -1.
+// Encoder direction +1 waits until the wheel is nearly stopped before the
+// stationary position-move takeover is allowed.
+static const float CW_STOP_DRIVE_DECISION_MAX_REV_S = 0.055f;
+static const float CW_STOP_DRIVE_DECISION_MIN_REV_S = 0.025f;
+static const float CW_STOP_DRIVE_MIN_PEAK_REV_S = 0.18f;
+static const float CCW_MOVING_DECISION_MAX_REV_S = 0.28f;
+static const float CCW_MOVING_DECISION_MIN_REV_S = 0.065f;
+
+static float decisionMaximumSpeed() {
+  return spinRecord.direction > 0 ? CW_STOP_DRIVE_DECISION_MAX_REV_S
+                                  : CCW_MOVING_DECISION_MAX_REV_S;
+}
+
+static float decisionMinimumSpeed() {
+  return spinRecord.direction > 0 ? CW_STOP_DRIVE_DECISION_MIN_REV_S
+                                  : CCW_MOVING_DECISION_MIN_REV_S;
+}
+
 static uint32_t decisionTrendSpinNumber = 0;
 static uint32_t decisionTrendSampleMs = 0;
 static uint32_t decisionFallingStartedMs = 0;
@@ -36,8 +55,21 @@ static float decisionTrendReferenceSpeed = 0.0f;
 
 static float decisionMinimumPeakRequirement() {
   float speed = fabsf(omega);
+  float forwardSpeed = omega * spinRecord.direction;
   uint32_t nowMs = millis();
 
+  // CW/+1 takeover happens only while the original spin is still moving
+  // forward and has decayed into the near-stop window.  No moving-phase
+  // synchronization is attempted in this direction.
+  if (spinRecord.direction > 0) {
+    if (forwardSpeed < CW_STOP_DRIVE_DECISION_MIN_REV_S ||
+        forwardSpeed > CW_STOP_DRIVE_DECISION_MAX_REV_S) {
+      return 1000.0f;
+    }
+    return CW_STOP_DRIVE_MIN_PEAK_REV_S;
+  }
+
+  // Preserve the validated falling-speed gate for CCW/-1 moving takeover.
   if (decisionTrendSpinNumber != spinRecord.number) {
     decisionTrendSpinNumber = spinRecord.number;
     decisionTrendSampleMs = nowMs;
