@@ -11,14 +11,14 @@
 
 static const float POWERED_DECISION_REV_S = 0.28f;
 static const uint16_t POWERED_PRECHARGE_MS = 50;
-static const uint16_t POWERED_ENTRY_CURRENT_CCW_MA = 350;
+static const uint16_t POWERED_ENTRY_CURRENT_CCW_MA = 450;
 static const uint16_t POWERED_ENTRY_CURRENT_CW_MA = 450;
-static const uint16_t POWERED_RUN_CURRENT_CCW_MA = 700;
+static const uint16_t POWERED_RUN_CURRENT_CCW_MA = 950;
 static const uint16_t POWERED_RUN_CURRENT_CW_MA = 950;
 static const uint16_t POWERED_CURRENT_RISE_MS = 160;
 static const uint32_t POWERED_SLEW_SPS2 = 800;
 static const float POWERED_ENTRY_FRACTION = 0.97f;
-static const float POWERED_CRUISE_CCW_REV_S = 0.22f;
+static const float POWERED_CRUISE_CCW_REV_S = 0.16f;
 static const float POWERED_CRUISE_CW_REV_S = 0.16f;
 static const float POWERED_MAX_REV_S = 0.30f;
 static const float POWERED_MIN_REV_S = 0.025f;
