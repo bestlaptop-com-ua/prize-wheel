@@ -1,0 +1,32 @@
+name: Build mid-spin firmware
+
+on:
+  push:
+    branches:
+      - main
+      - midspin-only-ledc
+    paths:
+      - 'prize_wheel/**'
+      - '.github/workflows/build-midspin.yml'
+  pull_request:
+    paths:
+      - 'prize_wheel/**'
+      - '.github/workflows/build-midspin.yml'
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Configure ESP32 board index
+        run: |
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index
+      - name: Install ESP32 core and libraries
+        run: |
+          arduino-cli core install esp32:esp32@3.3.10
+          arduino-cli lib install TMCStepper
+      - name: Compile
+        run: arduino-cli compile --fqbn esp32:esp32:esp32 prize_wheel
