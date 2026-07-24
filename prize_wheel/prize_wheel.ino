@@ -88,6 +88,12 @@ const uint16_t TAKEOVER_PRECHARGE_MS = 80;
 const uint16_t TAKEOVER_PICKUP_TO_BRAKE_MS = 250;
 const float TAKEOVER_SPEEDUP_ABORT_REV_S = 0.015f;
 const uint16_t TAKEOVER_SPEEDUP_ABORT_MS = 30;
+// Fight watchdog.  A motor driving against the wheel (dead DIR line, phase
+// fight, belt tooth-jump) cannot reverse a 0.9 kg wheel fast enough to trip
+// the opposite-motion abort, but it collapses forward speed far faster than
+// friction ever does.  Compare wheel speed against the live FAS command.
+const uint16_t TAKEOVER_FIGHT_GRACE_MS = 120;
+const float TAKEOVER_FIGHT_SPEED_FRACTION = 0.45f;
 const uint16_t RECOVERY_CURRENT_MA = 450;
 const uint16_t RECOVERY_HOLD_CURRENT_MA = 650;
 const uint32_t RECOVERY_SPEED_HZ = 120;
@@ -152,6 +158,7 @@ uint32_t takeoverMotorEnableMs = 0;
 uint8_t takeoverCurrentStage = 0;
 float takeoverLowestForwardRevS = 0.0f;
 uint32_t takeoverSpeedupSinceMs = 0;
+uint32_t takeoverStepStartMs = 0;
 uint32_t settleT0 = 0;
 bool sawSpinThisCycle = false;
 
@@ -171,6 +178,8 @@ uint8_t recoveryAttempts = 0;
 
 int32_t directionProbeStartCounts = 0;
 uint32_t directionProbeStartedMs = 0;
+uint8_t directionProbeLeg = 0;         // 1 = FAS+ leg, 2 = FAS- return leg
+int directionProbePlusSign = 0;        // encoder sign measured on the FAS+ leg
 
 // One immutable causal record per spin.  These values are deliberately
 // captured at the decision instant, then echoed after the true final stop.
@@ -798,9 +807,11 @@ void startDirectionProbe() {
   stepper->setJumpStart(0);
   directionProbeStartCounts = encoderCountsMT;
   directionProbeStartedMs = millis();
+  directionProbeLeg = 1;
+  directionProbePlusSign = 0;
   stepper->move(DIR_PROBE_USTEPS);
   mode = DIR_PROBE;
-  Serial.printf("# DIR PROBE: moving FAS+ %ld usteps; keep hands clear\n",
+  Serial.printf("# DIR PROBE leg 1/2: moving FAS+ %ld usteps; keep hands clear\n",
                 (long)DIR_PROBE_USTEPS);
 }
 
@@ -819,17 +830,49 @@ void serviceDirectionProbe() {
   if (fabsf(degrees) < DIR_PROBE_MIN_DEG) {
     driverFreewheel();
     mode = DONE;
-    Serial.printf("# DIR PROBE FAILED: encoder moved only %.2f deg; recovery remains locked\n", degrees);
+    Serial.printf("# DIR PROBE FAILED (leg %u): encoder moved only %.2f deg; if this was leg 2, suspect a stuck DIR line; recovery remains locked\n",
+                  (unsigned)directionProbeLeg, degrees);
     return;
   }
 
-  motorPositiveEncoderSign = degrees > 0.0f ? 1 : -1;
+  int legSign = degrees > 0.0f ? 1 : -1;
+
+  if (directionProbeLeg == 1) {
+    // Leg 2 retraces the same distance with FAS- and must move the encoder
+    // the opposite way.  This is the only place FAS- is ever validated, so a
+    // dead/stuck DIR line is caught here instead of during a guest spin.
+    directionProbePlusSign = legSign;
+    stepper->forceStopAndNewPosition(0);
+    directionProbeStartCounts = encoderCountsMT;
+    directionProbeStartedMs = millis();
+    directionProbeLeg = 2;
+    stepper->move(-DIR_PROBE_USTEPS);
+    Serial.printf("# DIR PROBE leg 2/2: FAS+ moved encoder %+.2f deg; now moving FAS- %ld usteps back\n",
+                  degrees, (long)DIR_PROBE_USTEPS);
+    return;
+  }
+
+  if (legSign == directionProbePlusSign) {
+    // Both electrical directions moved the wheel the SAME way: the DIR pin
+    // (GPIO27 -> driver DIR) is not switching.  Clear any stale calibration
+    // so no automatic move can run until the wiring is fixed and p passes.
+    motorDirectionCalibrated = false;
+    motorPositiveEncoderSign = 0;
+    preferences.putBool("dir_ok", false);
+    preferences.putInt("pos_sign", 0);
+    driverFreewheel();
+    mode = DONE;
+    Serial.println(F("# DIR PROBE FAILED: FAS+ and FAS- moved the wheel the SAME direction. DIR line fault (check GPIO27 wiring/solder joints). Takeover+recovery LOCKED."));
+    return;
+  }
+
+  motorPositiveEncoderSign = directionProbePlusSign;
   motorDirectionCalibrated = true;
   preferences.putBool("dir_ok", true);
   preferences.putInt("pos_sign", motorPositiveEncoderSign);
   driverFreewheel();
   mode = DONE;
-  Serial.printf("# DIR PROBE PASS: FAS+ is encoder dir=%+d; dare recovery ENABLED\n",
+  Serial.printf("# DIR PROBE PASS: both legs verified; FAS+ is encoder dir=%+d, FAS- opposite; takeover+recovery ENABLED\n",
                 motorPositiveEncoderSign);
 }
 
@@ -1064,6 +1107,7 @@ bool launchTakeover(float forwardDeg) {
   // One finite hardware-timed, calibrated relative move.  Do not issue any
   // additional planner commands while this trajectory is active.
   stepper->move(takeoverTargetU);
+  takeoverStepStartMs = millis();
 
   Serial.printf("SPIN#%lu TAKEOVER dir=%+d fasDir=%+d targetAngle=%.1f runwayDeg=%.1f relU=%ld wheelRevS=%.3f matchRevS=%.3f accel=%u brakeMa=%u\n",
                  (unsigned long)activeSpinNumber, dir, fasSign, takeoverTargetDeg,
@@ -1143,6 +1187,31 @@ void takeoverStep() {
     return;
   }
   updateTakeoverCurrent();
+
+  // Fight watchdog.  The belt is toothed, so the wheel can only fall far
+  // below the commanded step rate through motor step loss, belt tooth-jump,
+  // or a DIR-line fault -- exactly the failures that must end this move.  A
+  // fight decelerates the wheel long before it can reverse it, so the
+  // opposite-motion abort below never fires in time on a 0.9 kg wheel.
+  if (millis() - takeoverStepStartMs >= TAKEOVER_FIGHT_GRACE_MS &&
+      stepper->isRunning()) {
+    float commandedRevS =
+        fabsf((float)stepper->getCurrentSpeedInMilliHz(true)) /
+        (1000.0f * WHEEL_USTEPS_PER_REV);
+    float wheelForwardRevS = fmaxf(0.0f, omega * takeoverDir);
+    if (commandedRevS > TAKEOVER_MIN_REV_S &&
+        wheelForwardRevS < commandedRevS * TAKEOVER_FIGHT_SPEED_FRACTION) {
+      stepper->forceStopAndNewPosition(0);
+      driverFreewheel();
+      sawSpinThisCycle = true;
+      settleT0 = 0;
+      mode = FREE_SPIN;
+      Serial.printf("SPIN#%lu TAKEOVER ABORT: motor fighting wheel (wheel=%.3f commanded=%.3f rev/s); check DIR wiring/belt, re-run p\n",
+                    (unsigned long)activeSpinNumber, wheelForwardRevS,
+                    commandedRevS);
+      return;
+    }
+  }
 
   // If the measured wheel reverses for a sustained interval, release instead
   // of trying to correct it.  A powered reverse is both visible and the known
@@ -1319,7 +1388,7 @@ void help() {
   Serial.println(F(
     "\n=== PRIZE WHEEL (P1 sensing build) ===\n"
     " z  set current pointer position as wedge-0 boundary\n"
-    " p  attended 9-degree FAS+/encoder direction probe (safe wedge center only)\n"
+    " p  attended two-leg direction probe: 9 deg FAS+ then FAS- back (safe wedge center only)\n"
     " s  print angle / wedge / velocity / sensor health\n"
     " d  arm high-rate RAM encoder capture (auto-dump after true stop)\n"
     " v  toggle live takeover logs (disabled while d capture is armed)\n"
