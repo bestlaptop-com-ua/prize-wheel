@@ -1,4 +1,4 @@
-// Prize Wheel firmware v3: powered always-capture random-safe experiment.
+// Prize Wheel firmware v4: powered always-capture random-safe experiment.
 #include "firmware_v2_core.inc"
 
 // Keep the original drag implementation available under legacy names while
@@ -19,7 +19,22 @@
 [[maybe_unused]] static auto legacyServiceDragRef = &serviceLegacyDrag;
 [[maybe_unused]] static auto legacyMinimumRunwayRef = &minimumRunwayDeg;
 
+// Keep the previous one-way probe and serial UI link-checked under legacy
+// names. V4 supplies a two-way continuous-run probe and updated serial UI.
+#define startDirectionProbe startDirectionProbeV3
+#define serviceDirectionProbe serviceDirectionProbeV3
+#define printStatus printStatusV3
+#define printHelp printHelpV3
+#define handleSerial handleSerialV3
 #include "firmware_v2_recovery_ui.inc"
+#undef handleSerial
+#undef printHelp
+#undef printStatus
+#undef serviceDirectionProbe
+#undef startDirectionProbe
+[[maybe_unused]] static auto legacyProbeServiceRef = &serviceDirectionProbeV3;
+[[maybe_unused]] static auto legacyHandleSerialRef = &handleSerialV3;
+#include "firmware_v4_bidir_ui.inc"
 // Powered capture may carry the wheel farther than the brake-only experiment.
 // A 240-degree envelope guarantees at least one safe candidate at the 0.28
 // rev/s decision speed without ever reversing.
@@ -34,7 +49,7 @@
 #define chooseNearestSafeTarget chooseRandomReachableSafeTarget
 #define minimumRunwayDeg poweredMinimumRunwayDeg
 #define DECISION_REV_S POWERED_DECISION_REV_S
-#define DECISION_MIN_PEAK_REV_S 0.0f
+#define DECISION_MIN_PEAK_REV_S decisionMinimumPeakRequirement()
 #define PRECHARGE_MS POWERED_PRECHARGE_MS
 #define recordDecision recordAlwaysCaptureDecision
 #define setup setupV2Base
@@ -50,6 +65,12 @@
 
 void setup() {
   setupV2Base();
+  bool bidirOk = preferences.getBool("bidir_ok", false);
+  if (!bidirOk) {
+    motorDirectionCalibrated = false;
+    motorPositiveEncoderSign = 0;
+    Serial.println(F("# V4 CONTROL LOCKED: run bidirectional p probe before powered spins"));
+  }
   randomSeed((uint32_t)micros() ^ (uint32_t)encoderCountsMT);
-  Serial.println(F("# EXPERIMENT mode=POWERED_ALWAYS_CAPTURE_RANDOM target=random-reachable-safe; send o for motor-free observation"));
+  Serial.println(F("# EXPERIMENT mode=POWERED_RANDOM_V4 bidirectional-probe+falling-gate direction-profile; run p before powered spins"));
 }
