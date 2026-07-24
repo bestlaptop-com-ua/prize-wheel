@@ -71,7 +71,9 @@ const uint16_t GUEST_OVERRIDE_CONFIRM_MS = 60;
 #define ACCEL_CEILING_SPS2 650    // conservative attended-test value
 #define TAKEOVER_MAX_REV_S 0.240f
 const float TAKEOVER_MIN_REV_S = 0.070f;
-const float TAKEOVER_MIN_PEAK_REV_S = 0.28f;
+// 0.28 gated gentle spins out of the disguised takeover entirely, funneling
+// exactly those spins into stop-on-dare -> visible recovery.  Let them steer.
+const float TAKEOVER_MIN_PEAK_REV_S = 0.16f;
 const float TAKEOVER_MATCH_FRACTION = 0.90f; // motor trails the wheel: brake, never lead
 const float TAKEOVER_RUNWAY_MARGIN_DEG = 35.0f;
 const float TAKEOVER_GUARD_COAST_DEG = 60.0f;
@@ -96,8 +98,12 @@ const uint16_t TAKEOVER_FIGHT_GRACE_MS = 120;
 const float TAKEOVER_FIGHT_SPEED_FRACTION = 0.45f;
 const uint16_t RECOVERY_CURRENT_MA = 450;
 const uint16_t RECOVERY_HOLD_CURRENT_MA = 650;
-const uint32_t RECOVERY_SPEED_HZ = 120;
-const uint32_t RECOVERY_ACCEL_SPS2 = 400;
+// The old 120 Hz crawl left a dare wedge at ~7 deg/s: 4-7 s of visibly
+// robotic creep.  ~50 deg/s at the wheel reads as one decisive extra notch,
+// has large torque margin at 450 mA (17 motor RPM), and the accel stays
+// well under the ~1000-1200 sps2 bench-proven clean ceiling.
+const uint32_t RECOVERY_SPEED_HZ = 900;
+const uint32_t RECOVERY_ACCEL_SPS2 = 900;
 const float RECOVERY_STOP_LEAD_DEG = 2.5f;
 const float RECOVERY_TARGET_TOL_DEG = 2.0f;
 const uint16_t RECOVERY_HOLD_MS = 750;
@@ -961,7 +967,12 @@ void serviceDareRecovery() {
   if (!stepper) return;
   int32_t travelled = recoveryDir * (encoderCountsMT - recoveryStartCounts);
   int32_t oppositeTol = countsForDegrees(1.5f);
-  int32_t stopLead = countsForDegrees(RECOVERY_STOP_LEAD_DEG);
+  // At 900 Hz the FAS ramp-down alone covers ~25 deg of wheel travel, so the
+  // fixed lead sized for the old 120 Hz crawl would overshoot the safe
+  // target into the next wedge.  Ask FAS for its live stopping distance.
+  int32_t stopLead = countsForDegrees(
+      stepper->stepsToStop() * 360.0f / WHEEL_USTEPS_PER_REV +
+      RECOVERY_STOP_LEAD_DEG);
 
   // A calibrated recovery must never make the wheel travel opposite to the
   // original spin.  Cut output before it can become a visible reverse.
