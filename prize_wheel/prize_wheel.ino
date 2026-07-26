@@ -127,7 +127,9 @@ const uint16_t RECOVERY_HOLD_CURRENT_MA = 650;
 // has large torque margin at 450 mA (17 motor RPM), and the accel stays
 // well under the ~1000-1200 sps2 bench-proven clean ceiling.
 const uint32_t RECOVERY_SPEED_HZ = 900;
-const uint32_t RECOVERY_ACCEL_SPS2 = 900;
+// 1200 sps2 (top of the bench-proven clean range, extra margin at 450 mA)
+// makes the rest-recovery slip start crisply instead of winding up.
+const uint32_t RECOVERY_ACCEL_SPS2 = 1200;
 const float RECOVERY_STOP_LEAD_DEG = 2.5f;
 const float RECOVERY_TARGET_TOL_DEG = 2.0f;
 const uint16_t RECOVERY_HOLD_MS = 750;
@@ -186,6 +188,16 @@ const uint16_t ACCEL_PROBE_CURRENT_MA = 350;
 const uint32_t ACCEL_PROBE_SPEED_HZ = 1600;
 const float ACCEL_PROBE_MOVE_DEG = 120.0f;
 const float ACCEL_PROBE_LOSS_LIMIT_DEG = 4.0f;
+/* Creep-carry: a wheel creeping toward a dare below takeover speed is rolled
+ * through to the first clear angle WITHOUT ever stopping.  Continuity of
+ * motion is the whole disguise; a stop-then-restart is physically impossible
+ * for a passive wheel and is the one tell a guest cannot unsee. */
+const uint32_t CREEP_CARRY_SPEED_HZ = 360;    // ~20 deg/s wheel roll-out cap
+const uint32_t CREEP_CARRY_ACCEL_SPS2 = 250;  // gentle: bearing roll, not motor
+const float CREEP_CLEAR_EXTRA_DEG = 2.0f;     // land just past the margin zone
+/* If the wheel does reach true stillness on a dare, correct within ~300 ms
+ * total so it reads as the flapper slipping one last notch. */
+const uint16_t DARE_CONFIRM_MS = 180;
 
 /* --------------------------- STATE --------------------------------------- */
 TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
@@ -304,6 +316,10 @@ uint32_t accelProbeStartedMs = 0;
 int32_t accelProbeStartCounts = 0;
 int32_t accelProbeMoveU = 0;
 uint16_t accelProbeLastPass = 0;
+
+// Set between a creep-carry decision and its launch; selects the
+// motion-matched profile inside launchDareRecoveryMove().
+bool creepCarryPending = false;
 
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
@@ -1194,6 +1210,58 @@ void serviceAccelProbe() {
   beginAccelProbeStage();
 }
 
+/* ---------------- CREEP-CARRY: DARE AVOIDANCE IN MOTION ------------------ */
+// First angle in the spin direction clear of any dare and its prediction
+// margin, plus a small cushion.  Dares are isolated, so this always exists
+// within about 130 deg.
+float carryTargetAngle(int dir, float fromAngle) {
+  float t = fromAngle;
+  for (int i = 0; i < 140 && predictedStopCouldBeDare(t); ++i) {
+    t += (dir > 0) ? 1.0f : -1.0f;
+    if (t >= 360.0f) t -= 360.0f;
+    if (t < 0.0f) t += 360.0f;
+  }
+  t += (dir > 0) ? CREEP_CLEAR_EXTRA_DEG : -CREEP_CLEAR_EXTRA_DEG;
+  if (t >= 360.0f) t -= 360.0f;
+  if (t < 0.0f) t += 360.0f;
+  return t;
+}
+
+// Below takeover speed but above the stillness floor, a dare-bound wheel is
+// picked up AT ITS LIVE SPEED and rolled through to the first clear angle.
+// The wheel never stops, so there is no stop-then-restart to notice - the
+// outcome just reads as the wheel carrying a little farther than expected.
+bool tryCreepCarry() {
+  if (!ENABLE_DARE_RECOVERY || !motorDirectionCalibrated || !stepper) return false;
+  if (!encoderMotionReady() || !sawSpinThisCycle) return false;
+  float speed = fabsf(omega);
+  if (speed < STILL_REV_S || speed >= TAKEOVER_MIN_REV_S) return false;
+  int dir = (omega >= 0.0f) ? 1 : -1;
+  if (dir != spinDir) return false;
+  if (fasSignForEncoderDirection(spinDir) == 0) return false;
+  float predAngle = predictStopAngle();
+  if (!predictedStopCouldBeDare(predAngle)) return false;
+
+  recoveryDir = spinDir;
+  recoveryTargetDeg = carryTargetAngle(spinDir, predAngle);
+  creepCarryPending = true;
+  recoveryStopRequested = false;
+  recoveryStartedMs = millis();
+  ++recoveryAttempts;
+  if (!activeSpinHasDecision) {
+    recordSpinDecision(predAngle, wedgeAtAngle(predAngle), currentWedge(),
+                       true, wedgeAtAngle(recoveryTargetDeg));
+  }
+  activeSpinSteered = true;
+  activeSpinTargetWedge = wedgeAtAngle(recoveryTargetDeg);
+  driverActive(TAKEOVER_PRECHARGE_CURRENT_MA);
+  mode = RECOVERY_PRECHARGE;
+  Serial.printf("SPIN#%lu CREEP-CARRY omega=%.3f predStopAngle=%.1f targetAngle=%.1f targetWedge=%d\n",
+                (unsigned long)activeSpinNumber, omega, predAngle,
+                recoveryTargetDeg, activeSpinTargetWedge);
+  return true;
+}
+
 void startDareRecovery() {
   if (!ENABLE_DARE_RECOVERY || !motorDirectionCalibrated || !stepper) {
     Serial.println(F("# DARE RECOVERY LOCKED: run attended p direction probe before guest use"));
@@ -1205,12 +1273,11 @@ void startDareRecovery() {
   if (!isDare(current)) return;
 
   recoveryDir = spinDir >= 0 ? 1 : -1;
-  float runway = 0.0f;
-  if (!chooseSafeTargetAngle(recoveryDir, currentAngle, 0.0f,
-                             recoveryTargetDeg, runway)) {
-    Serial.println(F("# DARE RECOVERY FAILED: no forward safe target"));
-    return;
-  }
+  // Nearest clear angle in the spin direction: a rest recovery should read
+  // as the flapper slipping one final notch, so the move stays as short as
+  // the margin allows instead of hunting for a distant wedge.
+  recoveryTargetDeg = carryTargetAngle(recoveryDir, currentAngle);
+  float runway = forwardDistanceDeg(recoveryDir, currentAngle, recoveryTargetDeg);
 
   int fasSign = fasSignForEncoderDirection(recoveryDir);
   if (fasSign == 0) {
@@ -1262,17 +1329,33 @@ void launchDareRecoveryMove() {
     return;
   }
 
+  // A carry launched from motion picks the pulse train up at the wheel's
+  // live speed and rolls out gently; a rest recovery keeps the quick notch.
+  bool carry = creepCarryPending;
+  creepCarryPending = false;
+  uint32_t recSpeedHz = RECOVERY_SPEED_HZ;
+  uint32_t recAccel = RECOVERY_ACCEL_SPS2;
+  uint32_t recJump = 0;
+  if (carry) {
+    float entryHz = fabsf(omega) * WHEEL_USTEPS_PER_REV;
+    if (entryHz < 60.0f) entryHz = 60.0f;
+    if (entryHz > 700.0f) entryHz = 700.0f;
+    recSpeedHz = (uint32_t)fmaxf(entryHz, (float)CREEP_CARRY_SPEED_HZ);
+    recAccel = CREEP_CARRY_ACCEL_SPS2;
+    recJump = (uint32_t)(entryHz * entryHz / (2.0f * (float)CREEP_CARRY_ACCEL_SPS2));
+  }
   stepper->forceStopAndNewPosition(0);
   driverActive(RECOVERY_CURRENT_MA);
-  stepper->setSpeedInHz(RECOVERY_SPEED_HZ);
-  stepper->setAcceleration(RECOVERY_ACCEL_SPS2);
-  stepper->setJumpStart(0);
+  stepper->setSpeedInHz(recSpeedHz);
+  stepper->setAcceleration(recAccel);
+  stepper->setJumpStart(recJump);
   recoveryStopRequested = false;
   recoveryStartedMs = millis();
   stepper->move(fasSign * moveUsteps);
   mode = DARE_RECOVERY;
-  Serial.printf("SPIN#%lu RECOVERY dir=%+d fasDir=%+d runwayDeg=%.1f\n",
-                (unsigned long)activeSpinNumber, recoveryDir, fasSign, runway);
+  Serial.printf("SPIN#%lu RECOVERY dir=%+d fasDir=%+d runwayDeg=%.1f carry=%d\n",
+                (unsigned long)activeSpinNumber, recoveryDir, fasSign, runway,
+                carry ? 1 : 0);
 }
 
 void serviceDareRecovery() {
@@ -1344,6 +1427,7 @@ void startSpinEvent(int confirmedDir) {
   frictionResetSpin();
   refPredValid = false;
   takeoverDecelProfile = false;
+  creepCarryPending = false;
 
   Serial.printf("SPIN#%lu START dir=%+d omegaPeak=%.3f\n",
                 (unsigned long)activeSpinNumber, spinDir,
@@ -2054,6 +2138,7 @@ void loop() {
       maybeUpdateSteeringPlan();
       if (tryPlannedTakeover()) break;
       if (trySlowDareGuard()) break;
+      if (tryCreepCarry()) break;
 
       // Defer LEAVE until after the true settle window.  This keeps the guard
       // alive through a low-speed creep instead of declaring a safe outcome
@@ -2140,27 +2225,30 @@ void loop() {
       }
       float settleSpeed = fabsf(omega);
       if (trySlowDareGuard()) break;
+      if (tryCreepCarry()) break;
 
       if (settleSpeed > STILL_REV_S) {
         settleT0 = 0;
       } else {
         if (settleT0 == 0) settleT0 = millis();
-        if (millis() - settleT0 > SETTLE_MS) {
-          int wedge = currentWedge();
-          if (isDare(wedge)) {
-            // A dare is never accepted as a final outcome.  The wheel is at a
-            // true stop, so recovery can crawl in the already-latched spin
-            // direction without the dangerous mid-spin phase catch.
-            if (motorDirectionCalibrated && ENABLE_DARE_RECOVERY) {
-              startDareRecovery();
-            } else {
-              Serial.println(F("# DARE BLOCKED: run attended p probe; no unsafe automatic move was made"));
-              driverFreewheel();
-              sawSpinThisCycle = false;
-              mode = DONE;
-            }
-            break;
+        uint32_t stillForMs = millis() - settleT0;
+        int wedge = currentWedge();
+        if (stillForMs > DARE_CONFIRM_MS && isDare(wedge)) {
+          // A dare is never accepted as a final outcome, and the correction
+          // must not read as a stopped wheel coming back to life: confirm
+          // the stop fast and slip forward within ~300 ms total, like the
+          // flapper releasing one last notch.
+          if (motorDirectionCalibrated && ENABLE_DARE_RECOVERY) {
+            startDareRecovery();
+          } else {
+            Serial.println(F("# DARE BLOCKED: run attended p probe; no unsafe automatic move was made"));
+            driverFreewheel();
+            sawSpinThisCycle = false;
+            mode = DONE;
           }
+          break;
+        }
+        if (stillForMs > SETTLE_MS) {
           if (!activeSpinHasDecision) {
             float predAngle = predictStopAngle();
             recordSpinDecision(predAngle, wedgeAtAngle(predAngle),

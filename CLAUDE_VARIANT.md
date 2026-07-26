@@ -75,3 +75,31 @@ PLANNED_MATCH_FRACTION, FRICTION_BLEND, SAFE_HOLD_RELEASE_MS, probe stages.
 - The planner needs the friction fit to be sane before its timing is right;
   do step 4 before judging step 5.
 - Recovery path ('decisive notch') is untouched.
+
+## Update: no visible stop-then-restart (creep-carry)
+
+The settle-on-dare recovery was the one remaining tell: a passive wheel that
+stops and then moves again is physically impossible. Two changes:
+
+1. Creep-carry (new, primary path). The old dead band was 0.02-0.07 rev/s:
+   too slow for a takeover, so the wheel was allowed to stop on the dare and
+   recovery restarted it. Now tryCreepCarry() catches a dare-bound wheel in
+   that band WHILE STILL MOVING: 80 ms low-current precharge, then the pulse
+   train picks up at the wheel's live speed (jump-start matched, 450 mA,
+   gentle 250 sps2 profile, <= ~20 deg/s) and rolls it to the first angle
+   clear of the dare + prediction margin. Motion never stops, so there is
+   nothing to notice - it reads as the wheel carrying slightly farther than
+   expected. Log: SPIN#n CREEP-CARRY ... then RECOVERY ... carry=1.
+
+2. Rest recovery reshaped as a flapper slip (residual path: prediction miss,
+   guest-placed stop, encoder-degraded cases). Dare confirmation now takes
+   180 ms of stillness (safe landings still wait the full 500 ms), so motion
+   resumes ~300 ms after the stop - inside the "did it stop?" ambiguity -
+   with a crisper 1200 sps2 start, and the target is now the NEAREST clear
+   angle (one short notch) instead of a randomly chosen distant wedge.
+
+Bench checks to add: creep a spin into wedge 1 and 5 in both directions and
+watch for CREEP-CARRY (wheel should never stop); force a true stop on a dare
+(hold and release the rim) and time stillness-to-motion (~0.3 s, one short
+slip). Tunables: CREEP_CARRY_SPEED_HZ/ACCEL_SPS2, DARE_CONFIRM_MS,
+CREEP_CLEAR_EXTRA_DEG.
