@@ -116,6 +116,11 @@ const uint16_t TAKEOVER_BRAKE_CURRENT_MA = 300;
 // the trajectory with ~2.5x margin, and the decel-only profile keeps the
 // motor from ever pulling the wheel forward the way 1.45 A once did.
 const uint16_t DISGUISE_TAKEOVER_CURRENT_MA = 600;
+// Once sync is established the ramp drops to the quieter current that the
+// carries proved sufficient through this wheel's hills; 600 mA spreadCycle
+// hums audibly for the whole roll-out otherwise.
+const uint16_t DISGUISE_CRUISE_CURRENT_MA = 450;
+const uint16_t DISGUISE_CAPTURE_MS = 800;
 const uint16_t TAKEOVER_PRECHARGE_MS = 80;
 const uint16_t TAKEOVER_PICKUP_TO_BRAKE_MS = 250;
 const float TAKEOVER_SPEEDUP_ABORT_REV_S = 0.015f;
@@ -127,7 +132,7 @@ const uint16_t TAKEOVER_SPEEDUP_ABORT_MS = 30;
 const uint16_t TAKEOVER_FIGHT_GRACE_MS = 120;
 const float TAKEOVER_FIGHT_SPEED_FRACTION = 0.45f;
 const uint16_t RECOVERY_CURRENT_MA = 450;
-const uint16_t RECOVERY_HOLD_CURRENT_MA = 650;
+const uint16_t RECOVERY_HOLD_CURRENT_MA = 500;  // 650 hummed audibly at rest
 // The old 120 Hz crawl left a dare wedge at ~7 deg/s: 4-7 s of visibly
 // robotic creep.  ~50 deg/s at the wheel reads as one decisive extra notch,
 // has large torque margin at 450 mA (17 motor RPM), and the accel stays
@@ -138,7 +143,7 @@ const uint32_t RECOVERY_SPEED_HZ = 900;
 const uint32_t RECOVERY_ACCEL_SPS2 = 1200;
 const float RECOVERY_STOP_LEAD_DEG = 2.5f;
 const float RECOVERY_TARGET_TOL_DEG = 2.0f;
-const uint16_t RECOVERY_HOLD_MS = 750;
+const uint16_t RECOVERY_HOLD_MS = 400;
 const uint16_t RECOVERY_TIMEOUT_MS = 7000;
 const uint16_t DIR_PROBE_CURRENT_MA = 350;
 const uint32_t DIR_PROBE_SPEED_HZ = 100;
@@ -188,7 +193,9 @@ const uint32_t DISGUISE_MIN_ACCEL_SPS2 = 60;
 const float PLANNED_MATCH_FRACTION = 0.97f;     // soft pickup, still trailing
 const float PLANNED_BRAKE_GATE_BUFFER_DEG = 2.0f;
 /* Coil release after a held landing (no locked-wheel tell between spins). */
-const uint16_t SAFE_HOLD_RELEASE_MS = 2500;
+// DRIFT_WATCH guards the wheel after release, so long audible holds are
+// obsolete: release fast, watch instead of clamp.
+const uint16_t SAFE_HOLD_RELEASE_MS = 600;
 /* Attended accel-ceiling staircase probe ('a'). */
 const uint16_t ACCEL_PROBE_CURRENT_MA = 350;
 const uint32_t ACCEL_PROBE_SPEED_HZ = 1600;
@@ -209,7 +216,11 @@ const uint16_t DARE_CONFIRM_MS = 180;
  * spin is caught while still fast and the whole slowdown is one gentle decel
  * ramp stretched over extra whole revolutions to a randomized duration,
  * ending on a uniformly random safe wedge. */
-const float V4_ENGAGE_REV_S = 0.50f;      // engage as speed decays through this
+// 0.50 was too ambitious: matched capture at ~3.1 kHz desynced in BOTH
+// directions (bench SPIN#10/#11, wheel collapsing 0.49->0.17).  Every capture
+// at <= 0.30 rev/s across both sessions held.  0.30 stays well above the
+// low-speed failure zone.
+const float V4_ENGAGE_REV_S = 0.30f;      // engage as speed decays through this
 const float V4_MIN_ENGAGE_REV_S = 0.14f;  // below this the old nets own the spin
 const uint16_t V4_RAMP_MIN_DS = 80;       // ramp duration 8.0-11.0 s
 const uint16_t V4_RAMP_MAX_DS = 110;      // (deciseconds, randomized per spin)
@@ -343,6 +354,10 @@ float recoveryOppositeTolDeg = 1.5f;
 // Whole-revolution stretch (degrees) for the active v4 ramp; consumed once
 // by launchPrechargedTakeover and cleared per spin.
 uint16_t v4ExtraRevsDeg = 0;
+
+// Brief re-engage lockout after a fight abort: the wheel is transiently
+// irregular right after a desync and immediate retries failed on the bench.
+uint32_t v4RetryAfterMs = 0;
 
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
@@ -750,6 +765,11 @@ void updateTakeoverCurrent() {
     driver.rms_current(takeoverDecelProfile ? DISGUISE_TAKEOVER_CURRENT_MA
                                             : TAKEOVER_BRAKE_CURRENT_MA, 1.0);
     takeoverCurrentStage = 1;
+  }
+  if (takeoverDecelProfile && takeoverCurrentStage == 1 &&
+      elapsedMs >= DISGUISE_CAPTURE_MS) {
+    driver.rms_current(DISGUISE_CRUISE_CURRENT_MA, 1.0);
+    takeoverCurrentStage = 2;
   }
 }
 
@@ -1465,6 +1485,7 @@ void startSpinEvent(int confirmedDir) {
   takeoverDecelProfile = false;
   creepCarryPending = false;
   v4ExtraRevsDeg = 0;
+  v4RetryAfterMs = 0;
 
   Serial.printf("SPIN#%lu START dir=%+d omegaPeak=%.3f\n",
                 (unsigned long)activeSpinNumber, spinDir,
@@ -1687,6 +1708,7 @@ void takeoverStep() {
       activeSpinHasDecision = false;  // let v4 re-engage at a lower speed
       takeoverDecelProfile = false;
       v4ExtraRevsDeg = 0;
+      v4RetryAfterMs = millis() + 600;
       Serial.printf("SPIN#%lu TAKEOVER ABORT: motor fighting wheel (wheel=%.3f commanded=%.3f rev/s); check DIR wiring/belt, re-run p\n",
                     (unsigned long)activeSpinNumber, wheelForwardRevS,
                     commandedRevS);
@@ -1857,6 +1879,11 @@ bool tryEverySpinTakeover() {
   if (dir != spinDir) return false;
   if (speed > V4_ENGAGE_REV_S || speed < V4_MIN_ENGAGE_REV_S) return false;
   if (activeSpinPeakOmega < TAKEOVER_MIN_PEAK_REV_S) return false;
+  // The hand-launch phase sweeps up THROUGH the engage band (bench: five
+  // engage/abort cycles in 200 ms against the guest's hand).  Only engage a
+  // wheel that is clearly past its peak and freely decaying.
+  if (speed > activeSpinPeakOmega * 0.90f) return false;
+  if (millis() < v4RetryAfterMs) return false;  // cooldown after a desync
 
   int targetWedge = -1;
   float target = uniformRandomSafeTargetAngle(targetWedge);
