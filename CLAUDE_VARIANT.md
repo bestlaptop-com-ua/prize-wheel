@@ -103,3 +103,42 @@ watch for CREEP-CARRY (wheel should never stop); force a true stop on a dare
 (hold and release the rim) and time stillness-to-motion (~0.3 s, one short
 slip). Tunables: CREEP_CARRY_SPEED_HZ/ACCEL_SPS2, DARE_CONFIRM_MS,
 CREEP_CLEAR_EXTRA_DEG.
+## Bench session 26 Jul: findings and fixes
+
+44 landings recorded, ZERO on dares - the guarantee held even through faults.
+Three root causes of the "very unnatural" takeover were identified and fixed:
+
+1. Pole slip at 300 mA. On the (deliberately) unbalanced wheel, gravity
+   torque on hill segments exceeds the stepper's pullout torque at the old
+   300 mA brake current. Long profiled ramps desynced into a grinding drag
+   (fight aborts on SPIN#22/26/27/28/31, overshoots on #29/#30). Profiled
+   takeovers now run at DISGUISE_TAKEOVER_CURRENT_MA = 600.
+2. Phase-capture back-snap killed carries. Energizing 450 mA on a moving
+   rotor snaps it up to ~1.8 deg (wheel) backward to phase alignment - the
+   exact -1.6 deg signature of every aborted carry. Reversal guard is now
+   3.0 deg for carries (1.5 deg unchanged for rest recoveries).
+3. Friction fitter bias. Rejecting negative-decel samples as "hand contact"
+   discarded the downhill half of the gravity oscillation and inflated cw to
+   c=0.464. The sampler now accepts +-1.2 rev/s^2 symmetrically so the
+   least-squares mean recovers pure friction. Calibration was reset after
+   flashing this build; re-run calibration spins.
+
+## Spin direction handling (documented on request)
+
+- Direction latches at spin detect (|omega| >= 0.12 rev/s) from
+  IDLE/DONE/SAFE_HOLD, using the sign of omega at that moment.
+- A pre-rotation opposite to the intended spin (winding the wheel backward
+  >= 0.12 rev/s before flicking it the other way) latches that direction
+  first; the real spin re-latches via guest override once it exceeds
+  0.80 rev/s for 60 ms. Verified on the bench: every motor move (takeover,
+  carry, recovery) is issued strictly in the latched direction, and the
+  encoder->FAS direction mapping is correct for BOTH cw and ccw.
+- Known edge: a gentle real spin (< 0.80 rev/s) immediately after an
+  opposite wind-up keeps the stale latch until the wheel settles. The fight
+  watchdog aborts any takeover launched with a wrong latch, and the settle
+  path still guarantees no dare outcome.
+
+## Known cosmetic issue
+targetErrorDeg in LANDED lines is misleading for gated profiled takeovers
+(reports commanded-vs-travelled, not target-vs-landed); actual landings were
+on target. Fix later; logs' wedge numbers are authoritative.

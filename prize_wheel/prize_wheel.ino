@@ -110,6 +110,12 @@ const float TAKEOVER_OPPOSITE_ABORT_REV_S = 0.050f;
 const uint16_t TAKEOVER_OPPOSITE_ABORT_MS = 75;
 const uint16_t TAKEOVER_PRECHARGE_CURRENT_MA = 100;
 const uint16_t TAKEOVER_BRAKE_CURRENT_MA = 300;
+// Bench 26 Jul: the unbalanced wheel's gravity torque exceeds 300 mA pullout
+// on hill segments, desyncing long profiled ramps into a grinding drag (the
+// SPIN#22/26/27/28/31 fight aborts, the #29/#30 overshoots).  600 mA holds
+// the trajectory with ~2.5x margin, and the decel-only profile keeps the
+// motor from ever pulling the wheel forward the way 1.45 A once did.
+const uint16_t DISGUISE_TAKEOVER_CURRENT_MA = 600;
 const uint16_t TAKEOVER_PRECHARGE_MS = 80;
 const uint16_t TAKEOVER_PICKUP_TO_BRAKE_MS = 250;
 const float TAKEOVER_SPEEDUP_ABORT_REV_S = 0.015f;
@@ -164,7 +170,7 @@ const uint8_t VELOCITY_HISTORY_LEN = 64;
 const float FRICTION_FIT_MIN_REV_S = 0.06f;
 const float FRICTION_FIT_MAX_REV_S = 3.0f;
 const uint32_t FRICTION_PAIR_SPACING_US = 120000;
-const float FRICTION_MAX_DECEL_REV_S2 = 0.60f;  // above this = hand contact
+const float FRICTION_MAX_DECEL_REV_S2 = 1.20f;  // |decel| beyond this = hand contact
 const uint8_t FRICTION_MIN_PAIRS = 24;
 const float FRICTION_BLEND = 0.25f;             // per-spin blend into model
 const float FRICTION_C_MIN = 0.02f, FRICTION_C_MAX = 2.5f;  // rad/s^2
@@ -320,6 +326,9 @@ uint16_t accelProbeLastPass = 0;
 // Set between a creep-carry decision and its launch; selects the
 // motion-matched profile inside launchDareRecoveryMove().
 bool creepCarryPending = false;
+
+// Reversal-guard width for the active recovery/carry move (deg).
+float recoveryOppositeTolDeg = 1.5f;
 
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
@@ -724,7 +733,8 @@ void updateTakeoverCurrent() {
   if (takeoverCurrentStage == 0 && elapsedMs >= TAKEOVER_PICKUP_TO_BRAKE_MS) {
     // Keep the takeover in a low-torque braking regime.  Restoring 1.45 A
     // mid-spin was visibly pulling the wheel forward after the soft catch.
-    driver.rms_current(TAKEOVER_BRAKE_CURRENT_MA, 1.0);
+    driver.rms_current(takeoverDecelProfile ? DISGUISE_TAKEOVER_CURRENT_MA
+                                            : TAKEOVER_BRAKE_CURRENT_MA, 1.0);
     takeoverCurrentStage = 1;
   }
 }
@@ -812,8 +822,12 @@ void frictionSample() {
   float mid = 0.5f * (fricPrevSpeed + speed);
   fricPrevSpeed = speed;
   fricPrevUs = nowUs;
-  // Speed-ups and implausible drops are hand contact or noise, not friction.
-  if (decel <= 0.0f || decel > FRICTION_MAX_DECEL_REV_S2) return;
+  // The unbalanced wheel legitimately accelerates on downhill segments, so
+  // accept the gravity oscillation SYMMETRICALLY and let the least-squares
+  // mean recover pure friction; only implausible magnitudes (hand contact)
+  // are rejected.  One-sided clipping inflated the cw fit to c=0.464 during
+  // the first bench session.
+  if (fabsf(decel) > FRICTION_MAX_DECEL_REV_S2) return;
   int i = dirIndex(spinDir);
   double x = (double)(mid * TWO_PI);    // rad/s
   double y = (double)(decel * TWO_PI);  // rad/s^2
@@ -1333,6 +1347,11 @@ void launchDareRecoveryMove() {
   // live speed and rolls out gently; a rest recovery keeps the quick notch.
   bool carry = creepCarryPending;
   creepCarryPending = false;
+  // Energizing 450 mA on a MOVING rotor can snap it backward up to ~1.8 deg
+  // (wheel) to the nearest phase alignment - the exact -1.6 deg signature of
+  // the aborted bench carries.  Widen the reversal guard for carries only; a
+  // real rollback still trips it well before becoming visible.
+  recoveryOppositeTolDeg = carry ? 3.0f : 1.5f;
   uint32_t recSpeedHz = RECOVERY_SPEED_HZ;
   uint32_t recAccel = RECOVERY_ACCEL_SPS2;
   uint32_t recJump = 0;
@@ -1361,7 +1380,7 @@ void launchDareRecoveryMove() {
 void serviceDareRecovery() {
   if (!stepper) return;
   int32_t travelled = recoveryDir * (encoderCountsMT - recoveryStartCounts);
-  int32_t oppositeTol = countsForDegrees(1.5f);
+  int32_t oppositeTol = countsForDegrees(recoveryOppositeTolDeg);
   // At 900 Hz the FAS ramp-down alone covers ~25 deg of wheel travel, so the
   // fixed lead sized for the old 120 Hz crawl would overshoot the safe
   // target into the next wedge.  Ask FAS for its live stopping distance.
@@ -1538,7 +1557,8 @@ bool launchTakeover(float forwardDeg) {
                  (unsigned long)activeSpinNumber, dir, fasSign, takeoverTargetDeg,
                  forwardDeg, (long)takeoverTargetU, measuredForwardRevS, commandedRevS,
                  (unsigned)accelSps2,
-                 TAKEOVER_BRAKE_CURRENT_MA);
+                 (unsigned)(takeoverDecelProfile ? DISGUISE_TAKEOVER_CURRENT_MA
+                                                 : TAKEOVER_BRAKE_CURRENT_MA));
   if (debugLog && !diagnosticCapture) {
     Serial.printf("# TK-START dir=%d w0=%.3f target=%.1f runway=%.1f tgtU=%ld brakeOnly=1\n",
                   dir, measuredForwardRevS, takeoverTargetDeg, forwardDeg,
