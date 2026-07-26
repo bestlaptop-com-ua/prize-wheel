@@ -1,6 +1,28 @@
 /* ============================================================================
  * prize_wheel.ino - Prize wheel firmware
  *
+ * v2 adaptive revision (Claude variant, on top of the P1 sensing build)
+ * ---------------------------------------------------------------------
+ * Adds four things aimed at the open issues in README.md:
+ *  1. Friction auto-calibration.  Every free coast fits decel = c + b*omega
+ *     per direction and blends it into the model (NVS-persisted), and every
+ *     unsteered landing measures real prediction error, which now sets the
+ *     dare margin instead of a guessed constant.  'c' prints, 'C' resets.
+ *  2. Target-first steering.  When a dare stop is predicted, a target wedge
+ *     is drawn UNIFORMLY from all ten safe wedges while the wheel is still
+ *     fast, and the takeover fires at the one instant per revolution when
+ *     stopping on that wedge needs a decel of only ~1.1-1.7x natural
+ *     friction.  This removes the structural landing bias (wedges 11/0/2/3/4
+ *     were unreachable) because reachability now comes from timing, not from
+ *     whichever wedges happen to sit 150-210 deg ahead at a fixed speed.
+ *  3. Disguised braking.  A planned takeover is one continuous deceleration
+ *     ramp pinned just above the wheel's own measured friction, entered at
+ *     97% speed match, so the catch reads as slightly heavier coasting
+ *     rather than cruise-then-brake.
+ *  4. Housekeeping.  Attended 'a' staircase probe measures the true clean
+ *     accel ceiling (persisted); after a held landing the coils float after
+ *     2.5 s so an idle guest touch feels a free wheel, not a motor detent.
+ *
  * Priority-1 sensing revision
  * ---------------------------
  * The AS5600 sample timestamp is taken after the final I2C byte, I2C failures
@@ -69,7 +91,9 @@ const float SPIN_CANCEL_BACKTRACK_DEG = 2.0f;
 const float GUEST_OVERRIDE_REV_S = 0.80f;
 const uint16_t GUEST_OVERRIDE_CONFIRM_MS = 60;
 #define ACCEL_CEILING_SPS2 650    // conservative attended-test value
-#define TAKEOVER_MAX_REV_S 0.240f
+// v2: raised so the planner can catch at up to ~0.31 rev/s (38 motor RPM)
+// without an audible speed step at engagement.
+#define TAKEOVER_MAX_REV_S 0.320f
 const float TAKEOVER_MIN_REV_S = 0.070f;
 // 0.28 gated gentle spins out of the disguised takeover entirely, funneling
 // exactly those spins into stop-on-dare -> visible recovery.  Let them steer.
@@ -132,6 +156,37 @@ const uint32_t VELOCITY_MIN_WINDOW_US = 20000;
 const uint32_t VELOCITY_FILTER_TAU_US = 25000;
 const uint8_t VELOCITY_HISTORY_LEN = 64;
 
+/* ---------------------- ADAPTIVE VARIANT (v2) TUNING --------------------- */
+/* Friction auto-calibration: (omega, decel) pairs are sampled ~8x/s during
+ * every freewheeling coast and least-squares fitted per direction. */
+const float FRICTION_FIT_MIN_REV_S = 0.06f;
+const float FRICTION_FIT_MAX_REV_S = 3.0f;
+const uint32_t FRICTION_PAIR_SPACING_US = 120000;
+const float FRICTION_MAX_DECEL_REV_S2 = 0.60f;  // above this = hand contact
+const uint8_t FRICTION_MIN_PAIRS = 24;
+const float FRICTION_BLEND = 0.25f;             // per-spin blend into model
+const float FRICTION_C_MIN = 0.02f, FRICTION_C_MAX = 2.5f;  // rad/s^2
+const float FRICTION_B_MIN = 0.00f, FRICTION_B_MAX = 3.0f;  // 1/s
+/* Target-first steering planner. */
+const float PLAN_ARM_REV_S = 0.60f;       // plan once prediction is usable
+const float PLAN_FIRE_MAX_REV_S = 0.31f;  // fastest catch; 38 motor RPM
+const float PLAN_FALLBACK_REV_S = 0.14f;  // below this the old picker may act
+const float PLAN_MIN_FWD_DEG = 40.0f;
+const float PLAN_CANCEL_CLEAR_FACTOR = 2.0f;
+const uint16_t PLAN_CANCEL_SUSTAIN_MS = 200;
+const float DISGUISE_DECEL_MIN_RATIO = 1.08f;   // vs natural friction decel
+const float DISGUISE_DECEL_MAX_RATIO = 1.70f;
+const uint32_t DISGUISE_MIN_ACCEL_SPS2 = 60;
+const float PLANNED_MATCH_FRACTION = 0.97f;     // soft pickup, still trailing
+const float PLANNED_BRAKE_GATE_BUFFER_DEG = 2.0f;
+/* Coil release after a held landing (no locked-wheel tell between spins). */
+const uint16_t SAFE_HOLD_RELEASE_MS = 2500;
+/* Attended accel-ceiling staircase probe ('a'). */
+const uint16_t ACCEL_PROBE_CURRENT_MA = 350;
+const uint32_t ACCEL_PROBE_SPEED_HZ = 1600;
+const float ACCEL_PROBE_MOVE_DEG = 120.0f;
+const float ACCEL_PROBE_LOSS_LIMIT_DEG = 4.0f;
+
 /* --------------------------- STATE --------------------------------------- */
 TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
 FastAccelStepperEngine engine = FastAccelStepperEngine();
@@ -140,7 +195,8 @@ Preferences preferences;
 
 enum Mode : uint8_t {
   IDLE, FREE_SPIN, PRECHARGE, TAKEOVER, SETTLE,
-  RECOVERY_PRECHARGE, DARE_RECOVERY, RECOVERY_HOLD, SAFE_HOLD, DIR_PROBE, DONE
+  RECOVERY_PRECHARGE, DARE_RECOVERY, RECOVERY_HOLD, SAFE_HOLD, DIR_PROBE, DONE,
+  ACCEL_PROBE  // appended after DONE so mode ordinals in old captures hold
 };
 Mode mode = IDLE;
 
@@ -200,9 +256,54 @@ int activeSpinTargetWedge = -1;
 float activeSpinTargetErrorDeg = 0.0f;
 bool activeSpinTargetErrorValid = false;
 
-// Seeded friction model.  Priority 2 will calibrate/replace this from data.
+// Friction model: decel(rad/s^2) = c + b * omega(rad/s), per direction.  The
+// seeds below only survive until the auto-calibrator has fitted this wheel;
+// fitted values are loaded from NVS at boot.
 float cw_c = 0.30f, cw_b = 0.15f;
 float ccw_c = 0.30f, ccw_b = 0.15f;
+
+/* ---------------------- ADAPTIVE VARIANT (v2) STATE ---------------------- */
+// Runtime accel ceiling; seeded from ACCEL_CEILING_SPS2, replaced by the
+// attended 'a' probe result persisted in NVS.
+uint32_t accelCeilingSps2 = ACCEL_CEILING_SPS2;
+
+// Per-spin least-squares accumulators for decel = c + b*omega (rad units),
+// index 0 = CW (+1), 1 = CCW (-1).  Plain global scalars, so the Arduino
+// prototype generator never needs a user struct name.
+double fricSx[2], fricSy[2], fricSxx[2], fricSxy[2];
+uint16_t fricN[2];
+float fricPrevSpeed = 0.0f;
+uint32_t fricPrevUs = 0;
+bool fricPairPrimed = false;
+
+// Rolling |prediction error| (deg) per direction, seeded at the old fixed
+// margin and updated from every unsteered landing.
+float predMaeDeg[2] = {PREDICTION_DARE_MARGIN_DEG, PREDICTION_DARE_MARGIN_DEG};
+
+// Reference prediction snapshotted mid-coast (~0.45 rev/s); comparing it to
+// the true landing measures model accuracy at a speed where it matters.
+float refPredAngleDeg = 0.0f;
+bool refPredValid = false;
+
+// Target-first steering plan for the active spin.
+bool planActive = false;
+float planTargetDeg = 0.0f;
+int planTargetWedge = -1;
+uint32_t planSafeSinceMs = 0;
+
+// When set, launchTakeover() shapes the move as one continuous deceleration
+// ramp pinned just above natural friction instead of cruise-then-brake.
+bool takeoverDecelProfile = false;
+
+uint32_t safeHoldStillSinceMs = 0;
+
+// Attended accel probe state.
+const uint16_t ACCEL_PROBE_STAGES[5] = {800, 1000, 1200, 1500, 1800};
+uint8_t accelProbeStage = 0;
+uint32_t accelProbeStartedMs = 0;
+int32_t accelProbeStartCounts = 0;
+int32_t accelProbeMoveU = 0;
+uint16_t accelProbeLastPass = 0;
 
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
@@ -652,8 +753,115 @@ int predictStopWedge() {
   return wedgeAtAngle(predictStopAngle());
 }
 
+/* ---------------- FRICTION AUTO-CALIBRATION (v2) ------------------------- */
+inline int dirIndex(int dir) { return dir > 0 ? 0 : 1; }
+
+// Natural coast deceleration (rev/s^2) at a given speed, per direction.
+float frictionDecelRevS2(int dir, float speedRevS) {
+  float c = (dir > 0) ? cw_c : ccw_c;
+  float b = (dir > 0) ? cw_b : ccw_b;
+  return (c + b * speedRevS * TWO_PI) / TWO_PI;
+}
+
+void frictionResetSpin() {
+  for (int i = 0; i < 2; ++i) {
+    fricSx[i] = 0.0; fricSy[i] = 0.0; fricSxx[i] = 0.0; fricSxy[i] = 0.0;
+    fricN[i] = 0;
+  }
+  fricPairPrimed = false;
+}
+
+// Called each loop of a freewheeling FREE_SPIN coast, so every pair is pure
+// wheel friction: no motor state ever reaches this sampler.
+void frictionSample() {
+  if (!encoderMotionReady()) { fricPairPrimed = false; return; }
+  float speed = fabsf(omega);
+  int dir = (omega >= 0.0f) ? 1 : -1;
+  if (dir != spinDir || speed < FRICTION_FIT_MIN_REV_S ||
+      speed > FRICTION_FIT_MAX_REV_S) {
+    fricPairPrimed = false;
+    return;
+  }
+  uint32_t nowUs = micros();
+  if (!fricPairPrimed) {
+    fricPrevSpeed = speed;
+    fricPrevUs = nowUs;
+    fricPairPrimed = true;
+    return;
+  }
+  uint32_t dtUs = nowUs - fricPrevUs;
+  if (dtUs < FRICTION_PAIR_SPACING_US) return;
+  float dtS = (float)dtUs / 1000000.0f;
+  float decel = (fricPrevSpeed - speed) / dtS;  // rev/s^2, >0 while coasting
+  float mid = 0.5f * (fricPrevSpeed + speed);
+  fricPrevSpeed = speed;
+  fricPrevUs = nowUs;
+  // Speed-ups and implausible drops are hand contact or noise, not friction.
+  if (decel <= 0.0f || decel > FRICTION_MAX_DECEL_REV_S2) return;
+  int i = dirIndex(spinDir);
+  double x = (double)(mid * TWO_PI);    // rad/s
+  double y = (double)(decel * TWO_PI);  // rad/s^2
+  fricSx[i] += x; fricSy[i] += y; fricSxx[i] += x * x; fricSxy[i] += x * y;
+  ++fricN[i];
+}
+
+// At the true end of a spin, fit this coast and blend it into the model.
+void frictionFinalizeSpin() {
+  for (int i = 0; i < 2; ++i) {
+    if (fricN[i] < FRICTION_MIN_PAIRS) continue;
+    double n = (double)fricN[i];
+    double denom = n * fricSxx[i] - fricSx[i] * fricSx[i];
+    if (denom < 1e-6) continue;
+    float bFit = (float)((n * fricSxy[i] - fricSx[i] * fricSy[i]) / denom);
+    float cFit = (float)((fricSy[i] - (double)bFit * fricSx[i]) / n);
+    if (cFit < FRICTION_C_MIN || cFit > FRICTION_C_MAX) continue;
+    if (bFit < FRICTION_B_MIN || bFit > FRICTION_B_MAX) continue;
+    float& c = (i == 0) ? cw_c : ccw_c;
+    float& b = (i == 0) ? cw_b : ccw_b;
+    c += FRICTION_BLEND * (cFit - c);
+    b += FRICTION_BLEND * (bFit - b);
+    Serial.printf("SPIN#%lu FRICTION dir=%s pairs=%u fit c=%.3f b=%.3f -> model c=%.3f b=%.3f\n",
+                  (unsigned long)activeSpinNumber, i == 0 ? "+1" : "-1",
+                  (unsigned)fricN[i], cFit, bFit, c, b);
+  }
+  frictionResetSpin();
+}
+
+void persistCalibration() {
+  preferences.putFloat("cw_c", cw_c);
+  preferences.putFloat("cw_b", cw_b);
+  preferences.putFloat("ccw_c", ccw_c);
+  preferences.putFloat("ccw_b", ccw_b);
+  preferences.putFloat("mae_cw", predMaeDeg[0]);
+  preferences.putFloat("mae_ccw", predMaeDeg[1]);
+}
+
+// Dare margin justified by the measured prediction error of THIS wheel.
+float predictionDareMarginDeg() {
+  float mae = fmaxf(predMaeDeg[0], predMaeDeg[1]);
+  float margin = 1.6f * mae;
+  if (margin < 6.0f) margin = 6.0f;
+  if (margin > 22.0f) margin = 22.0f;
+  return margin;
+}
+
+// Every unsteered landing measures the friction model directly: fold the
+// signed along-track miss of the mid-coast reference prediction into a
+// per-direction rolling MAE.
+void updatePredictionError() {
+  if (activeSpinSteered || !refPredValid) return;
+  float landed = wheelAngleDeg();
+  float err = forwardDistanceDeg(spinDir, refPredAngleDeg, landed);
+  if (err > 180.0f) err -= 360.0f;
+  int i = dirIndex(spinDir);
+  predMaeDeg[i] += 0.25f * (fabsf(err) - predMaeDeg[i]);
+  Serial.printf("SPIN#%lu PRED-ERR dir=%+d refPred=%.1f landed=%.1f errDeg=%+.1f mae=%.1f margin=%.1f\n",
+                (unsigned long)activeSpinNumber, spinDir, refPredAngleDeg,
+                landed, err, predMaeDeg[i], predictionDareMarginDeg());
+}
+
 float requiredTakeoverRunwayDeg(float speedRevS) {
-  float wheelAccel = (float)ACCEL_CEILING_SPS2 / WHEEL_USTEPS_PER_REV;
+  float wheelAccel = (float)accelCeilingSps2 / WHEEL_USTEPS_PER_REV;
   return (speedRevS * speedRevS) / (2.0f * wheelAccel) * 360.0f
        + TAKEOVER_RUNWAY_MARGIN_DEG;
 }
@@ -690,11 +898,11 @@ bool predictedStopCouldBeDare(float angle) {
   if (isDare(wedge)) return true;
 
   float within = fmodf(angle, WEDGE_DEG);
-  if (within < PREDICTION_DARE_MARGIN_DEG) {
+  if (within < predictionDareMarginDeg()) {
     int previous = (wedge + NUM_WEDGES - 1) % NUM_WEDGES;
     if (isDare(previous)) return true;
   }
-  if (within > WEDGE_DEG - PREDICTION_DARE_MARGIN_DEG) {
+  if (within > WEDGE_DEG - predictionDareMarginDeg()) {
     int next = (wedge + 1) % NUM_WEDGES;
     if (isDare(next)) return true;
   }
@@ -759,6 +967,26 @@ bool chooseRandomSafeTargetAngle(int dir, float currentAngle, float minRunwayDeg
   targetAngle = candidates[chosen];
   runwayDeg = candidateRunways[chosen];
   return true;
+}
+
+// Uniform choice among ALL safe wedges - the target-first planner's picker.
+// Deliberately no runway filter: the alignment scheduler waits for the
+// revolution moment when this target becomes naturally reachable, which is
+// what removes the structural landing bias of the runway-filtered pickers.
+float uniformRandomSafeTargetAngle(int& chosenWedge) {
+  int safeWedges[NUM_WEDGES];
+  uint8_t count = 0;
+  for (int wedge = 0; wedge < NUM_WEDGES; ++wedge) {
+    if (!isDare(wedge)) safeWedges[count++] = wedge;
+  }
+  int wedge = safeWedges[random((long)count)];
+  long jitterCentiDeg = lroundf(SAFE_TARGET_JITTER_DEG * 100.0f);
+  float jitter = (float)random(-jitterCentiDeg, jitterCentiDeg + 1) / 100.0f;
+  float maxJitter = WEDGE_DEG * 0.5f - SAFE_WEDGE_EDGE_MARGIN_DEG;
+  if (jitter > maxJitter) jitter = maxJitter;
+  if (jitter < -maxJitter) jitter = -maxJitter;
+  chosenWedge = wedge;
+  return (float)(wedge + 0.50f) * WEDGE_DEG + jitter;
 }
 
 int32_t curUstepFromWheel() {
@@ -880,6 +1108,90 @@ void serviceDirectionProbe() {
   mode = DONE;
   Serial.printf("# DIR PROBE PASS: both legs verified; FAS+ is encoder dir=%+d, FAS- opposite; takeover+recovery ENABLED\n",
                 motorPositiveEncoderSign);
+}
+
+/* ---------------- ATTENDED ACCEL-CEILING PROBE (v2) ---------------------- */
+// Staircase 800 -> 1800 sps2.  Each stage is one 120-deg move at 1600 Hz and
+// 350 mA; commanded vs encoder travel disagreeing by more than 4 deg means
+// step loss, and the persisted ceiling becomes 75% of the last clean stage.
+// Attended only: the wheel sweeps through dares, so run it on the bench like
+// the p probe.
+
+void beginAccelProbeStage() {
+  stepper->forceStopAndNewPosition(0);
+  driverActive(ACCEL_PROBE_CURRENT_MA);
+  stepper->setSpeedInHz(ACCEL_PROBE_SPEED_HZ);
+  stepper->setAcceleration(ACCEL_PROBE_STAGES[accelProbeStage]);
+  stepper->setJumpStart(0);
+  accelProbeStartCounts = encoderCountsMT;
+  accelProbeStartedMs = millis();
+  accelProbeMoveU = ustepsForDegrees(ACCEL_PROBE_MOVE_DEG);
+  stepper->move(accelProbeMoveU);
+  Serial.printf("# ACCEL PROBE stage %u/%u: accel=%u sps2\n",
+                (unsigned)(accelProbeStage + 1),
+                (unsigned)(sizeof(ACCEL_PROBE_STAGES) / sizeof(ACCEL_PROBE_STAGES[0])),
+                (unsigned)ACCEL_PROBE_STAGES[accelProbeStage]);
+}
+
+void startAccelProbe() {
+  if (!stepper || !encoderHealthy()) {
+    Serial.println(F("# ACCEL PROBE refused: encoder/stepper unavailable"));
+    return;
+  }
+  if (mode != IDLE && mode != DONE) {
+    Serial.println(F("# ACCEL PROBE refused: wait for a fully stopped wheel"));
+    return;
+  }
+  accelProbeStage = 0;
+  accelProbeLastPass = 0;
+  mode = ACCEL_PROBE;
+  beginAccelProbeStage();
+}
+
+void finishAccelProbe(bool lossDetected, float lossDeg) {
+  driverFreewheel();
+  mode = DONE;
+  if (accelProbeLastPass == 0) {
+    Serial.printf("# ACCEL PROBE FAILED: first stage already lost %.1f deg; ceiling unchanged (%u)\n",
+                  lossDeg, (unsigned)accelCeilingSps2);
+    return;
+  }
+  uint32_t ceiling = (uint32_t)(0.75f * (float)accelProbeLastPass);
+  if (ceiling < ACCEL_CEILING_SPS2) ceiling = ACCEL_CEILING_SPS2;
+  accelCeilingSps2 = ceiling;
+  preferences.putUInt("accel", accelCeilingSps2);
+  Serial.printf("# ACCEL PROBE DONE: last clean=%u sps2%s; ceiling=%u sps2 persisted\n",
+                (unsigned)accelProbeLastPass,
+                lossDetected ? " (next stage lost steps)" : " (all stages clean)",
+                (unsigned)accelCeilingSps2);
+}
+
+void serviceAccelProbe() {
+  if (stepper && stepper->isRunning()) {
+    if (millis() - accelProbeStartedMs <= RECOVERY_TIMEOUT_MS) return;
+    stepper->forceStopAndNewPosition(0);
+    driverFreewheel();
+    mode = DONE;
+    Serial.println(F("# ACCEL PROBE FAILED: timeout"));
+    return;
+  }
+  int32_t travelled = encoderCountsMT - accelProbeStartCounts;
+  float travelledDeg = fabsf(travelled * 360.0f / 4096.0f);
+  float lossDeg = ACCEL_PROBE_MOVE_DEG - travelledDeg;
+  Serial.printf("# ACCEL PROBE stage %u result: commanded=%.0f measured=%.1f loss=%.1f deg\n",
+                (unsigned)(accelProbeStage + 1), ACCEL_PROBE_MOVE_DEG,
+                travelledDeg, lossDeg);
+  if (lossDeg > ACCEL_PROBE_LOSS_LIMIT_DEG) {
+    finishAccelProbe(true, lossDeg);
+    return;
+  }
+  accelProbeLastPass = ACCEL_PROBE_STAGES[accelProbeStage];
+  ++accelProbeStage;
+  if (accelProbeStage >= sizeof(ACCEL_PROBE_STAGES) / sizeof(ACCEL_PROBE_STAGES[0])) {
+    finishAccelProbe(false, 0.0f);
+    return;
+  }
+  beginAccelProbeStage();
 }
 
 void startDareRecovery() {
@@ -1028,6 +1340,10 @@ void startSpinEvent(int confirmedDir) {
   activeSpinTargetErrorDeg = 0.0f;
   activeSpinTargetErrorValid = false;
   recoveryAttempts = 0;
+  resetSteeringPlan();
+  frictionResetSpin();
+  refPredValid = false;
+  takeoverDecelProfile = false;
 
   Serial.printf("SPIN#%lu START dir=%+d omegaPeak=%.3f\n",
                 (unsigned long)activeSpinNumber, spinDir,
@@ -1091,7 +1407,8 @@ bool launchTakeover(float forwardDeg) {
   // Start at the wheel's measured rolling speed, slightly below it.  Starting
   // FastAccelStepper at zero here made the motor arrive long after the wheel
   // had almost stopped; starting above it produces an obvious forward pull.
-  float commandedRevS = measuredForwardRevS * TAKEOVER_MATCH_FRACTION;
+  float commandedRevS = measuredForwardRevS *
+      (takeoverDecelProfile ? PLANNED_MATCH_FRACTION : TAKEOVER_MATCH_FRACTION);
   if (commandedRevS <= 0.0f) return false;
   if (commandedRevS > TAKEOVER_MAX_REV_S) commandedRevS = TAKEOVER_MAX_REV_S;
 
@@ -1107,13 +1424,26 @@ bool launchTakeover(float forwardDeg) {
 
   uint32_t maxHz = (uint32_t)floorf(commandedRevS * WHEEL_USTEPS_PER_REV);
   if (maxHz == 0) return false;
+
+  // v2: a profiled takeover is one continuous deceleration ramp whose rate
+  // was scheduled to sit just above this wheel's own friction decel, so the
+  // catch reads as slightly heavier coasting rather than cruise-then-brake.
+  uint32_t accelSps2 = accelCeilingSps2;
+  if (takeoverDecelProfile) {
+    float rampSteps = (float)ustepsForDegrees(
+        fmaxf(forwardDeg - PLANNED_BRAKE_GATE_BUFFER_DEG, 15.0f));
+    accelSps2 = (uint32_t)ceilf(((float)maxHz * (float)maxHz) /
+                                (2.0f * rampSteps));
+    if (accelSps2 < DISGUISE_MIN_ACCEL_SPS2) accelSps2 = DISGUISE_MIN_ACCEL_SPS2;
+    if (accelSps2 > accelCeilingSps2) accelSps2 = accelCeilingSps2;
+  }
   stepper->forceStopAndNewPosition(0);
   stepper->setSpeedInHz(maxHz);
-  stepper->setAcceleration(ACCEL_CEILING_SPS2);
+  stepper->setAcceleration(accelSps2);
   // FastAccelStepper expects a ramp-step count here, not Hz.  Calculate the
   // requested matched start speed explicitly rather than relying on clamping.
   uint32_t jumpStep = (uint32_t)lroundf(
-      ((float)maxHz * (float)maxHz) / (2.0f * ACCEL_CEILING_SPS2));
+      ((float)maxHz * (float)maxHz) / (2.0f * (float)accelSps2));
   stepper->setJumpStart(jumpStep);
   // One finite hardware-timed, calibrated relative move.  Do not issue any
   // additional planner commands while this trajectory is active.
@@ -1123,7 +1453,7 @@ bool launchTakeover(float forwardDeg) {
   Serial.printf("SPIN#%lu TAKEOVER dir=%+d fasDir=%+d targetAngle=%.1f runwayDeg=%.1f relU=%ld wheelRevS=%.3f matchRevS=%.3f accel=%u brakeMa=%u\n",
                  (unsigned long)activeSpinNumber, dir, fasSign, takeoverTargetDeg,
                  forwardDeg, (long)takeoverTargetU, measuredForwardRevS, commandedRevS,
-                 ACCEL_CEILING_SPS2,
+                 (unsigned)accelSps2,
                  TAKEOVER_BRAKE_CURRENT_MA);
   if (debugLog && !diagnosticCapture) {
     Serial.printf("# TK-START dir=%d w0=%.3f target=%.1f runway=%.1f tgtU=%ld brakeOnly=1\n",
@@ -1138,8 +1468,13 @@ bool launchPrechargedTakeover() {
   float speed0 = fabsf(omega);
   float guardedSpeed = speed0;
   if (guardedSpeed < TAKEOVER_MIN_REV_S) guardedSpeed = TAKEOVER_MIN_REV_S;
-  float minimumRunwayDeg = fmaxf(takeoverMinimumRunwayDeg,
-                                  requiredTakeoverRunwayDeg(guardedSpeed));
+  // A profiled (planner-scheduled) move already proved its decel fits inside
+  // the ceiling at its shorter runway; re-imposing the worst-case ceiling
+  // runway here would throw the chosen wedge away after every precharge.
+  float minimumRunwayDeg = takeoverDecelProfile
+      ? takeoverMinimumRunwayDeg
+      : fmaxf(takeoverMinimumRunwayDeg,
+              requiredTakeoverRunwayDeg(guardedSpeed));
   float forwardDeg = forwardDistanceDeg(takeoverDir, wheelAngleDeg(),
                                          takeoverTargetDeg);
 
@@ -1244,7 +1579,8 @@ void takeoverStep() {
   // The encoder, not FAS's virtual coordinate, decides when braking starts.
   // FAS's queued stop distance plus an 8-degree interior buffer leaves room
   // for the wheel to settle without passing a safe target into a dare.
-  float stopLeadDeg = stepper->stepsToStop() * 360.0f / WHEEL_USTEPS_PER_REV + 8.0f;
+  float stopLeadDeg = stepper->stepsToStop() * 360.0f / WHEEL_USTEPS_PER_REV +
+      (takeoverDecelProfile ? PLANNED_BRAKE_GATE_BUFFER_DEG : 8.0f);
   int32_t brakeGateCounts = takeoverTravelCounts - countsForDegrees(stopLeadDeg);
   if (travelled >= brakeGateCounts && !stepper->isStopping()) {
     stepper->stopMove();
@@ -1275,6 +1611,100 @@ void takeoverStep() {
   }
 }
 
+/* ---------------- TARGET-FIRST STEERING PLANNER (v2) --------------------- */
+// The runway-filtered pickers can only reach wedges sitting 150-210 deg
+// ahead of wherever the wheel happens to be at a fixed decision speed, which
+// is why landings clustered and wedges 11/0/2/3/4 were structurally
+// unreachable.  The planner inverts that: pick ANY safe wedge uniformly
+// while the wheel is still fast, then let the wheel itself rotate the
+// geometry into place and fire at the one instant per revolution when
+// stopping on that wedge needs a deceleration only slightly above natural
+// friction - which is also exactly the move that is hardest to perceive.
+
+void resetSteeringPlan() {
+  planActive = false;
+  planTargetDeg = 0.0f;
+  planTargetWedge = -1;
+  planSafeSinceMs = 0;
+}
+
+void maybeUpdateSteeringPlan() {
+  if (activeSpinHasDecision || !sawSpinThisCycle) return;
+  if (!ENABLE_MOTOR_TAKEOVER || !motorDirectionCalibrated) return;
+  if (!encoderMotionReady()) return;
+  float speed = fabsf(omega);
+  if (speed > PLAN_ARM_REV_S || speed < TAKEOVER_MIN_REV_S) return;
+
+  float predAngle = predictStopAngle();
+  bool predDare = predictedStopCouldBeDare(predAngle);
+
+  if (!planActive) {
+    if (!predDare) return;
+    planTargetDeg = uniformRandomSafeTargetAngle(planTargetWedge);
+    planActive = true;
+    planSafeSinceMs = 0;
+    Serial.printf("SPIN#%lu PLAN omega=%.3f predStopAngle=%.1f predStopWedge=%d targetWedge=%d targetAngle=%.1f\n",
+                  (unsigned long)activeSpinNumber, omega, predAngle,
+                  wedgeAtAngle(predAngle), planTargetWedge, planTargetDeg);
+    return;
+  }
+
+  // Cancel only if the refining prediction is now comfortably clear of both
+  // dares for a sustained interval; flip-flopping is worse than one steer.
+  float clearMargin = predictionDareMarginDeg() * PLAN_CANCEL_CLEAR_FACTOR;
+  int predWedge = wedgeAtAngle(predAngle);
+  float within = fmodf(predAngle, WEDGE_DEG);
+  bool comfortablyClear = !isDare(predWedge);
+  if (comfortablyClear && within < clearMargin &&
+      isDare((predWedge + NUM_WEDGES - 1) % NUM_WEDGES)) comfortablyClear = false;
+  if (comfortablyClear && within > WEDGE_DEG - clearMargin &&
+      isDare((predWedge + 1) % NUM_WEDGES)) comfortablyClear = false;
+  if (!comfortablyClear) {
+    planSafeSinceMs = 0;
+    return;
+  }
+  if (planSafeSinceMs == 0) {
+    planSafeSinceMs = millis();
+  } else if (millis() - planSafeSinceMs >= PLAN_CANCEL_SUSTAIN_MS) {
+    Serial.printf("SPIN#%lu PLAN-CANCEL predStopAngle=%.1f now clear\n",
+                  (unsigned long)activeSpinNumber, predAngle);
+    resetSteeringPlan();
+  }
+}
+
+// Fire the planned takeover when geometry and physics line up: the decel
+// needed to stop exactly on the chosen wedge is a small multiple of the
+// wheel's own natural friction decel, and inside the proven accel ceiling.
+bool tryPlannedTakeover() {
+  if (!planActive || activeSpinHasDecision) return false;
+  if (!encoderHealthy() || !ENABLE_MOTOR_TAKEOVER || !motorDirectionCalibrated) {
+    return false;
+  }
+  float speed = fabsf(omega);
+  if (speed < TAKEOVER_MIN_REV_S || speed > PLAN_FIRE_MAX_REV_S) return false;
+  if (activeSpinPeakOmega < TAKEOVER_MIN_PEAK_REV_S) return false;
+
+  float fwd = forwardDistanceDeg(spinDir, wheelAngleDeg(), planTargetDeg);
+  if (fwd < PLAN_MIN_FWD_DEG || fwd > TAKEOVER_MAX_RUNWAY_DEG) return false;
+
+  float vSps = speed * WHEEL_USTEPS_PER_REV;
+  float dSteps = (float)ustepsForDegrees(
+      fmaxf(fwd - PLANNED_BRAKE_GATE_BUFFER_DEG, 15.0f));
+  float aReq = (vSps * vSps) / (2.0f * dSteps);
+  float aNat = frictionDecelRevS2(spinDir, speed) * WHEEL_USTEPS_PER_REV;
+  if (aNat < 1.0f) aNat = 1.0f;
+  if (aReq < aNat * DISGUISE_DECEL_MIN_RATIO) return false;  // motor would lead
+  if (aReq > aNat * DISGUISE_DECEL_MAX_RATIO) return false;  // visible grab
+  if (aReq > (float)accelCeilingSps2) return false;
+
+  float predAngle = predictStopAngle();
+  recordSpinDecision(predAngle, wedgeAtAngle(predAngle), currentWedge(), true,
+                     planTargetWedge);
+  takeoverDecelProfile = true;
+  beginTakeover(spinDir, planTargetDeg, PLAN_MIN_FWD_DEG * 0.5f);
+  return true;
+}
+
 // Calibrated high-speed capture.  Intervene while there is usable runway only
 // when the predicted stop lies in, or close to, a dare; choose a random safe
 // interior for that intervention.
@@ -1288,6 +1718,9 @@ bool trySlowDareGuard() {
   float speed = fabsf(omega);
   if (activeSpinPeakOmega < TAKEOVER_MIN_PEAK_REV_S) return false;
   if (speed > TAKEOVER_REV_S || speed < TAKEOVER_MIN_REV_S) return false;
+  // Defer to the target-first planner until its alignment window is nearly
+  // spent; this old always-reachable picker stays as the last resort.
+  if (planActive && speed > PLAN_FALLBACK_REV_S) return false;
 
   float predAngle = predictStopAngle();
   int predWedge = wedgeAtAngle(predAngle);
@@ -1308,6 +1741,7 @@ bool trySlowDareGuard() {
   int curWedge = currentWedge();
   int targetWedge = wedgeAtAngle(targetAngle);
   recordSpinDecision(predAngle, predWedge, curWedge, true, targetWedge);
+  takeoverDecelProfile = true;  // shape the fallback catch as one ramp too
   beginTakeover(spinDir, targetAngle, minForwardDeg);
   return true;
 }
@@ -1404,6 +1838,9 @@ void help() {
     " d  arm high-rate RAM encoder capture (auto-dump after true stop)\n"
     " v  toggle live takeover logs (disabled while d capture is armed)\n"
     " m  print dare mask\n"
+    " a  attended accel-ceiling probe (wheel sweeps 120 deg per stage)\n"
+    " c  print calibration (friction fit, prediction error, accel ceiling)\n"
+    " C  reset calibration to seed values\n"
     " ?  show this help"));
 }
 
@@ -1414,6 +1851,10 @@ void status() {
                 encoderVelocityValid ? "VALID" : "REPRIME",
                 (unsigned long)ageUs, wheelAngleDeg(), currentWedge(), omega,
                 predictStopAngle(), predictStopWedge(), (unsigned)mode);
+  Serial.printf("# cal cw(c=%.3f b=%.3f) ccw(c=%.3f b=%.3f) maeDeg=%.1f/%.1f margin=%.1f accel=%u plan=%d tgtW=%d\n",
+                cw_c, cw_b, ccw_c, ccw_b, predMaeDeg[0], predMaeDeg[1],
+                predictionDareMarginDeg(), (unsigned)accelCeilingSps2,
+                planActive ? 1 : 0, planTargetWedge);
 }
 
 void handleSerial() {
@@ -1448,6 +1889,23 @@ void handleSerial() {
     case 'i':
       Serial.println(F("# INVERT_DIR is fixed; use p to measure and persist the physical motor direction"));
       break;
+    case 'a':
+      startAccelProbe();
+      break;
+    case 'c':
+      Serial.printf("# CAL friction cw(c=%.3f b=%.3f) ccw(c=%.3f b=%.3f) | maeDeg cw=%.1f ccw=%.1f margin=%.1f | accelCeiling=%u sps2\n",
+                    cw_c, cw_b, ccw_c, ccw_b, predMaeDeg[0], predMaeDeg[1],
+                    predictionDareMarginDeg(), (unsigned)accelCeilingSps2);
+      break;
+    case 'C':
+      cw_c = 0.30f; cw_b = 0.15f; ccw_c = 0.30f; ccw_b = 0.15f;
+      predMaeDeg[0] = PREDICTION_DARE_MARGIN_DEG;
+      predMaeDeg[1] = PREDICTION_DARE_MARGIN_DEG;
+      accelCeilingSps2 = ACCEL_CEILING_SPS2;
+      persistCalibration();
+      preferences.putUInt("accel", accelCeilingSps2);
+      Serial.println(F("# CAL reset to seed values and persisted"));
+      break;
     case 'm':
       Serial.printf("# dare_mask=0x%03X; dare wedges: 1 5\n", dare_mask);
       break;
@@ -1469,6 +1927,14 @@ void setup() {
   motorPositiveEncoderSign = preferences.getInt("pos_sign", 0);
   motorDirectionCalibrated = preferences.getBool("dir_ok", false) &&
                              (motorPositiveEncoderSign == 1 || motorPositiveEncoderSign == -1);
+  cw_c = preferences.getFloat("cw_c", cw_c);
+  cw_b = preferences.getFloat("cw_b", cw_b);
+  ccw_c = preferences.getFloat("ccw_c", ccw_c);
+  ccw_b = preferences.getFloat("ccw_b", ccw_b);
+  predMaeDeg[0] = preferences.getFloat("mae_cw", predMaeDeg[0]);
+  predMaeDeg[1] = preferences.getFloat("mae_ccw", predMaeDeg[1]);
+  accelCeilingSps2 = preferences.getUInt("accel", accelCeilingSps2);
+  frictionResetSpin();
 
   Wire.begin(PIN_SDA, PIN_SCL);
   Wire.setClock(400000);
@@ -1579,6 +2045,14 @@ void loop() {
         activeSpinPeakOmega = fabsf(omega);
       }
       float speed = fabsf(omega);
+      frictionSample();
+      if (!refPredValid && sawSpinThisCycle && speed <= 0.45f &&
+          speed >= 2.0f * TAKEOVER_MIN_REV_S) {
+        refPredAngleDeg = predictStopAngle();
+        refPredValid = true;
+      }
+      maybeUpdateSteeringPlan();
+      if (tryPlannedTakeover()) break;
       if (trySlowDareGuard()) break;
 
       // Defer LEAVE until after the true settle window.  This keeps the guard
@@ -1692,6 +2166,9 @@ void loop() {
             recordSpinDecision(predAngle, wedgeAtAngle(predAngle),
                                wedge, false, -1);
           }
+          updatePredictionError();
+          frictionFinalizeSpin();
+          persistCalibration();
           printLandedEvent();
           driverFreewheel();
           sawSpinThisCycle = false;
@@ -1756,25 +2233,41 @@ void loop() {
         break;
       }
 
+      updatePredictionError();
+      frictionFinalizeSpin();
+      persistCalibration();
       printLandedEvent();
       sawSpinThisCycle = false;
+      safeHoldStillSinceMs = millis();
       mode = SAFE_HOLD;
       break;
     }
 
     case SAFE_HOLD:
-      // Keep the recovered wheel locked in its verified safe wedge.  A new
-      // deliberate hand spin releases it before normal spin detection begins.
+      // Hold the verified safe wedge only briefly, then float the coils: a
+      // guest idly rocking the wheel between spins must feel a free wheel,
+      // not a motor detent.  A stationary balanced wheel does not drift.
       if (encoderMotionReady() && fabsf(omega) >= SPIN_DETECT_REV_S) {
         driverFreewheel();
         spinAboveMs = 0;
         settleT0 = 0;
         mode = IDLE;
+        break;
+      }
+      if (safeHoldStillSinceMs != 0 &&
+          millis() - safeHoldStillSinceMs >= SAFE_HOLD_RELEASE_MS) {
+        driverFreewheel();
+        safeHoldStillSinceMs = 0;
+        mode = DONE;
       }
       break;
 
     case DIR_PROBE:
       serviceDirectionProbe();
+      break;
+
+    case ACCEL_PROBE:
+      serviceAccelProbe();
       break;
   }
 
