@@ -1631,7 +1631,15 @@ bool launchPrechargedTakeover() {
   // The 80 ms low-current precharge may let the wheel advance a fraction of a
   // degree.  Re-select only if that would make the already-chosen target too
   // close to stop naturally; this is not a per-tick planner rewrite.
-  if (forwardDeg < minimumRunwayDeg || forwardDeg > TAKEOVER_MAX_RUNWAY_DEG) {
+  // v4: apply the whole-revolution stretch BEFORE the runway checks.  The
+  // 210-deg reachability cap exists for ballistic (unstretched) moves; on
+  // stretched profiled ramps it was silently replacing uniform-random
+  // targets with close ones braked at up to ~880 sps2 - the bench rattling
+  // and a reintroduced distribution bias in one bug (SPIN#15/16/18/19).
+  forwardDeg += (float)v4ExtraRevsDeg;
+  v4ExtraRevsDeg = 0;
+  if (forwardDeg < minimumRunwayDeg ||
+      (!takeoverDecelProfile && forwardDeg > TAKEOVER_MAX_RUNWAY_DEG)) {
     float replacementTarget = 0.0f;
     if (!chooseRandomSafeTargetAngle(takeoverDir, wheelAngleDeg(), minimumRunwayDeg,
                                       replacementTarget, forwardDeg)) {
@@ -1641,9 +1649,6 @@ bool launchPrechargedTakeover() {
     activeSpinTargetWedge = wedgeAtAngle(replacementTarget);
   }
 
-  // v4: stretch the single ramp by the whole revolutions chosen at engage.
-  forwardDeg += (float)v4ExtraRevsDeg;
-  v4ExtraRevsDeg = 0;
   return launchTakeover(forwardDeg);
 }
 
