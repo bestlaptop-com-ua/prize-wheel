@@ -142,3 +142,27 @@ Three root causes of the "very unnatural" takeover were identified and fixed:
 targetErrorDeg in LANDED lines is misleading for gated profiled takeovers
 (reports commanded-vs-travelled, not target-vs-landed); actual landings were
 on target. Fix later; logs' wedge numbers are authoritative.
+## v4: every-spin high-speed engagement (user-directed redesign)
+
+Prediction is out of the outcome path. Every confirmed spin is engaged as its
+speed decays through 0.50 rev/s (0.14 floor; weaker spins fall to the old
+nets), the target is a uniformly random safe wedge, and the whole slowdown is
+ONE continuous decel ramp stretched by up to 5 extra whole revolutions to a
+randomized 8-11 s roll-out (clamped so commanded accel never drops below the
+60 sps2 disguise floor - the motor only ever brakes). Profiled moves now run
+at 600 mA from the FIRST step (the 100 mA pickup stage was the residual
+desync). TAKEOVER_MAX_REV_S raised to 0.55.
+
+New DRIFT_WATCH mode closes both unguarded holes: every coil release after a
+held landing, and every recovery abort, now land in an armed state where a
+fresh spin restarts normally, a forward drift toward a dare is nudged inside
+the roll (carry, max 4 attempts/spin), and a rest on a dare gets the fast
+slip. Aborted takeovers clear the spin decision so v4 re-engages at a lower
+speed instead of abandoning the spin.
+
+v2 planner/guards remain in the binary as dormant safety nets below the v4
+floor. Log line: SPIN#n V4-ENGAGE omega/target/fwdDeg/extraRevs/durS.
+
+Acceptance for guest use: over >=30 spins - zero fight aborts, zero rattles,
+zero dare rests (including after release), roughly uniform landings over the
+ten safe wedges, and the owner's eye/ear sign-off on the roll-out.

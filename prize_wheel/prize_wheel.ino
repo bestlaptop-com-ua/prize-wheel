@@ -91,9 +91,9 @@ const float SPIN_CANCEL_BACKTRACK_DEG = 2.0f;
 const float GUEST_OVERRIDE_REV_S = 0.80f;
 const uint16_t GUEST_OVERRIDE_CONFIRM_MS = 60;
 #define ACCEL_CEILING_SPS2 650    // conservative attended-test value
-// v2: raised so the planner can catch at up to ~0.31 rev/s (38 motor RPM)
-// without an audible speed step at engagement.
-#define TAKEOVER_MAX_REV_S 0.320f
+// v4: engagement happens as speed decays through ~0.50 rev/s (60 motor RPM),
+// far above the low-speed failure zone; command follows the wheel at 97%.
+#define TAKEOVER_MAX_REV_S 0.550f
 const float TAKEOVER_MIN_REV_S = 0.070f;
 // 0.28 gated gentle spins out of the disguised takeover entirely, funneling
 // exactly those spins into stop-on-dare -> visible recovery.  Let them steer.
@@ -204,6 +204,15 @@ const float CREEP_CLEAR_EXTRA_DEG = 2.0f;     // land just past the margin zone
 /* If the wheel does reach true stillness on a dare, correct within ~300 ms
  * total so it reads as the flapper slipping one last notch. */
 const uint16_t DARE_CONFIRM_MS = 180;
+/* v4 (every-spin) engagement: stop prediction is unusable on this unbalanced
+ * wheel, so instead of guessing which spins are dare-bound, EVERY confirmed
+ * spin is caught while still fast and the whole slowdown is one gentle decel
+ * ramp stretched over extra whole revolutions to a randomized duration,
+ * ending on a uniformly random safe wedge. */
+const float V4_ENGAGE_REV_S = 0.50f;      // engage as speed decays through this
+const float V4_MIN_ENGAGE_REV_S = 0.14f;  // below this the old nets own the spin
+const uint16_t V4_RAMP_MIN_DS = 80;       // ramp duration 8.0-11.0 s
+const uint16_t V4_RAMP_MAX_DS = 110;      // (deciseconds, randomized per spin)
 
 /* --------------------------- STATE --------------------------------------- */
 TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
@@ -214,7 +223,8 @@ Preferences preferences;
 enum Mode : uint8_t {
   IDLE, FREE_SPIN, PRECHARGE, TAKEOVER, SETTLE,
   RECOVERY_PRECHARGE, DARE_RECOVERY, RECOVERY_HOLD, SAFE_HOLD, DIR_PROBE, DONE,
-  ACCEL_PROBE  // appended after DONE so mode ordinals in old captures hold
+  ACCEL_PROBE,  // appended after DONE so mode ordinals in old captures hold
+  DRIFT_WATCH   // post-release guard: motor-placed stops can roll off
 };
 Mode mode = IDLE;
 
@@ -329,6 +339,10 @@ bool creepCarryPending = false;
 
 // Reversal-guard width for the active recovery/carry move (deg).
 float recoveryOppositeTolDeg = 1.5f;
+
+// Whole-revolution stretch (degrees) for the active v4 ramp; consumed once
+// by launchPrechargedTakeover and cleared per spin.
+uint16_t v4ExtraRevsDeg = 0;
 
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
@@ -1247,7 +1261,9 @@ float carryTargetAngle(int dir, float fromAngle) {
 // outcome just reads as the wheel carrying a little farther than expected.
 bool tryCreepCarry() {
   if (!ENABLE_DARE_RECOVERY || !motorDirectionCalibrated || !stepper) return false;
-  if (!encoderMotionReady() || !sawSpinThisCycle) return false;
+  if (!encoderMotionReady()) return false;
+  if (!sawSpinThisCycle && mode != DRIFT_WATCH) return false;
+  if (recoveryAttempts >= 4) return false;  // never loop corrections
   float speed = fabsf(omega);
   if (speed < STILL_REV_S || speed >= TAKEOVER_MIN_REV_S) return false;
   int dir = (omega >= 0.0f) ? 1 : -1;
@@ -1393,7 +1409,8 @@ void serviceDareRecovery() {
   if (travelled < -oppositeTol) {
     stepper->forceStopAndNewPosition(0);
     driverFreewheel();
-    mode = DONE;
+    settleT0 = 0;
+    mode = DRIFT_WATCH;  // keep guarding: the wheel may still be creeping
     Serial.printf("# DARE RECOVERY ABORT: opposite motion %.1f deg; re-run p calibration\n",
                   travelled * 360.0f / 4096.0f);
     return;
@@ -1447,6 +1464,7 @@ void startSpinEvent(int confirmedDir) {
   refPredValid = false;
   takeoverDecelProfile = false;
   creepCarryPending = false;
+  v4ExtraRevsDeg = 0;
 
   Serial.printf("SPIN#%lu START dir=%+d omegaPeak=%.3f\n",
                 (unsigned long)activeSpinNumber, spinDir,
@@ -1551,6 +1569,13 @@ bool launchTakeover(float forwardDeg) {
   // One finite hardware-timed, calibrated relative move.  Do not issue any
   // additional planner commands while this trajectory is active.
   stepper->move(takeoverTargetU);
+  // Profiled ramps need real holding torque from the first step: the 100 mA
+  // pickup stage desynced on this wheel's hills (bench SPIN#12).  600 mA
+  // cannot pull the wheel forward because the trajectory only ever slows.
+  if (takeoverDecelProfile) {
+    driver.rms_current(DISGUISE_TAKEOVER_CURRENT_MA, 1.0);
+    takeoverCurrentStage = 1;
+  }
   takeoverStepStartMs = millis();
 
   Serial.printf("SPIN#%lu TAKEOVER dir=%+d fasDir=%+d targetAngle=%.1f runwayDeg=%.1f relU=%ld wheelRevS=%.3f matchRevS=%.3f accel=%u brakeMa=%u\n",
@@ -1595,6 +1620,9 @@ bool launchPrechargedTakeover() {
     activeSpinTargetWedge = wedgeAtAngle(replacementTarget);
   }
 
+  // v4: stretch the single ramp by the whole revolutions chosen at engage.
+  forwardDeg += (float)v4ExtraRevsDeg;
+  v4ExtraRevsDeg = 0;
   return launchTakeover(forwardDeg);
 }
 
@@ -1656,6 +1684,9 @@ void takeoverStep() {
       sawSpinThisCycle = true;
       settleT0 = 0;
       mode = FREE_SPIN;
+      activeSpinHasDecision = false;  // let v4 re-engage at a lower speed
+      takeoverDecelProfile = false;
+      v4ExtraRevsDeg = 0;
       Serial.printf("SPIN#%lu TAKEOVER ABORT: motor fighting wheel (wheel=%.3f commanded=%.3f rev/s); check DIR wiring/belt, re-run p\n",
                     (unsigned long)activeSpinNumber, wheelForwardRevS,
                     commandedRevS);
@@ -1806,6 +1837,52 @@ bool tryPlannedTakeover() {
                      planTargetWedge);
   takeoverDecelProfile = true;
   beginTakeover(spinDir, planTargetDeg, PLAN_MIN_FWD_DEG * 0.5f);
+  return true;
+}
+
+/* ---------------- V4: EVERY-SPIN HIGH-SPEED ENGAGEMENT ------------------- */
+// Bench verdict 26 Jul: stop prediction on this unbalanced wheel has 40-60
+// deg MAE, so selective steering misfires both ways.  v4 removes prediction
+// from the outcome path entirely: engage every confirmed spin while it is
+// still fast (pickup at speed is imperceptible), command ONE continuous
+// gentle deceleration stretched by whole revolutions to a randomized 8-11 s
+// roll-out, and land on a uniformly random safe wedge.  From the engage
+// speed the motor only ever brakes.
+bool tryEverySpinTakeover() {
+  if (activeSpinHasDecision || !sawSpinThisCycle) return false;
+  if (!ENABLE_MOTOR_TAKEOVER || !motorDirectionCalibrated) return false;
+  if (!encoderHealthy() || !encoderMotionReady()) return false;
+  float speed = fabsf(omega);
+  int dir = (omega >= 0.0f) ? 1 : -1;
+  if (dir != spinDir) return false;
+  if (speed > V4_ENGAGE_REV_S || speed < V4_MIN_ENGAGE_REV_S) return false;
+  if (activeSpinPeakOmega < TAKEOVER_MIN_PEAK_REV_S) return false;
+
+  int targetWedge = -1;
+  float target = uniformRandomSafeTargetAngle(targetWedge);
+  float fwd = forwardDistanceDeg(spinDir, wheelAngleDeg(), target);
+
+  float durS = (float)random((long)V4_RAMP_MIN_DS, (long)V4_RAMP_MAX_DS + 1) / 10.0f;
+  float totalDeg = speed * 360.0f * durS * 0.5f;  // constant-decel distance
+  // Never command a ramp gentler than the minimum disguise accel allows:
+  // that would force a constant-speed cruise, i.e. the motor driving.
+  float vSps = speed * WHEEL_USTEPS_PER_REV;
+  float maxTotalDeg = (vSps * vSps / (2.0f * (float)DISGUISE_MIN_ACCEL_SPS2)) *
+                      (360.0f / WHEEL_USTEPS_PER_REV);
+  if (totalDeg > maxTotalDeg) totalDeg = maxTotalDeg;
+  long extraRevs = (long)floorf((totalDeg - fwd) / 360.0f);
+  if (extraRevs < 0) extraRevs = 0;
+  if (extraRevs > 5) extraRevs = 5;
+  v4ExtraRevsDeg = (uint16_t)(extraRevs * 360);
+
+  float predAngle = predictStopAngle();
+  recordSpinDecision(predAngle, wedgeAtAngle(predAngle), currentWedge(), true,
+                     targetWedge);
+  takeoverDecelProfile = true;
+  beginTakeover(spinDir, target, PLAN_MIN_FWD_DEG * 0.5f);
+  Serial.printf("SPIN#%lu V4-ENGAGE omega=%.3f targetAngle=%.1f targetWedge=%d fwdDeg=%.1f extraRevs=%ld durS=%.1f\n",
+                (unsigned long)activeSpinNumber, omega, target, targetWedge,
+                fwd, extraRevs, durS);
   return true;
 }
 
@@ -2155,6 +2232,7 @@ void loop() {
         refPredAngleDeg = predictStopAngle();
         refPredValid = true;
       }
+      if (tryEverySpinTakeover()) break;
       maybeUpdateSteeringPlan();
       if (tryPlannedTakeover()) break;
       if (trySlowDareGuard()) break;
@@ -2194,6 +2272,9 @@ void loop() {
         driverFreewheel();
         mode = FREE_SPIN;
         settleT0 = 0;
+        activeSpinHasDecision = false;  // let v4 re-engage after the push
+        takeoverDecelProfile = false;
+        v4ExtraRevsDeg = 0;
         break;
       }
       if (millis() - takeoverMotorEnableMs < TAKEOVER_PRECHARGE_MS) break;
@@ -2366,7 +2447,8 @@ void loop() {
           millis() - safeHoldStillSinceMs >= SAFE_HOLD_RELEASE_MS) {
         driverFreewheel();
         safeHoldStillSinceMs = 0;
-        mode = DONE;
+        settleT0 = 0;
+        mode = DRIFT_WATCH;  // unbalanced wheel: a placed stop can roll off
       }
       break;
 
@@ -2376,6 +2458,37 @@ void loop() {
 
     case ACCEL_PROBE:
       serviceAccelProbe();
+      break;
+
+    case DRIFT_WATCH:
+      // Coils are floating after a held landing, but this unbalanced wheel
+      // can roll off a motor-placed stop.  Stay armed: a fresh spin starts
+      // normally, a forward drift toward a dare is nudged inside the roll,
+      // and a rest on a dare gets the fast slip.
+      if (spinConfirmed) {
+        sawSpinThisCycle = true;
+        startSpinEvent(spinAboveDir);
+        driverFreewheel();
+        mode = FREE_SPIN;
+        break;
+      }
+      if (!encoderMotionReady()) break;
+      if (tryCreepCarry()) break;
+      if (fabsf(omega) <= STILL_REV_S) {
+        if (settleT0 == 0) settleT0 = millis();
+        uint32_t stillForMs = millis() - settleT0;
+        if (stillForMs > DARE_CONFIRM_MS && isDare(currentWedge())) {
+          if (motorDirectionCalibrated && ENABLE_DARE_RECOVERY) {
+            startDareRecovery();
+          } else {
+            mode = DONE;
+          }
+          break;
+        }
+        if (stillForMs > SETTLE_MS) mode = DONE;
+      } else {
+        settleT0 = 0;
+      }
       break;
   }
 
