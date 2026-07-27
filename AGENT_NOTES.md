@@ -2,6 +2,77 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
+## 2026-07-27 SUPERVISOR v2 SESSION 3 (~08:22) — T3 BASELINE batch (latch fix DONE last session)
+### Entry state (verified this session)
+- Firmware = committed latch fix 429e2a5 (board runs it; no flash needed). Working tree clean.
+- Frame zero VALID (owner re-zero 07:54, wedge-3 center=103.5). Board `s` 08:22:15: angle=106.35
+  wedge=3 (SAFE) omega=0 mode=10 DONE, coils floating, accel=900, cal cw(0.300/0.150) ccw(0.352/0.119).
+- Instruments live+fresh: bridge pid30212, cam pid19992 (stable d=0 q=2.4), mic pid12492 (ambient
+  floor RMS ~-97 dBFS band -48 dB). Cam is UNCAL for absolute wedge but net-rotation scale=0.837491
+  in pw_cam_cal.txt (T2); use for cam-enc net agreement.
+- Prior VALID (post-07:54) baseline points: g->w6, G->w11 (~08:05), g->w3 (08:19 SPIN#1 steered dare1).
+  Counts so far g~2 / G~1; need >=10 each. This batch adds toward that (G-weighted, scarcer dir).
+
+### MOTOR RUN log (this session) — T3 baseline batch, <=4 spins
+- MOTOR RUN: T3 baseline batch of 4 alternating G,g,G,g through v4. Arm d on spin 1 only (dense enc
+  reference for acoustic cross-attribution; d auto-dumps after stop, WDT-safe Fix A), spins 2-4 without
+  d to keep landing/acoustic data clean. Per spin capture: SPIN-GEN release omega (engage speed), accel,
+  fight-aborts, LANDED wedge/isDare/steered, cam net vs enc net, post-release drift, mic flags in window.
+  Expect each: SPIN-GEN START->RELEASE reason=target -> SPIN#n V4 -> LANDED isDare=0. Ceiling 900, frame
+  zero VALID, bench, wheel clear. Firmware 429e2a5.
+
+### RESULT — 4-spin T3 batch, ALL SAFE, zero aborts/latch/mic-anomaly (batch budget spent)
+Fired G,g,G,g (2 per FAS dir). Release speeds spanned 0.365-0.442 rev/s (full T1 range). Every spin:
+SPIN-GEN START->RELEASE reason=target -> V4 STEER -> LANDED isDare=0 steered=1. No fight-abort, no
+RECOVERY-FAIL (the only FAILED lines in log remain the historic 07:46 pre-fix ones), no WDT/panic.
+  - SPIN#2 G/FAS- dir+1: rel omega=0.365 -> LANDED wedge=2 (pred w3). Dense d trace CLEAN
+    (n=3072 accepted=3072 errors=0 gaps=0 alias=0 flips=0 maxAbsDelta=1) = good acoustic/jitter ref.
+  - SPIN#3 g/FAS+ dir-1: rel omega=-0.412 -> pred wedge=5 (DARE!) -> STEER -> LANDED wedge=0, err -1.4.
+  - SPIN#4 G/FAS- dir+1: rel omega=0.413 -> pred wedge=1 (DARE!) -> STEER -> LANDED wedge=8 (+1 rev).
+  - SPIN#5 g/FAS+ dir-1: rel omega=-0.442 -> LANDED wedge=10 (pred w2 safe, steered to distribute).
+Acoustics: ZERO mic flag=1 across 08:22:30-08:26 window; mic stayed at ambient floor (RMS ~-96 dBFS,
+band ~-48 dB) THROUGHOUT ramps/engages/brakes. Engage+takeover acoustically inaudible (T4/T6 criterion
+met for this batch). Cam SAW every spin (d peaked -3.41 rev/s-ish at release, returned to d~0 stable) -
+qualitative three-way agreement (motion+stop); precise net-agreement fit deferred to pw_baseline tool.
+VALID (post-07:54) baseline tally now ~ g: w6,w3,w0,w10  |  G: w11,w2,w8  (=4 g / 3 G). Need >=10 each.
+
+### >>> T3-EXPOSED ANOMALY #1 (catalog; investigate FIRST next session, NOT owner-blocking) <<<
+POST-LANDING CREEP IN DONE. SPIN#5 LANDED wedge=10 angle=316.0 @08:25:56 (dir=-1 spin); board `s`
+@08:26:13 (17 s later) read angle=338.55 wedge=11 omega=0 mode=10 DONE. => wheel crept +22.5deg while
+in DONE, crossing the w10->w11 boundary, with NO DRIFT_WATCH/CARRY marker in the serial log. Note the
+creep was +deg = OPPOSITE the dir=-1 spin (consistent with passive gravity/imbalance pull, not a motor
+move; coils were floating). STAYED SAFE (w10 and w11 both safe; dares w1/w5 far) so NO invariant-1/2/3
+violation THIS time. BUT: a ~22deg post-landing creep near a dare boundary could carry a steered-safe
+landing ONTO a dare (e.g. land w0@~40deg -> creep to ~62 = w1 DARE; or w4/w6 toward w5). This is the
+known "DONE never recovers a static rest" gap (CLAUDE.md) meeting real imbalance creep -> it is the
+core-guarantee risk T3 is meant to surface.
+CAVEATS (do not overclaim from ONE reading): (a) only spin5 had a follow-up `s`; spins 2-4 had the next
+spin fired ~immediately so their settle drift is UNMEASURED - unknown if systematic. (b) owner is at the
+bench; a hand nudge in those 17 s cannot be excluded from a single sample. Must REPRODUCE before fixing.
+REPRODUCE (no extra motor budget beyond the spins - method is post-landing polling, not new moves):
+run 2-3 spins; after EACH LANDED, send `s` every ~2 s for ~25 s and log angle(t) to get the creep curve
+(magnitude, rate, whether it settles). If systematic and >~half a wedge: candidate minimal fixes to weigh
+next session (do NOT implement blind) - (1) extend DRIFT_WATCH arming to persist a few seconds into DONE
+for landings whose creep envelope reaches a dare boundary; (2) add a drift-margin buffer so the planner
+only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges. Evidence first.
+
+### Board / instrument state at end (SAFE)
+- Board `s` 08:26:13: angle=338.55 wedge=11 (SAFE) omega=0 mode=10 DONE, coils FLOATING, accel=900,
+  cal unchanged cw(0.300/0.150) ccw(0.352/0.119). No wheel/motor work left running (all my Bash calls
+  were synchronous; started no background task). Instruments live: bridge pid30212, cam pid19992,
+  mic pid12492. 4 of <=4 motor spins used - motor budget SPENT for this session.
+- Repo: docs-only edit (this file) on claude/adaptive-v2; mission NOT complete (stay on branch, no
+  REPORT.md yet). Firmware unchanged (429e2a5 latch fix still flashed + running).
+
+### NEXT SESSION (critical path)
+1. INVESTIGATE ANOMALY #1 (post-landing creep) via the post-LANDED `s`-polling method above - FIRST,
+   before adding more baseline points. It touches the core dare guarantee. Evidence, then minimal fix.
+2. Continue T3 baseline toward >=10 g + >=10 G (currently ~4 g / 3 G valid). Batches <=4/session, mic +
+   occasional dense d. Keep cataloging engage speed / aborts / enc-vs-cam / drift / acoustics.
+3. T4 remaining anomaly items (slow-engage click, ccw brake rattle, uphill recovery slip) - evidence-first.
+4. Then T5, then T6 ACCEPTANCE = ATTENDED >=30 OWNER HAND spins via the relay protocol (write request at
+   TOP of this file + exit), then REPORT.md + checkout clean main.
+
 ## 2026-07-27 SUPERVISOR v2 SESSION (~08:10) — LEGACY LATCH FIX applied + IN-SESSION verified (wheel already on dare)
 ### Entry state
 - Frame zero VALID (owner re-zero 07:54, persisted NVS; wheel physically moving does not change it).
