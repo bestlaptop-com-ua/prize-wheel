@@ -39,8 +39,12 @@ Purpose: a restarted session can read this and continue. Newest at top.
    then FORCE a fail-recovery test (deliberately land a dare + fail recovery 3x) to prove the
    coils now float instead of gripping. This is the last firmware safety item.
 2. Resume T3 baseline: >=10 g + >=10 G through v4 (batches <=4/session), armed d + mic, log
-   engage speed/aborts/enc-vs-cam wedge/drift/acoustics. Then T6 acceptance (30-spin), REPORT.md.
+   engage speed/aborts/enc-vs-cam wedge/drift/acoustics. (g/G = iteration tooling ONLY.)
 3. First g/G spins THIS session already gave 2 valid baseline data points (both steered dares).
+4. T6 ACCEPTANCE IS ATTENDED (owner directive, commit 906cc0f / MISSION.md T6): >=30 OWNER
+   HAND spins via the AGENT_NOTES relay protocol, NOT motor spins. When acceptance-ready
+   (after latch fix + T3-T5), write the exact request at the TOP of this file and exit so the
+   owner can perform them. Motor spins are for iteration only, never for final acceptance.
 
 
 ## 2026-07-27 SUPERVISOR v2 SESSION 4 (~07:38) — g/G rebuilt on bounded k/K-style ramp (owner tooling directive)
