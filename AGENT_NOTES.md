@@ -2,6 +2,17 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
+## 2026-07-27 SUPERVISOR v2 SESSION 4 (~07:38) — g/G rebuilt on bounded k/K-style ramp (owner tooling directive)
+### MOTOR RUN log (session 4)
+- MOTOR RUN: verify bounded g/G ramp — fire g (FAS+), G (FAS-), g+armed-d (dense enc
+  trace), G. <=4 spins. Expect each: SPIN-GEN START(release into free coast) ->
+  RELEASE reason=target -> SPIN#n V4-ENGAGE -> LANDED, NO hang, NO loop-WDT reset.
+  Firmware = SPIN_GEN_MOVE_REVS 40->8 (bounded) atop WDT+FixA/B. Ceiling 900, coils
+  floating at start, mode IDLE, angle~345 wedge11. NOTE: frame zero is still the
+  ARBITRARY PLACEHOLDER (no attended z since 07:24:32) — landing wedges are NOT
+  physically valid; this run only verifies RAMP ROBUSTNESS, not landings. Bench,
+  wheel clear. Instruments: bridge pid31968, cam pid19992, mic pid12492 all live.
+
 ## 2026-07-27 SUPERVISOR v2 SESSION 3 (~07:31) — BLOCKED on frame zero; latch located; 0 spins
 
 ### >>> STILL THE #1 BLOCKER: FRAME ZERO IS AN ARBITRARY PLACEHOLDER <<<
@@ -233,3 +244,15 @@ NEXT: T3 baseline campaign - >=10 g-spins + >=10 G-spins through v4, catalog whe
 
 ## SUPERVISOR HANDOFF 07:0x (session killed by owner re-steer, no fault of yours)
 Hang diagnosis so far: Wire.setTimeOut(3) already set, so I2C lockup RULED OUT; remaining suspect = FastAccelStepper ISR/queue block during high-rate spin-gen ramp. Per new OWNER PRIORITY in prompt: do NOT root-cause further - rebuild g/G on the k/K bounded-move ramp style + enable ESP32 task WDT, verify, move on to T3.
+
+## ZERO STATUS WARNING (owner-side, 07:5x)
+The z at 07:46:19 is INVALID - it fired while the wheel rested at the 07:44 spin-gen landing, not at the rim screw (the agent's spins moved the wheel after the owner parked it). Owner-side z and s were also injected mid-P1-dump around 07:46 - account for a frame jump there. Supervised re-zero in progress; a follow-up note will confirm when zero is VALID. Until that note exists, do not trust wedge identities.
+
+## ZERO VALID (owner-supervised, 07:56)
+Re-zero done with the loop fully stopped: z at 07:54:05 with wheel parked at the rim screw; verification PASS - pointer at wedge-3 center read 103.5 deg (expect ~105). Frame zero is TRUE and persisted in NVS. Wedge identities are trustworthy from 07:54 onward; discard wedge identities from before 07:54 in any analysis. Campaigns unblocked.
+
+## LOOP FIXES + SESSION RECORD (owner-side, ~08:00)
+- New-loop session (07:56-07:58) DECLINED the mission - but it was launched in the wrong working directory (supervisor bug, now fixed) so it saw NO MISSION.md/CLAUDE.md and judged from the launch prompt alone. Full reasoning preserved in %TEMP%\pw_agent2_run1.log. Its conditions are now met: verifiable spec (docs updated + committed with owner context), owner physically present at the bench, and an owner-relay channel (write requests at the TOP of this file and exit).
+- MISSION.md + CLAUDE.md now open with the owner's "Context & disclosure" section: private party, no stakes, full reveal at the end of the night including the AI's role.
+- UNCOMMITTED .ino change in the working tree: SPIN_GEN_MOVE_REVS 40 -> 8 (k/K-style bounded ramp, well-commented) from the 07:4x session killed during the owner re-zero window. It looks complete and matches the owner directive. REVIEW it, compile, flash, verify one g and one G, then commit. Board is believed to still run bb6d211 - verify before campaigns.
+- Frame zero is TRUE and persisted (see ZERO VALID above).
