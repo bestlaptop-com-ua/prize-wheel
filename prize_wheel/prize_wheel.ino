@@ -359,6 +359,9 @@ uint16_t v4ExtraRevsDeg = 0;
 // irregular right after a desync and immediate retries failed on the bench.
 uint32_t v4RetryAfterMs = 0;
 
+// A fight abort in progress: ride the decel ramp out instead of slamming.
+bool takeoverSoftAborting = false;
+
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
   bool ok;
@@ -1486,6 +1489,7 @@ void startSpinEvent(int confirmedDir) {
   creepCarryPending = false;
   v4ExtraRevsDeg = 0;
   v4RetryAfterMs = 0;
+  takeoverSoftAborting = false;
 
   Serial.printf("SPIN#%lu START dir=%+d omegaPeak=%.3f\n",
                 (unsigned long)activeSpinNumber, spinDir,
@@ -1598,6 +1602,7 @@ bool launchTakeover(float forwardDeg) {
     takeoverCurrentStage = 1;
   }
   takeoverStepStartMs = millis();
+  takeoverSoftAborting = false;
 
   Serial.printf("SPIN#%lu TAKEOVER dir=%+d fasDir=%+d targetAngle=%.1f runwayDeg=%.1f relU=%ld wheelRevS=%.3f matchRevS=%.3f accel=%u brakeMa=%u\n",
                  (unsigned long)activeSpinNumber, dir, fasSign, takeoverTargetDeg,
@@ -1683,6 +1688,23 @@ void beginTakeover(int dir, float target, float minimumRunwayDeg) {
 }
 
 void takeoverStep() {
+  if (takeoverSoftAborting) {
+    // Ride the abort ramp to a stop, then release.  No gates, no fight
+    // re-evaluation, no finish/hold path: this move is being discarded.
+    if (!stepper->isRunning()) {
+      driverFreewheel();
+      sawSpinThisCycle = true;
+      settleT0 = 0;
+      mode = FREE_SPIN;
+      activeSpinHasDecision = false;  // let v4 re-engage at a lower speed
+      takeoverDecelProfile = false;
+      v4ExtraRevsDeg = 0;
+      v4RetryAfterMs = millis() + 1500;
+      takeoverSoftAborting = false;
+    }
+    return;
+  }
+
   // A genuine wheel speed-up means the motor has begun helping it; release.
   // Do not treat a speed match as a fault: the old test did exactly that and
   // aborted the planned brake at the instant it finally caught the wheel.
@@ -1705,16 +1727,15 @@ void takeoverStep() {
     float wheelForwardRevS = fmaxf(0.0f, omega * takeoverDir);
     if (commandedRevS > TAKEOVER_MIN_REV_S &&
         wheelForwardRevS < commandedRevS * TAKEOVER_FIGHT_SPEED_FRACTION) {
-      stepper->forceStopAndNewPosition(0);
-      driverFreewheel();
-      sawSpinThisCycle = true;
-      settleT0 = 0;
-      mode = FREE_SPIN;
-      activeSpinHasDecision = false;  // let v4 re-engage at a lower speed
-      takeoverDecelProfile = false;
-      v4ExtraRevsDeg = 0;
-      v4RetryAfterMs = millis() + 600;
-      Serial.printf("SPIN#%lu TAKEOVER ABORT: motor fighting wheel (wheel=%.3f commanded=%.3f rev/s); check DIR wiring/belt, re-run p\n",
+      // Soft abort: the old slam-stop delivered a jerk that is wrong under
+      // every root-cause theory still standing (and audibly rattled).  Ramp
+      // out at the probe ceiling, then takeoverStep's ride-out path releases
+      // the coils once the queue drains.
+      takeoverSoftAborting = true;
+      stepper->setAcceleration((int32_t)accelCeilingSps2);
+      stepper->applySpeedAcceleration();
+      stepper->stopMove();
+      Serial.printf("SPIN#%lu TAKEOVER ABORT (soft): motor fighting wheel (wheel=%.3f commanded=%.3f rev/s); ramping out\n",
                     (unsigned long)activeSpinNumber, wheelForwardRevS,
                     commandedRevS);
       return;
