@@ -2,6 +2,57 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
+## 2026-07-27 SUPERVISOR v2 SESSION 3 (~07:31) — BLOCKED on frame zero; latch located; 0 spins
+
+### >>> STILL THE #1 BLOCKER: FRAME ZERO IS AN ARBITRARY PLACEHOLDER <<<
+- Verified this session: the ONLY wedge-0 event in pw_serial.log is the placeholder at
+  07:24:32 (`# wedge-0 boundary set at current encoder angle (persisted)`). No true
+  attended `z` has happened since. The dare mask is therefore misaligned to the physical
+  wheel, so EVERY LANDED/isDare/landing-wedge reading is physically meaningless.
+- Consequence: T3 baseline, T6 acceptance, and any latch-fix verification are ALL blocked.
+  A "30-spin acceptance run" on this mask would be a FALSE guarantee (a physically-dare
+  wedge can read safe). I refuse to produce acceptance data on a wrong mask.
+- UNBLOCK (physical, owner/attended — I cannot rotate the wheel): rotate so the bright rim
+  screw is under the red pointer (physical wedge-0 boundary), send `z` ONCE. It now
+  persists across reboots/RTS resets (Fix B, session 1). Then `s` should read a sane wedge.
+- LIKELY-PRESENT-OWNER SIGNAL: at 07:31:27 and 07:31:42 someone HAND-SPUN the wheel
+  (SPIN#1 omegaPeak 0.220 dir+1; SPIN#2 0.257 dir-1; NO SPIN-GEN markers; no campaign
+  process alive). A human was at the bench this morning — that is exactly when the one
+  attended re-zero should be done. Bench idle since 07:31:59.
+
+### What I did (frame-independent, no motor, no flash)
+- LOCATED the long-lost LEGACY LATCH ("source never located" open item is now CLOSED).
+  It is the `recoveryAttempts >= 3` branch of RECOVERY_HOLD, prize_wheel.ino ~2662-2671:
+  it prints "DARE RECOVERY FAILED: held" and re-holds forever WITHOUT ever calling
+  driverFreewheel(), so the coils stay energized at RECOVERY_HOLD_CURRENT_MA=500 mA in an
+  infinite hold loop = the grip the owner felt. Forcing the wheel only resets the timer,
+  never floats the coils. Full mechanism + a READY minimal fix (float coils + fault +
+  DRIFT_WATCH) written in CLAUDE_VARIANT.md ("LEGACY LATCH located" entry).
+- Deliberately did NOT commit/flash the latch fix: exercising that branch requires
+  deliberately landing a dare and failing recovery 3x, which is only meaningful with a
+  VALID frame zero. Committing a blind change to core dare-recovery would break the
+  evidence-first / >=4-verification-spin discipline. Patch is staged verbatim in the log.
+
+### Board / instrument state at end of session 3
+- No firmware change, no motor spins (0 of <=4 used). Board last known: mode 0 IDLE from
+  the 07:31:59 LANDED; coils floating after the external hand-spins. accel=900, seeds
+  c=0.300 b=0.150 (drifted to c=0.352 b=0.119 by the 07:31:59 FRICTION fit).
+- Instruments alive (confirmed via Win32_Process): serial bridge pid 15624; cam tracker2
+  pid 19992; mic logger pw_mic.py pid 12492; supervisor pw_supervisor2.ps1 pid 11088.
+  (Cleaned up an orphaned `tail -f | grep` serial-watcher pipe left from a prior session.)
+- git: only doc edits (CLAUDE_VARIANT.md, AGENT_NOTES.md) this session; committing on
+  claude/adaptive-v2. NO code change. Repo stays on claude/adaptive-v2 (mission NOT
+  complete — do not checkout main / do not write REPORT.md until a valid acceptance run
+  exists on a correct frame zero).
+
+### NEXT SESSION (unchanged critical path)
+1. Confirm whether an attended `z` at the true rim-screw position has happened (grep
+   pw_serial.log for a NEW `wedge-0 boundary set` after 07:24:32). If not, the mission
+   cannot validly advance — surface the physical re-zero need again.
+2. Once frame zero is valid: (a) apply+flash+verify the staged LEGACY LATCH fix with a
+   forced fail-recovery test; (b) resume T3 baseline (>=10 g + >=10 G, batches <=4/session,
+   armed d + mic); then T4 fixes, T6 acceptance, REPORT.md.
+
 ## 2026-07-27 SUPERVISOR v2 SESSION 1 OUTCOMES — 2 firmware robustness fixes VERIFIED
 
 ### >>> OWNER ACTION REQUIRED BEFORE ANY VALID CAMPAIGN <<<

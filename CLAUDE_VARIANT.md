@@ -287,3 +287,71 @@ EWMA floor, auto 4 s anomaly clips, last 20). Ambient floor ~-97 dBFS / band ~-4
 The clean g spin registered no band-energy rise and no clips; at the current mic
 distance the peg clacks sit below the floor, so the mic cannot yet anchor the
 "natural sound" reference. Needs closer placement or a lower threshold next session.
+
+## 2026-07-27 SESSION 3 (~07:31) — LEGACY LATCH located + characterized (open item closed)
+
+Context: session opened to a HARD blocker — frame zero is still the placeholder from
+07:24:32 (only `# wedge-0 boundary set at current encoder angle (persisted)` event in
+the serial log; no true attended `z` since). So the dare mask is misaligned and NO
+isDare / landing / acceptance data is physically valid. I ran ZERO motor spins.
+Also observed two EXTERNAL hand-spins at 07:31:27 (dir+1, omegaPeak 0.220) and
+07:31:42 (dir-1, omegaPeak 0.257) — no SPIN-GEN markers, low peak omega, no campaign
+driver process alive => a human (likely the owner) hand-spun the wheel at the bench,
+not my work. Bench idle again from 07:31:59. Did not send motor commands into that.
+
+Used the frame-blocked time on a pure code-audit item that needs no motor/frame:
+
+### The "DARE RECOVERY FAILED: held" latch — FOUND. It is not hidden; it is the
+>=3-attempts branch of the RECOVERY_HOLD state machine.
+- prize_wheel.ino RECOVERY_HOLD case, lines ~2662-2671:
+    if (isDare(currentWedge())) {
+      if (recoveryAttempts < 3) { startDareRecovery(); }
+      else {
+        Serial.println(F("# DARE RECOVERY FAILED: held; do not use until inspected"));
+        recoveryHoldStartedMs = millis();   // <-- only resets its own timer
+      }
+      break;                                 // <-- returns with coils STILL energized
+    }
+- Coil state: RECOVERY_HOLD is entered via driverActive(RECOVERY_HOLD_CURRENT_MA)
+  (=500 mA; lines 2621 / 2638 / and the recovery-move completion paths ~1509/1521/1596/
+  1685). The latch branch never calls driverFreewheel(). So on every subsequent loop it
+  re-enters RECOVERY_HOLD, waits RECOVERY_HOLD_MS (400 ms), finds the wheel still on a
+  dare with attempts>=3, reprints, and holds again => an INFINITE energized-hold loop at
+  500 mA. This is the grip the owner felt.
+- Why forcing the wheel doesn't free it: the only branches that touch this state early
+  are `!encoderMotionReady()` (2648) and `fabsf(omega) > STILL_REV_S` (2652); both merely
+  reset recoveryHoldStartedMs and break WITHOUT floating the coils — so pushing the wheel
+  just makes the motor fight your hand, exactly as reported. recoveryAttempts only resets
+  to 0 inside startSpinEvent-class entry points (~1626/1687), which never run while stuck
+  here because no new spin is recognized under an energized hold. Self-clearing is
+  impossible; it needs a power cycle / RTS reset.
+
+### Minimal safe fix (READY, deliberately NOT yet committed — see why below)
+Replace the latch branch body with a float-and-fault:
+    else {
+      driverFreewheel();                    // never grip a human
+      Serial.println(F("# DARE RECOVERY FAILED: floating coils; hardware/cal fault"));
+      updatePredictionError(); frictionFinalizeSpin(); persistCalibration();
+      printLandedEvent();                    // records the fault outcome honestly
+      sawSpinThisCycle = false; settleT0 = 0;
+      mode = DRIFT_WATCH;                    // stay armed: a re-spin or drift is handled
+    }
+Rationale: after 3 genuine recovery failures this is by definition a hardware/calibration
+fault, not a steer-able spin. Floating the coils is SAFE — an unbalanced dare rest with
+floating coils is an ordinary free-wheel the guest can simply re-spin; it does not "declare"
+the dare as an engineered outcome, it just stops the motor from clamping a person. Leaving
+DRIFT_WATCH armed keeps the existing net for a re-spin or a roll-off. This trades a rare,
+already-failed correction for the elimination of an indefinite grip on the wheel — a clear
+safety win consistent with invariant 3 (nothing visibly restarts) and the "guests never
+notice the motor" guarantee.
+
+### Why NOT committed/flashed this session
+Invariant 5 requires flashing after any firmware commit, and mission cadence requires >=4
+verification spins after a firmware change. Exercising THIS branch means deliberately
+landing on a dare and failing recovery 3x — which is only meaningful with a correct frame
+zero (a misaligned mask makes "dare" physically meaningless). With frame zero still a
+placeholder I cannot verify the fix, so committing a blind change to the core dare-recovery
+path would violate the evidence-first discipline and risk a worse regression. The patch is
+staged here verbatim; apply + flash + verify it in the FIRST session that has a valid frame
+zero (fail-recovery test: force a dare rest, confirm the coils float and print the fault,
+confirm a hand can move the wheel freely during the "failed" state).
