@@ -393,3 +393,48 @@ five times in a row (the infinite grip). NEW fw printed the float-fault ONCE and
 Regression spin `g` right after: SPIN-GEN RELEASE → v4 predicted wedge 1 (DARE) → STEER → LANDED
 wedge=3 isDare=0 (targetErrorDeg=1.9). Normal pipeline + dare-avoidance intact; wheel now off the dare.
 COMMITTED on claude/adaptive-v2. The "source never located" LEGACY LATCH open item is CLOSED and safe.
+
+## 2026-07-27 ~08:31 — ANOMALY #1 IS AN ENCODER-FRAME SLIP (~156°), NOT PHYSICAL CREEP (three-way proven)
+
+The prior session cataloged a "post-landing creep in DONE" (Anomaly #1) from a single sample: SPIN#5
+LANDED wedge=10 angle=316.0 @08:25:56, then `s` @08:26:13 read angle=338.55 wedge=11 (+22.5°), with no
+DRIFT_WATCH marker. It hypothesized passive gravity/imbalance creep and proposed extending DRIFT_WATCH
+or adding a creep-margin buffer. Investigated this session with the full three-frame method — the
+hypothesis is WRONG and the proposed fixes would not help.
+
+### Evidence (all logs preserved; coils floating / mode DONE / no motor / no reboot the whole time)
+- The wheel was still sitting in that post-landing DONE state at the start of this session. Polled `s`
+  x12 @~2 s (08:30:32–08:30:54): angle=134.65 wedge=4, DEAD STILL (0.00° change over 23 s). But the prior
+  reading (08:26:13) was 338.55 (wedge 11). => a **~156° encoder shift** occurred sometime in the
+  08:26:13–08:30:32 gap and then held rock-steady.
+- CAMERA (physical ground truth, top-half arc phase-correlation, scale 0.837491 fit in T2 @0.29° RMS)
+  over 08:26:14–08:30:31, 3844 samples: cam-angle range 0.18 units (~0.2° physical), summed d = −0.18,
+  max single |d| = 0.020, quality steady ~2.1 (never <1.0). => the physical wheel did **not move** in the
+  window. Immediately after the 08:25:56 landing the camera DID record a normal ~40° damped settle-
+  oscillation (cam −5406 → −5440 → back to −5424 over ~8 s), locking flat from 08:26:02 onward. So the
+  real "creep" is just that post-brake pendulum settle; the large later shift is encoder-only.
+- MIC over 08:26:02–08:30:32: band max −47.2 dB ≈ ambient floor, zero anomaly flags => no acoustic event
+  (no sudden mechanical clunk; consistent with a quiet gradual slip or an electronic glitch).
+- Reboot/RTS/re-zero RULED OUT: no boot banner and no executed `z` in serial for the window; the 08:30:30
+  serial burst was only the supervisor's `?` help-probe (the board answered it, so no RTS reset fired).
+
+### Attribution
+Per CLAUDE.md's three-frame table, "cam short + enc full = disc slipped." The AS5600 is a single-turn
+ABSOLUTE encoder, so a 156° firmware-angle change requires the magnet to have physically rotated ~156°
+relative to the sensor. The camera proves the wheel RIM did not rotate. Therefore the encoder magnet (or
+its hub on the shaft, or the sensor mount) decoupled from the wheel by ~156° — a mechanical slip in the
+encoder path — OR, less likely, a persistent AS5600 field/read fault. Either way the encoder no longer
+reflects physical wheel position. This is a NEW class vs the historic 33/78/150/255° divergences (those
+all occurred during grind/stall/latch motor events; this one happened during a STATIC floating rest with
+no motor action at all — which, if it's a hub slip, is worse: it can invalidate the dare mask silently
+between spins).
+
+### Consequence + action (invariant #7 hardware-wall discipline)
+The dare mask lives in the encoder frame; a ~156° encoder slip means a firmware-"safe" wedge can be a
+PHYSICAL dare. Per the >5° STOP rule I halted all motor work, did zero spins, preserved logs, and wrote
+the owner an attended-verification request at the TOP of AGENT_NOTES.md (look at the physical pointer vs
+the firmware wedge; if the encoder slipped, secure the AS5600 magnet-hub set screw / sensor mount, then
+re-zero and re-verify wedge-3 ≈ 103.5°). Simplest proposed fix: mechanically secure the encoder magnet/
+mount so it cannot slip, then re-zero; add a periodic AS5600 magnitude/AGC health read (`d` diag exposes
+it) as an early-warning flag for a weakening magnet. Do NOT implement the prior DRIFT_WATCH/creep-margin
+fixes — they target a physical-creep model that the camera has now disproven.
