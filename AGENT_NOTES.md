@@ -2,27 +2,34 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
-## >>> OWNER ACTION REQUIRED — ONE ACTION UNBLOCKS EVERYTHING (re-confirmed Session 9, 08:53, STATE STILL FROZEN) <<<
+## >>> OWNER ACTION REQUIRED — ONE ACTION UNBLOCKS EVERYTHING (re-verified Session 10, 08:57; blocked ~31 min) <<<
 The encoder frame is out of sync with the physical wheel by ~156° and the mission cannot validly advance
-until you re-align it. Sessions 4, 5, and 6 have all independently verified this from the raw logs; it is
-sound. Motor work is HALTED; board is still on the validated latch-fix firmware (429e2a5), NOT reflashed.
+until you re-align it. Sessions 4–10 have independently verified this; Session 10 re-derived it FROM SCRATCH
+off the raw logs (see the decisive numbers below), so it is not an inherited assumption — it is sound.
+Motor work is HALTED; board is still on the validated latch-fix firmware (429e2a5), NOT reflashed.
 
-WHAT'S WRONG (short version): the wheel landed on ~wedge 10/11 at 08:25:56 and — per the camera — has not
-physically moved since. But the firmware/encoder now reads wedge 4 (angle 134.65) and has held that reading
-rock-stable for 20+ min. So the encoder is ~156° off from where the wheel actually is. Because the encoder
-is the ONLY absolute position sense, no software check can fix this and every wedge/dare identity is
-currently untrustworthy — a firmware-"safe" landing could be a physical DARE. That is why I will not spin.
+WHAT'S WRONG (short version): the wheel landed on ~wedge 10/11 at 08:25:56 and has not physically moved
+since. But the firmware/encoder now reads wedge 4 (angle 134.65) and has held that rock-stable for 30+ min.
+So the encoder is ~156° off from where the wheel actually is.
+DECISIVE EVIDENCE (Session 10, first-hand): in the 08:26→08:30 gap the encoder angle moved 338.55°→134.65°
+(Δ≈156°) while the CALIBRATED camera (scale 0.837, fit resid 0.29°) stayed within a 0.18° span across 3918
+frames — i.e. the wheel physically did NOT move — and there was NO reboot banner and NO `z` re-zero in that
+gap. A stable, FRESH/VALID absolute reading that is 156° wrong with the wheel still = the AS5600 magnet has
+PHYSICALLY SLIPPED ON ITS HUB. This is a hardware slip, not a firmware glitch, so a board reboot will NOT
+fix it and I cannot fix it from software. Because the encoder is the ONLY absolute position sense, every
+wedge/dare identity is currently untrustworthy — a firmware-"safe" landing could be a physical DARE. That
+is why I will not spin. IMPORTANT: a re-zero ALONE won't hold — please snug the magnet hub set screw first
+(step 3), or it can slip again mid-party and silently break the dare guarantee during your reveal.
 
-  >>> THE ONE ACTION THAT UNBLOCKS ME (≈30 s, same as your 07:54 re-zero): <<<
-  1. (Optional, 5 s, helps diagnosis) Glance at the wheel and note which wedge number is physically under
-     the red pointer. wedge 10/11 = encoder slipped (a hub/sensor came loose); wedge 4 = wheel rolled &
-     camera missed it (unlikely). Jot it in a note here if you can — but this is NOT required to proceed.
-  2. (Required) Rotate the wheel so the bright rim screw sits under the red pointer, then — with the spin
+  >>> THE ONE ACTION THAT UNBLOCKS ME (≈60 s, same re-zero as 07:54 + a set-screw snug): <<<
+  1. (5 s, helps confirm) Glance at the wheel and note which wedge number is physically under the red
+     pointer. Expected: ~wedge 10/11 (that confirms the encoder slipped). Jot it here if you can.
+  2. (Required — do this FIRST, before re-zeroing) The AS5600 magnet hub on the shaft has slipped ~156°.
+     Snug its set screw (and nudge-check the sensor mount for looseness) so it can't slip again during the
+     party. If it feels already tight, still re-seat it — the evidence says it moved.
+  3. (Required) Rotate the wheel so the bright rim screw sits under the red pointer, then — with the spin
      loop idle — send `z` ONCE. Verify `s` then reads wedge-3 center ≈ 103.5° (as on the 07:54 re-zero).
-     This physically RE-ESTABLISHES encoder==wheel by construction and fixes BOTH possible causes at once.
-  3. If step 1 showed wedge 10/11 (a real slip): before the re-zero, please also nudge-check the AS5600
-     magnet-hub set screw and the sensor mount for looseness — a slip that recurs mid-party would silently
-     break the dare guarantee during the reveal. If it was loose, snug it, then re-zero.
+     This physically RE-ESTABLISHES encoder==wheel by construction.
 
   After you leave an owner note OR a new `# wedge-0 boundary set` appears in the serial log (dated after
   08:46), the next session will re-validate encoder==camera with one tiny attended cam-cal move and resume
@@ -31,6 +38,39 @@ currently untrustworthy — a firmware-"safe" landing could be a physical DARE. 
 Full three-way evidence (encoder jumped / camera flat / mic silent, no reboot/RTS/re-zero in the gap) is
 in the Session 4 & 5 records below and in CLAUDE_VARIANT.md. This is a candidate hardware wall (invariant
 #7); the re-zero above is the simplest fix and resolves it regardless of root cause.
+
+## 2026-07-27 SUPERVISOR v2 SESSION 10 (~08:57) — BLOCKED; block re-derived FIRST-HAND from raw logs; 0 spins, NO flash
+### What I did (NO motor, NO flash — independent re-verification + sharpened owner ask)
+- Checked both unblock signals: (1) NO new `# wedge-0 boundary set` after 07:54:05 (grep: only 07:24/07:46/
+  07:54). (2) No owner note atop this file. Block unchanged.
+- KEY DIFFERENCE vs Sessions 5–9: I did NOT trust the inherited narrative — I re-derived the block from the
+  raw serial + calibrated camera logs myself:
+    * Serial: encoder angle 338.55 (08:26:13) → 134.65 (08:30:32), Δ≈156°, stable at 134.65 through 08:57:48
+      (fresh `s`: FRESH/VALID age_us=402, omega=0, mode=10).
+    * Camera (cam_cal.txt: scale 0.837, sign +1, fit resid_rms 0.29°): across the 08:26:14→08:30:35 gap,
+      3918 frames spanned only 0.18 cam-deg (−5423.68..−5423.86); still −5423.74 at 08:56:39. A real 156°
+      wheel move = ~131 cam-deg. → wheel physically did NOT move.
+    * No reboot: no boot/`rst:` banner in serial during the gap (08:30:30 lines are the supervisor `?`
+      help-echo, board answered → no RTS); no `z` in the gap.
+  → CONCLUSION (root cause, first-hand): the AS5600 magnet hub PHYSICALLY SLIPPED ~156°. A stable FRESH/VALID
+    absolute reading that is 156° wrong with the wheel still and no reboot cannot be a firmware glitch. So a
+    remote RTS reset would NOT unblock (magnet is where it physically is) — confirmed no owner-independent fix.
+- Sharpened the top owner ask: promoted "snug the magnet-hub set screw" to a REQUIRED first step (not
+  conditional), added the decisive numbers and elapsed-time, so the re-zero durably holds through the reveal.
+- LEGACY LATCH item remains CLOSED (429e2a5 = HEAD = flashed). No owner-independent code work pending; tree clean.
+### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+- Board `s` 08:57:48: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically ≈ wedge 10/11 (camera, calibrated).
+- Instruments live (verified this session): serial bridge (answered `s`), cam (flat, −5423.74). NO wheel/motor
+  work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor spins used. UNFLASHED (429e2a5).
+- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete — stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
+   neither, re-confirm with ONE `s` and no-op. The block is now first-hand verified (Session 10) — do NOT
+   re-derive again; a supervisor `?` probe keeps the board alive between sessions if you send nothing.
+2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
+   T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
+   acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
 ## 2026-07-27 SUPERVISOR v2 SESSION 9 (~08:53) — STILL BLOCKED on owner; LIVE 3-way re-confirm; 0 spins, NO flash
 ### What I did (NO motor, NO flash — unblock-signal check + live instrument integrity check + handoff)
