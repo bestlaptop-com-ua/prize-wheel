@@ -2,6 +2,61 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
+## 2026-07-27 SUPERVISOR v2 SESSION (~08:10) — LEGACY LATCH FIX applied + IN-SESSION verified (wheel already on dare)
+### Entry state
+- Frame zero VALID (owner re-zero 07:54, persisted NVS; wheel physically moving does not change it).
+- Board `s` at 08:15:37: angle=156.71 wedge=5 (DARE) omega=0 mode=10 DONE, coils floating, accel=900,
+  cal cw(0.300/0.150) ccw(0.352/0.119). The wheel is passively RESTING ON DARE WEDGE 5 (drifted/placed
+  there while in DONE; DONE never recovers a static rest — a known benign gap, coils floating = safe).
+- Working tree at entry: clean (last session committed SPIN_GEN 40->8). Bridge pid21132 LIVE.
+
+### Firmware change (prize_wheel.ino only) — reviewed staged fix, FOUND A BUG in it, corrected
+- Applied the LEGACY LATCH fix (recoveryAttempts>=3 branch of RECOVERY_HOLD, ~line 2669). The staged
+  patch in CLAUDE_VARIANT.md used `mode = DRIFT_WATCH` — REJECTED: DRIFT_WATCH re-detects the dare rest
+  and re-calls startDareRecovery(), which has NO attempt cap (only tryCreepCarry checks >=4). That would
+  loop-re-energize (twitch) forever — WORSE than the static grip. Corrected terminal = `mode = DONE`
+  (fully passive; only a genuine new spin re-arms; recoveryAttempts clears then via startSpinEvent).
+- New branch body: driverFreewheel() + print "# DARE RECOVERY FAILED: floating coils; hardware/cal fault
+  - re-spin to clear" + sawSpinThisCycle=false + settleT0=0 + mode=DONE. NO LANDED line emitted (fault,
+  not a safe landing => LANDED-isDare==0 invariant stays intact). No cal pollution.
+- Added guarded self-test cmd `L`: refuses unless wheel ready + on a dare wedge; else forces
+  recoveryAttempts=3, driverActive(RECOVERY_HOLD_CURRENT_MA), mode=RECOVERY_HOLD -> the real state
+  machine then hits the fixed branch. Faithful test of the fix (skips only the 3 prior failed moves).
+  Added to help(). Compiles clean (32% flash, unchanged).
+
+### MOTOR RUN log (this session)
+- MOTOR RUN: LEGACY LATCH fix verification. Wheel already parked on dare wedge 5, still, coils floating.
+  Flash new fw (fix + L cmd), then fire `L` (1 motor action: brief 500mA energize then FLOAT). Expect:
+  "# L latch-test: dare wedge=5 ... entering RECOVERY_HOLD" then within RECOVERY_HOLD_MS
+  "# DARE RECOVERY FAILED: floating coils ..." then mode->DONE (coils float). Then `s` confirms floating.
+  <=4 motor actions; owner at bench; wheel clear. Ceiling 900, frame zero VALID.
+- MOTOR RUN: post-fix regression spin — one `g` (FAS+) to confirm the RECOVERY_HOLD edit did not
+  break the normal spin/steer pipeline AND to move the wheel OFF dare wedge 5 to a safe rest. Expect
+  SPIN-GEN START->RELEASE->SPIN#n V4 -> LANDED isDare=0. (2nd of <=4 motor actions.)
+
+### RESULT — LATCH FIX VERIFIED + regression PASS, committed (LEGACY LATCH open item CLOSED)
+- Flashed COM3 (Hash of data verified + Hard resetting). Frame zero survived RTS reset (wedge 5 pre/post).
+- `L` test (wheel on dare wedge 5): 08:18:19 "entering RECOVERY_HOLD" -> 08:18:20 "# DARE RECOVERY
+  FAILED: floating coils; hardware/cal fault - re-spin to clear" -> 08:18:21 status mode=10 DONE, coils
+  FLOATING, still wedge 5 (rotor snapped ~3.5deg on 500mA energize, expected). NO repeat, NO twitch loop,
+  NO panic/WDT. Contrast: OLD fw printed "held; do not use" x5 at 07:46 (the infinite grip) — now GONE.
+- Regression `g`: RELEASE omega=-0.386 -> v4 predicted wedge 1 (DARE) -> STEER -> LANDED wedge=3 isDare=0
+  targetErrorDeg=1.9. Normal pipeline + dare-avoidance intact; wheel moved OFF the dare to safe wedge 3.
+- End state: board angle=106.35 wedge=3 (SAFE) omega=0 mode=10 DONE, coils floating, accel=900,
+  cal cw(0.300/0.150) ccw(0.352/0.119). Bridge pid30212 LIVE. No wheel work left running. 2 of <=4 motor
+  actions used. COMMITTED firmware + docs on claude/adaptive-v2. Board runs the committed fix.
+
+### NEXT SESSION (critical path; frame zero VALID; last firmware SAFETY item now DONE)
+1. LATCH FIX IS DONE + VERIFIED + FLASHED + COMMITTED. `L` self-test command remains in fw (guarded,
+   harmless test tooling; can stay for the reveal or be stripped before final if desired).
+2. Resume T3 baseline: >=10 g + >=10 G through v4, supervised batches <=4/session, armed d + mic; log
+   engage speed/aborts/enc-vs-cam wedge/drift/acoustics. Valid baseline points so far: 08:18 g (steered
+   dare1->wedge3), plus the 2 from the ~08:05 session. (g/G = iteration tooling ONLY.)
+3. Then T4 anomaly fixes (slow-engage click, ccw brake rattle, uphill recovery slip — evidence-first),
+   T5, then T6 ACCEPTANCE = ATTENDED: >=30 OWNER HAND spins via the relay protocol (write the request at
+   the TOP of this file and exit; motor spins are for iteration only, never final acceptance), then REPORT.md.
+
+
 ## 2026-07-27 SUPERVISOR v2 (new loop) SESSION 1 (~08:05) — FLASHED bounded 8-rev spin-gen; verifying g/G
 ### State at entry
 - Frame zero VALID (owner re-zero 07:54:05, wedge-3 center = 103.5 deg, persisted NVS).

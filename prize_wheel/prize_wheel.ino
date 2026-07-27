@@ -2245,6 +2245,7 @@ void help() {
     " G  attended spin generator FAS- (other direction)\n"
     " k  attended cam-cal move FAS+ (short bounded ~108 deg sweep, self-stops)\n"
     " K  attended cam-cal move FAS- (other direction)\n"
+    " L  latch self-test: prove 3x-failed dare-recovery floats coils (park on a dare wedge first)\n"
     " c  print calibration (friction fit, prediction error, accel ceiling)\n"
     " C  reset calibration to seed values\n"
     " ?  show this help"));
@@ -2311,6 +2312,28 @@ void handleSerial() {
     case 'K':
       startSpinGenerator(-1, true);
       break;
+    case 'L': {
+      // Latch self-test: deterministically exercise the 3x-failed dare-recovery
+      // branch to PROVE it now floats the coils instead of gripping.  Requires
+      // the wheel PARKED on a dare wedge (1 or 5) - there is no motor command to
+      // park on a dare (g/G/k/K steer away by design), so the owner must hand-park
+      // it first.  Refuses otherwise.  Forces recoveryAttempts=3 and enters
+      // RECOVERY_HOLD; the normal state machine then hits the failed branch and
+      // must print "floating coils" + go DONE within RECOVERY_HOLD_MS.  Test-only.
+      int w = currentWedge();
+      if (!encoderMotionReady() || !isDare(w)) {
+        Serial.printf("# L latch-test REFUSED: park wheel on a dare wedge (1 or 5) first; current wedge=%d ready=%d\n",
+                      w, encoderMotionReady() ? 1 : 0);
+        break;
+      }
+      recoveryAttempts = 3;
+      driverActive(RECOVERY_HOLD_CURRENT_MA);
+      recoveryHoldStartedMs = 0;
+      mode = RECOVERY_HOLD;
+      Serial.printf("# L latch-test: dare wedge=%d, attempts forced=3, entering RECOVERY_HOLD; expect FLOAT+fault within %ums\n",
+                    w, (unsigned)RECOVERY_HOLD_MS);
+      break;
+    }
     case 'c':
       Serial.printf("# CAL friction cw(c=%.3f b=%.3f) ccw(c=%.3f b=%.3f) | maeDeg cw=%.1f ccw=%.1f margin=%.1f | accelCeiling=%u sps2\n",
                     cw_c, cw_b, ccw_c, ccw_b, predMaeDeg[0], predMaeDeg[1],
@@ -2670,10 +2693,25 @@ void loop() {
         if (recoveryAttempts < 3) {
           startDareRecovery();
         } else {
-          // Holding is safer than declaring a dare outcome or issuing a
-          // reverse correction.  This is a hardware/calibration fault.
-          Serial.println(F("# DARE RECOVERY FAILED: held; do not use until inspected"));
-          recoveryHoldStartedMs = millis();
+          // Three genuine recovery failures = a hardware/calibration fault,
+          // not a steerable spin.  NEVER grip a human: float the coils.  The
+          // old code re-held at RECOVERY_HOLD_CURRENT_MA forever (an infinite
+          // energized clamp - the grip the owner once felt) and forcing the
+          // wheel only reset its timer.  An unbalanced dare rest with floating
+          // coils is just an ordinary free wheel the guest can re-spin; it
+          // does not declare the dare as an engineered outcome.
+          //
+          // Terminal state is DONE (fully passive) - NOT DRIFT_WATCH: DRIFT_WATCH
+          // re-detects the dare rest and re-calls startDareRecovery(), which has
+          // NO attempt cap, so it would loop-re-energize (worse than the grip).
+          // DONE only re-arms on a genuine new spin; recoveryAttempts clears
+          // then via startSpinEvent.  No LANDED line is emitted (this is a fault,
+          // not a safe landing; keeps the LANDED-isDare==0 invariant intact).
+          driverFreewheel();
+          Serial.println(F("# DARE RECOVERY FAILED: floating coils; hardware/cal fault - re-spin to clear"));
+          sawSpinThisCycle = false;
+          settleT0 = 0;
+          mode = DONE;
         }
         break;
       }

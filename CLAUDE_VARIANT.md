@@ -355,3 +355,41 @@ path would violate the evidence-first discipline and risk a worse regression. Th
 staged here verbatim; apply + flash + verify it in the FIRST session that has a valid frame
 zero (fail-recovery test: force a dare rest, confirm the coils float and print the fault,
 confirm a hand can move the wheel freely during the "failed" state).
+
+## 2026-07-27 SESSION (~08:10) — LEGACY LATCH FIX applied, VERIFIED in-session, committed (open item CLOSED)
+Frame zero now VALID (owner re-zero 07:54). Applied the staged latch fix — BUT first caught a real
+bug in the staged patch by code inspection:
+
+### Bug in the staged patch: `mode = DRIFT_WATCH` would loop-re-energize
+The staged fix set the failed-recovery terminal to DRIFT_WATCH. Traced the DRIFT_WATCH case
+(~2723): after DARE_CONFIRM_MS on a dare rest it calls `startDareRecovery()`, and startDareRecovery
+(1466) has NO recoveryAttempts cap (only tryCreepCarry checks >=4). So DRIFT_WATCH would re-arm
+recovery at attempt 4,5,6… indefinitely — a repeating energize/twitch instead of the old static
+grip. That is WORSE (motor visibly cycling; still clamps during each recovery move). Rejected.
+
+### Applied fix (prize_wheel.ino RECOVERY_HOLD >=3 branch, ~2669)
+Terminal is `mode = DONE` (fully passive). IDLE/DONE (2466) only re-arm on a genuine new spin
+(`spinConfirmed`); they never re-trigger recovery on a static rest. Branch body: `driverFreewheel()`
++ print `# DARE RECOVERY FAILED: floating coils; hardware/cal fault - re-spin to clear` +
+`sawSpinThisCycle=false; settleT0=0; mode=DONE`. No LANDED emitted (fault, not a safe landing —
+keeps LANDED-isDare==0 invariant), no cal pollution. recoveryAttempts clears on the next spin via
+startSpinEvent. Minimal surface; worst case (float) is strictly safer than the old grip.
+
+### Test hook: guarded `L` self-test command
+`L` refuses unless the wheel is ready AND resting on a dare wedge; otherwise forces
+recoveryAttempts=3, driverActive(RECOVERY_HOLD_CURRENT_MA), mode=RECOVERY_HOLD — the real state
+machine then reaches the fixed branch. Faithful (skips only the 3 prior failed *moves*, exercises the
+identical branch). Added to help().
+
+### Verification EVIDENCE (in-session — the wheel happened to be resting on dare wedge 5)
+Compiled clean (32% flash). Flashed COM3 (Hash of data verified + Hard resetting); frame zero
+survived the RTS reset (wedge 5 before and after). Serial log:
+- 08:18:19.662 `# L latch-test: dare wedge=5, attempts forced=3, entering RECOVERY_HOLD; expect FLOAT+fault within 400ms`
+- 08:18:20.206 `# DARE RECOVERY FAILED: floating coils; hardware/cal fault - re-spin to clear`
+- 08:18:21.492 status `mode=10` (DONE), coils floating, wedge=5, omega≈0 (rotor snapped ~3.5° on the
+  500 mA energize, expected; stayed on wedge 5). NO repeat "held", NO re-energize loop, NO panic/WDT.
+Contrast: OLD fw at 07:46:17-18 printed `# DARE RECOVERY FAILED: held; do not use until inspected`
+five times in a row (the infinite grip). NEW fw printed the float-fault ONCE and settled to DONE.
+Regression spin `g` right after: SPIN-GEN RELEASE → v4 predicted wedge 1 (DARE) → STEER → LANDED
+wedge=3 isDare=0 (targetErrorDeg=1.9). Normal pipeline + dare-avoidance intact; wheel now off the dare.
+COMMITTED on claude/adaptive-v2. The "source never located" LEGACY LATCH open item is CLOSED and safe.
