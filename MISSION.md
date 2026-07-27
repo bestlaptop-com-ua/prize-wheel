@@ -43,9 +43,17 @@ T5. If face-vs-encoder divergence reappears (> 5 deg): stop, attribute with
     the three-way matrix, reproduce ONCE deliberately under camera watch if
     needed, then write the proof + simplest mechanical fix proposal. Do not
     repeat slip-inducing runs beyond proof.
-T6. Acceptance: >= 30 generated spins mixed directions with zero dare rests
-    (including after release), zero aborts, zero latch events, plausibly
-    uniform safe-wedge distribution, cam-enc within 2 deg throughout.
+T6. Acceptance (ATTENDED - owner directive 2026-07-27): >= 30 OWNER HAND
+    SPINS, mixed directions, with zero dare rests (including after release),
+    zero aborts, zero latch events, plausibly uniform safe-wedge
+    distribution, cam-enc within 2 deg throughout. Real human spins are the
+    authoritative acceptance evidence - they are what party night looks
+    like. Protocol: when acceptance-ready, write the exact request at the
+    TOP of AGENT_NOTES.md (spin count, directions, pacing, anything to
+    avoid) and exit; the owner performs the spins while all instruments
+    log; the next session analyzes the logs and certifies or lists fixes
+    and re-requests. Motor-generated spins remain the tool for baseline and
+    iteration (T3-T5), never for final acceptance.
     Then: final REPORT.md at repo root (findings, evidence, remaining risks,
     the owner checklist for a live-guest rehearsal), update CLAUDE_VARIANT.md,
     commit everything on claude/adaptive-v2, checkout clean main, and print
