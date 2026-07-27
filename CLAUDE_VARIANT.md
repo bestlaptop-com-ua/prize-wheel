@@ -246,3 +246,44 @@ refusals: wedge 6/11/10/3, all isDare=0. Spin #4 hit target 0.442 rev/s (above t
 OPEN: the underlying rare stall trigger is now masked by the watchdog but not
 eliminated. If a reset ever fires mid-campaign, capture the panic backtrace (it will
 name the blocking frame) to fix the true cause.
+
+## 2026-07-27 Supervisor-v2 Session 1: dump-stall root cause + two robustness fixes
+
+Context: relaunched after the loop-WDT fix (6ab587a) shipped. Owner re-steer said
+treat spin-gen as disposable, take the simplest robust path, protect the party night.
+
+Finding 1 — the WDT actually fired in the wild. Armed `d` (dense 1 kHz capture) then
+ran a `g` spin. Clean spin (LANDED wedge, isDare=0), but ~6.5 s into the post-stop
+dump the loop task WDT tripped: `E task_wdt: - loopTask (CPU 1) ... Aborting ...
+Rebooting`. So the earlier "spin-gen hang" class was really: dumpDiagnostics() streams
+~3072 lines; once the UART TX ring fills, Serial.printf busy-waits and blocks loop()
+for ~16 s >> the 4000 ms WDT. The ramp was never the culprit for THIS stall. The WDT
+did its job (self-recovered) — but the reboot wiped frame zero.
+
+Fix A: feed `esp_task_wdt_reset(); yield();` every 32 lines in the dump loop. Verified:
+identical arm-d + g spin now completes the full 3069-line dump with zero reboot markers
+and the board stays responsive. Encoder trace itself was pristine (accepted=3072,
+errors/gaps/alias/flips=0, maxAbsDelta=1) — no sensor jitter, so acoustic silence on
+this spin was genuine, not a masked capture fault.
+
+Finding 2 — frame zero was volatile. wedge0OffsetDeg was RAM-only; only sign/cal/accel
+lived in NVS. So every WDT reboot AND every supervisor RTS reset silently reset the
+wheel-0 boundary to 0.0. That is the exact "reset wipes frame zero, re-run zero-verify"
+hazard the mission rules call out, and it bites automatically, not just on demand.
+
+Fix B: `z` now persists wedge0OffsetDeg via preferences.putDouble("wedge0",...) and
+setup() restores it with getDouble (same proven mechanism as the accel ceiling).
+Verified with an RTS-reset round-trip: set z at raw~54deg (angle then reads 0.00),
+RTS-pulse reboot (mode 10->0 confirms a real boot), angle still 0.00 after boot ->
+offset survived. Frame zero now outlives both the WDT self-reset and supervisor resets.
+
+Caveat left for the owner: the value persisted this session is a PLACEHOLDER at an
+arbitrary rest position (used only to prove the round-trip), so the current wedge map
+is misaligned. One attended `z` with the rim screw under the red pointer seeds the true
+zero, and from now on it sticks. Documented at the top of AGENT_NOTES.
+
+Acoustic note (T2b): built pw_mic.py (50 ms cadence: RMS dBFS, 1-6 kHz band, crest,
+EWMA floor, auto 4 s anomaly clips, last 20). Ambient floor ~-97 dBFS / band ~-48 dB.
+The clean g spin registered no band-energy rise and no clips; at the current mic
+distance the peg clacks sit below the floor, so the mic cannot yet anchor the
+"natural sound" reference. Needs closer placement or a lower threshold next session.

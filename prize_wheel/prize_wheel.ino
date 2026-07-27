@@ -2186,6 +2186,9 @@ void dumpDiagnostics() {
                   sample.raw, sample.rawDiff, sample.delta, (long)sample.counts,
                   sample.i2cUs, sample.omegaMilliRevS, sample.flags,
                   sample.txStatus, sample.requested, sample.available, sample.state);
+    // The full dump can block loop() far longer than LOOP_WDT_TIMEOUT_MS while the
+    // serial TX buffer drains; feed the task WDT and yield so it never self-resets.
+    if ((i & 0x1F) == 0) { esp_task_wdt_reset(); yield(); }
   }
 }
 
@@ -2261,7 +2264,8 @@ void handleSerial() {
       if (!encoderPrimed) Serial.println(F("# encoder is not primed; calibration ignored"));
       else {
         wedge0OffsetDeg = angleDegMT;
-        Serial.println(F("# wedge-0 boundary set at current encoder angle"));
+        preferences.putDouble("wedge0", wedge0OffsetDeg);  // survive WDT reboot / RTS reset
+        Serial.println(F("# wedge-0 boundary set at current encoder angle (persisted)"));
       }
       break;
     case 'p':
@@ -2342,6 +2346,7 @@ void setup() {
   predMaeDeg[0] = preferences.getFloat("mae_cw", predMaeDeg[0]);
   predMaeDeg[1] = preferences.getFloat("mae_ccw", predMaeDeg[1]);
   accelCeilingSps2 = preferences.getUInt("accel", accelCeilingSps2);
+  wedge0OffsetDeg = preferences.getDouble("wedge0", wedge0OffsetDeg);  // frame zero persists across resets
   frictionResetSpin();
 
   Wire.begin(PIN_SDA, PIN_SCL);

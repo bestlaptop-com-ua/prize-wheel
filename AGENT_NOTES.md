@@ -2,6 +2,90 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
+## 2026-07-27 SUPERVISOR v2 SESSION 1 OUTCOMES — 2 firmware robustness fixes VERIFIED
+
+### >>> OWNER ACTION REQUIRED BEFORE ANY VALID CAMPAIGN <<<
+- FRAME ZERO IS CURRENTLY WRONG (arbitrary). The WDT reboot at 07:15:20 wiped the
+  old in-RAM zero; I then persisted a PLACEHOLDER zero at whatever position the wheel
+  sat at 07:24:32 (to prove the persistence path). Wedge numbers since are NOT the
+  physical wedge map, so the dare-mask is misaligned. Owner/next session must:
+  rotate wheel so the bright rim screw is under the red pointer (physical wedge-0
+  boundary), send `z` ONCE. It now PERSISTS across reboots/RTS resets — do it once.
+- Until re-zeroed, do NOT treat any LANDED wedge / isDare as physically valid.
+
+### Fix A (committed): d-dump no longer self-resets the board
+- Root cause of the 07:15:20 WDT reboot: dumpDiagnostics() prints ~3072 lines; the
+  serial TX buffer fills and Serial.printf busy-waits, blocking loop() ~16 s >> the
+  4000 ms loop WDT -> panic+reset (reboot wiped frame zero). NOT the spin ramp.
+- Fix: feed esp_task_wdt_reset()+yield() every 32 lines inside the dump loop
+  (prize_wheel.ino dumpDiagnostics). VERIFIED: armed d + g spin -> full 3069-line
+  dump completed, ZERO task_wdt/Rebooting markers, board responsive after. Same op
+  rebooted at ~6.5 s before the fix. Encoder trace clean (accepted=3072 errors=0
+  gaps=0 alias=0 flips=0 maxAbsDelta=1).
+
+### Fix B (committed): frame zero survives resets (NVS-persisted)
+- Was: wedge0OffsetDeg reset to 0.0 on every boot (only sign/cal/accel were in NVS),
+  so every WDT reboot AND every supervisor RTS reset wiped frame zero (the standing
+  hazard the mission rules warn about).
+- Fix: `z` now preferences.putDouble("wedge0",...); boot getDouble restores it (same
+  proven pattern as "accel"). VERIFIED via RTS-reset round-trip: z at raw~54 -> angle
+  reads 0.00 -> RTS reboot (mode 10->0) -> angle still 0.00 (offset restored).
+
+### WDT behaviour confirmed
+- The loop task WDT (4000 ms panic+reset) WORKS: it caught the dump stall and
+  self-recovered. Boot banner: "# loop watchdog armed: 4000 ms, panic+reset on stall".
+  Fix A removes the only stall trigger seen this session; WDT remains the safety net.
+
+### Firmware / board state at end of session 1
+- Firmware = spin-gen(16e1e14)+loopWDT(6ab587a)+FixA+FixB. COMPILED clean (32% flash),
+  FLASHED COM3 (Hash verified + Hard resetting), then RTS-reboot-tested. To COMMIT
+  this session on claude/adaptive-v2. Board: mode=0 IDLE, coils floating, accel=900,
+  seeds c=0.300 b=0.150, wedge0 PLACEHOLDER persisted (see OWNER ACTION above).
+- Instruments live: serial bridge pid 15624; cam tracker v2 (assumed, not re-checked);
+  mic logger pw_mic.py pid 12492 (running, ambient floor RMS ~-97 dBFS / band ~-48 dB).
+  No motor/wheel task left running. pyserial + sounddevice pip-installed this session.
+- Motor spins used: 2 of <=4 (both `g`). Both clean START->RELEASE->SPIN#->LANDED,
+  no aborts, no rattle markers, no WDT reset (2nd verified Fix A).
+
+### Acoustic first data point (T2b)
+- The clean `g` spin was ACOUSTICALLY SILENT at the mic: mean 1-6kHz band == ambient
+  (-48 dB), crest 7.1 vs 6 dB ambient, zero anomaly clips. At current mic placement
+  the peg-clack rhythm (~12x omega, ~4-5 impulses/s at 0.4 rev/s) is below the floor
+  -> mic cannot yet serve as the natural-sound reference the addendum wants. NEXT:
+  either move the mic closer or lower the anomaly threshold; and the "strange noises"
+  the owner hears are likely intermittent engage-click/rattle events (not this clean
+  run) -> catch them with clips during a real campaign AFTER re-zero.
+
+### NEXT SESSION (in priority order)
+1. Owner (or attended) re-`z` at true physical wedge-0 (screw under pointer). Verify
+   `s` reads a sane wedge and that a `g` spin lands on a plausible physical wedge.
+2. Resume T3 baseline: >=10 g + >=10 G through v4, batches <=4/session, WITH d dense
+   capture (now safe) + mic. Log engage speed, aborts, enc-vs-cam wedge, drift, acoustics.
+3. Improve mic sensitivity/threshold so peg rhythm is resolvable (natural-sound ref).
+
+---
+
+## 2026-07-27 SUPERVISOR v2 SESSION 1 (~07:10-) — T2b mic logger built; peg-clack cal + T3
+- Board health CONFIRMED at start: s -> sensor FRESH, velocity VALID, angle=108.72
+  wedge=3 omega=0 mode=10(DONE) ceiling=900 seeds c=0.300 b=0.150. No RTS reset in
+  events log (supervisor v2 started 07:07). Frame zero intact from prior session.
+- Firmware = commit 6ab587a (spin-gen g/G @16e1e14 + loop TWDT 4000ms). help shows
+  g/G/k/K present. Working tree clean except this notes file.
+- T2b DONE (logger): built %TEMP%\pw_mic.py -> pw_mic.log, ~50ms/line: rms_dbfs,
+  band_db(1-6kHz), crest_db, peak_dbfs, floor_db(EWMA ambient), flag. Anomaly=band
+  >floor+12dB x3 blocks -> 4s WAV clip to %TEMP%\pw_clips (last 20), debounce 3s.
+  pid %TEMP%\pw_mic.pid, stop file %TEMP%\pw_mic_stop. Uses default input (Intel mic
+  array dev1, NOT NVIDIA Broadcast). Installed sounddevice 0.5.5 via pip. RUNNING
+  detached pythonw pid 12492. Ambient floor: RMS ~-97 dBFS, band ~-48 dB (= the 10s
+  ambient calibration; wheel silent). Same wall clock as serial/cam logs.
+
+## MOTOR RUN log (session 1)
+- MOTOR RUN: peg-clack acoustic cal + T3 batch — arm d (dense enc), fire g (FAS+)
+  spin-gen, wait LANDED+dump; then G (FAS-). 2 spins total (<=4 rule). Instruments:
+  serial bridge, cam tracker v2, mic logger all live. Bench, wheel clear. Firmware
+  6ab587a. Purpose: re-confirm g/G+WDT in fresh loop, first 3-frame+acoustic T3 data,
+  predict peg rhythm ~12x omega for the mic natural-sound reference.
+
 ## 2026-07-27 relaunch (~07:00) — T1 HANG FIXED; RESUME AT T3
 
 ### FIRST-PRIORITY RESOLVED
@@ -95,3 +179,6 @@ NEXT: T3 baseline campaign - >=10 g-spins + >=10 G-spins through v4, catalog whe
 
 ## 2026-07-27 session (relaunch, ~07:00) — T1 hang fix
 - MOTOR RUN: watchdog-fix verification — one `g` (FAS+) then one `G` (FAS-) spin generator run, expect SPIN-GEN START -> RELEASE -> SPIN#n V4-ENGAGE -> LANDED, no hang. Bench, wheel clear. Firmware = spin-gen + loop TWDT (4000ms panic).
+
+## SUPERVISOR HANDOFF 07:0x (session killed by owner re-steer, no fault of yours)
+Hang diagnosis so far: Wire.setTimeOut(3) already set, so I2C lockup RULED OUT; remaining suspect = FastAccelStepper ISR/queue block during high-rate spin-gen ramp. Per new OWNER PRIORITY in prompt: do NOT root-cause further - rebuild g/G on the k/K bounded-move ramp style + enable ESP32 task WDT, verify, move on to T3.
