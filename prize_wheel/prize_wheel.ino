@@ -224,6 +224,8 @@ const float V4_ENGAGE_REV_S = 0.30f;      // engage as speed decays through this
 const float V4_MIN_ENGAGE_REV_S = 0.14f;  // below this the old nets own the spin
 const uint16_t V4_RAMP_MIN_DS = 80;       // ramp duration 8.0-11.0 s
 const uint16_t V4_RAMP_MAX_DS = 110;      // (deciseconds, randomized per spin)
+// Hardest brake a v4 ramp may command; beyond this, add a revolution.
+const uint16_t V4_SOFT_MAX_ACCEL_SPS2 = 400;
 
 /* --------------------------- STATE --------------------------------------- */
 TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
@@ -361,6 +363,10 @@ uint32_t v4RetryAfterMs = 0;
 
 // A fight abort in progress: ride the decel ramp out instead of slamming.
 bool takeoverSoftAborting = false;
+
+// The motor touched this spin (takeover/carry/recovery, even aborted):
+// its coast is no longer a clean sample for the friction/prediction learners.
+bool spinHadMotorContact = false;
 
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
@@ -837,6 +843,7 @@ void frictionResetSpin() {
 // Called each loop of a freewheeling FREE_SPIN coast, so every pair is pure
 // wheel friction: no motor state ever reaches this sampler.
 void frictionSample() {
+  if (spinHadMotorContact) { fricPairPrimed = false; return; }
   if (!encoderMotionReady()) { fricPairPrimed = false; return; }
   float speed = fabsf(omega);
   int dir = (omega >= 0.0f) ? 1 : -1;
@@ -916,7 +923,7 @@ float predictionDareMarginDeg() {
 // signed along-track miss of the mid-coast reference prediction into a
 // per-direction rolling MAE.
 void updatePredictionError() {
-  if (activeSpinSteered || !refPredValid) return;
+  if (activeSpinSteered || spinHadMotorContact || !refPredValid) return;
   float landed = wheelAngleDeg();
   float err = forwardDistanceDeg(spinDir, refPredAngleDeg, landed);
   if (err > 180.0f) err -= 360.0f;
@@ -1391,6 +1398,7 @@ void launchDareRecoveryMove() {
   // the aborted bench carries.  Widen the reversal guard for carries only; a
   // real rollback still trips it well before becoming visible.
   recoveryOppositeTolDeg = carry ? 3.0f : 1.5f;
+  spinHadMotorContact = true;
   uint32_t recSpeedHz = RECOVERY_SPEED_HZ;
   uint32_t recAccel = RECOVERY_ACCEL_SPS2;
   uint32_t recJump = 0;
@@ -1490,6 +1498,7 @@ void startSpinEvent(int confirmedDir) {
   v4ExtraRevsDeg = 0;
   v4RetryAfterMs = 0;
   takeoverSoftAborting = false;
+  spinHadMotorContact = false;
 
   Serial.printf("SPIN#%lu START dir=%+d omegaPeak=%.3f\n",
                 (unsigned long)activeSpinNumber, spinDir,
@@ -1658,6 +1667,7 @@ bool launchPrechargedTakeover() {
 }
 
 void beginTakeover(int dir, float target, float minimumRunwayDeg) {
+  spinHadMotorContact = true;
   if (!motorDirectionCalibrated || fasSignForEncoderDirection(dir) == 0) {
     Serial.println(F("# TAKEOVER LOCKED: run p direction probe"));
     return;
@@ -1926,6 +1936,20 @@ bool tryEverySpinTakeover() {
   long extraRevs = (long)floorf((totalDeg - fwd) / 360.0f);
   if (extraRevs < 0) extraRevs = 0;
   if (extraRevs > 5) extraRevs = 5;
+  // floor() can drop a near-whole revolution (bench SPIN#2: 0.955 rev -> 0),
+  // collapsing an 8 s ramp into a 90-deg brake at ~1000 sps2 - the hard
+  // rattling stop.  If the implied accel is harsher than the soft ceiling,
+  // put the revolution back.
+  {
+    float rampDeg = fwd + 360.0f * (float)extraRevs;
+    float rampU = rampDeg / 360.0f * WHEEL_USTEPS_PER_REV;
+    if (rampU > 1.0f) {
+      float impliedAccel = vSps * vSps / (2.0f * rampU);
+      if (impliedAccel > (float)V4_SOFT_MAX_ACCEL_SPS2 && extraRevs < 5) {
+        extraRevs += 1;
+      }
+    }
+  }
   v4ExtraRevsDeg = (uint16_t)(extraRevs * 360);
 
   float predAngle = predictStopAngle();
