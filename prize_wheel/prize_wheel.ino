@@ -241,6 +241,12 @@ const uint16_t SPIN_GEN_CURRENT_MA = 600;   // enough torque to break stiction o
 const uint32_t SPIN_GEN_MOVE_REVS = 40;     // long enough that the ramp never
                                             // decelerates before release fires
 const uint32_t SPIN_GEN_TIMEOUT_MS = 12000; // abort+release if target never met
+/* Calibration move ('k'/'K'): a short bounded there-and-stop bench move used to
+ * fit the camera vs the encoder.  Deliberately small and fast enough (<3 s) that
+ * the whole clean sweep fits inside the 3072-sample diagnostic ring, and it never
+ * enters the spin pipeline (it self-decelerates to a stop under motor control). */
+const float SPIN_GEN_CAL_REVS = 0.30f;      // ~108 deg triangular sweep
+const float SPIN_GEN_CAL_CAP_REV_S = 0.25f; // speed cap; triangle peaks ~0.21
 
 /* --------------------------- STATE --------------------------------------- */
 TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
@@ -368,6 +374,7 @@ int spinGenFasDir = 1;
 float spinGenTargetRevS = 0.0f;
 uint32_t spinGenAccelSps2 = 0;
 int32_t spinGenStartCounts = 0;
+bool spinGenCal = false;
 
 // Set between a creep-carry decision and its launch; selects the
 // motion-matched profile inside launchDareRecoveryMove().
@@ -1297,7 +1304,7 @@ void serviceAccelProbe() {
 // to the normal v4 pipeline as a natural decaying spin.  fasDir picks the FAS
 // electrical direction; the encoder direction that produces IS the spin
 // direction, so no invariant is at stake (motion never reverses).
-void startSpinGenerator(int fasDir) {
+void startSpinGenerator(int fasDir, bool cal) {
   if (!stepper || !encoderHealthy()) {
     Serial.println(F("# SPIN-GEN refused: encoder/stepper unavailable"));
     return;
@@ -1306,12 +1313,36 @@ void startSpinGenerator(int fasDir) {
     Serial.println(F("# SPIN-GEN refused: wait for a fully stopped wheel"));
     return;
   }
+  spinGenCal = cal;
+  spinGenFasDir = (fasDir >= 0) ? 1 : -1;
+  spinGenStartCounts = encoderCountsMT;
+  spinGenStartedMs = millis();
+
+  if (cal) {
+    // Bounded there-and-stop move: full ceiling accel, capped speed, short
+    // distance -> a clean <3 s triangular sweep captured whole by the diag ring.
+    spinGenAccelSps2 = accelCeilingSps2;
+    uint32_t capHz = (uint32_t)lroundf(SPIN_GEN_CAL_CAP_REV_S * WHEEL_USTEPS_PER_REV);
+    int32_t moveU = spinGenFasDir *
+        (int32_t)lroundf(SPIN_GEN_CAL_REVS * WHEEL_USTEPS_PER_REV);
+    stepper->forceStopAndNewPosition(0);
+    driverActive(SPIN_GEN_CURRENT_MA);
+    stepper->setSpeedInHz(capHz);
+    stepper->setAcceleration(spinGenAccelSps2);
+    stepper->setJumpStart(0);
+    stepper->move(moveU);
+    mode = SPIN_GEN;
+    Serial.printf("# SPIN-GEN CAL-MOVE fasDir=%+d revs=%.3f capHz=%lu accel=%lu curMa=%u (bounded, self-stops)\n",
+                  spinGenFasDir, SPIN_GEN_CAL_REVS, (unsigned long)capHz,
+                  (unsigned long)spinGenAccelSps2, (unsigned)SPIN_GEN_CURRENT_MA);
+    return;
+  }
+
   long r = random(0, 1001);
   spinGenTargetRevS = SPIN_GEN_MIN_REV_S +
       (SPIN_GEN_MAX_REV_S - SPIN_GEN_MIN_REV_S) * (float)r / 1000.0f;
   spinGenAccelSps2 = accelCeilingSps2 / 2;      // <= half the persisted ceiling
   if (spinGenAccelSps2 < 60) spinGenAccelSps2 = 60;
-  spinGenFasDir = (fasDir >= 0) ? 1 : -1;
   uint32_t targetHz = (uint32_t)lroundf(spinGenTargetRevS * WHEEL_USTEPS_PER_REV);
   int32_t moveU = spinGenFasDir *
       (int32_t)(SPIN_GEN_MOVE_REVS * (uint32_t)WHEEL_USTEPS_PER_REV);
@@ -1321,8 +1352,6 @@ void startSpinGenerator(int fasDir) {
   stepper->setSpeedInHz(targetHz);
   stepper->setAcceleration(spinGenAccelSps2);
   stepper->setJumpStart(0);
-  spinGenStartCounts = encoderCountsMT;
-  spinGenStartedMs = millis();
   stepper->move(moveU);
   mode = SPIN_GEN;
   Serial.printf("# SPIN-GEN START fasDir=%+d targetRevS=%.3f targetHz=%lu accel=%lu curMa=%u ceiling=%lu (release into free coast)\n",
@@ -1332,6 +1361,19 @@ void startSpinGenerator(int fasDir) {
 }
 
 void serviceSpinGenerator() {
+  if (spinGenCal) {
+    // Bench calibration move: let the bounded move self-decelerate to a stop,
+    // then float the coils.  Never hand off to the spin pipeline.
+    if (stepper && stepper->isRunning() &&
+        (millis() - spinGenStartedMs) < SPIN_GEN_TIMEOUT_MS) return;
+    driverFreewheel();
+    spinAboveMs = 0;
+    mode = DONE;
+    Serial.printf("# SPIN-GEN CAL-MOVE DONE angle=%.1f wedge=%d sweptDeg=%.1f\n",
+                  wheelAngleDeg(), currentWedge(),
+                  (encoderCountsMT - spinGenStartCounts) * 360.0f / 4096.0f);
+    return;
+  }
   bool timedOut = (millis() - spinGenStartedMs) >= SPIN_GEN_TIMEOUT_MS;
   bool reached = encoderVelocityValid && fabsf(omega) >= spinGenTargetRevS;
   bool moveEnded = !(stepper && stepper->isRunning());
@@ -2177,6 +2219,8 @@ void help() {
     " a  attended accel-ceiling probe (wheel sweeps 120 deg per stage)\n"
     " g  attended spin generator FAS+ (spin up to ~0.4 rev/s, release to coast)\n"
     " G  attended spin generator FAS- (other direction)\n"
+    " k  attended cam-cal move FAS+ (short bounded ~108 deg sweep, self-stops)\n"
+    " K  attended cam-cal move FAS- (other direction)\n"
     " c  print calibration (friction fit, prediction error, accel ceiling)\n"
     " C  reset calibration to seed values\n"
     " ?  show this help"));
@@ -2231,10 +2275,16 @@ void handleSerial() {
       startAccelProbe();
       break;
     case 'g':
-      startSpinGenerator(+1);
+      startSpinGenerator(+1, false);
       break;
     case 'G':
-      startSpinGenerator(-1);
+      startSpinGenerator(-1, false);
+      break;
+    case 'k':
+      startSpinGenerator(+1, true);
+      break;
+    case 'K':
+      startSpinGenerator(-1, true);
       break;
     case 'c':
       Serial.printf("# CAL friction cw(c=%.3f b=%.3f) ccw(c=%.3f b=%.3f) | maeDeg cw=%.1f ccw=%.1f margin=%.1f | accelCeiling=%u sps2\n",

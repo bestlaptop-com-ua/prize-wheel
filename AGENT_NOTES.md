@@ -32,3 +32,11 @@ produce SPIN-GEN START/RELEASE then a normal SPIN#n START/V4-ENGAGE.
 ### Flash reminder (from CLAUDE.md)
 Stop bridge -> esptool -> wait >=5 s -> restart bridge. cli + --libraries
 mandatory. Judge upload by 'Hash of data verified' + 'Hard resetting'.
+
+## MOTOR RUN log
+- 2026-07-27 ~00:17 flashed T1 (commit 16e1e14). Verified help shows g/G.
+- MOTOR RUN: first `g` (FAS+) spin-generator test — expect SPIN-GEN START -> RELEASE -> SPIN#n V4-ENGAGE coast. Bench, wheel clear.
+
+- MOTOR RUN: `G` (FAS-) spin-generator test, opposite direction.
+
+- MOTOR RUN: T2 cal capture — arm d (dense encoder), fire g, dump, fit cam vs enc.
