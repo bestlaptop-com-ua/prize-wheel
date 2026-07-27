@@ -2,6 +2,47 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
+## 2026-07-27 SUPERVISOR v2 (new loop) SESSION 1 (~08:05) — FLASHED bounded 8-rev spin-gen; verifying g/G
+### State at entry
+- Frame zero VALID (owner re-zero 07:54:05, wedge-3 center = 103.5 deg, persisted NVS).
+- Uncommitted .ino change reviewed: SPIN_GEN_MOVE_REVS 40 -> 8. VERIFIED SAFE against code:
+  serviceSpinGenerator moveEnded path (line ~1400) calls driverFreewheel()+mode=DONE with
+  reason="moveEnd"; reach-to-speed at ceiling 900 (accel 450) ~= 1.44 rev << 8 rev bound.
+- Compiled clean (32% flash). FLASHED COM3 (Hash of data verified + Hard resetting).
+- Bridge stopped(pid31968)->flash->waited 7s->restarted(pid21132), confirmed LIVE (s/c replied).
+- Post-flash s: angle~8.7 wedge=0 mode=0 IDLE, accel=900, seeds c=0.300 b=0.150 / c=0.352 b=0.119.
+  Wheel physically drifted to ~wedge0 boundary after 07:56 (floating coils, unbalanced) — wedge0
+  OFFSET persisted (Fix B, same RTS reset that was round-trip-verified) so mask STILL VALID.
+
+### MOTOR RUN log (this session)
+- MOTOR RUN: verify bounded 8-rev spin-gen. Fire g (FAS+), wait LANDED; then G (FAS-), wait
+  LANDED. <=4 spins (using 2). Expect each: SPIN-GEN START(release into free coast) -> RELEASE
+  reason=target -> SPIN#n V4-ENGAGE/DECISION -> LANDED isDare=0, NO hang, NO loop-WDT reset.
+  Firmware = bb6d211 + SPIN_GEN_MOVE_REVS 8. Ceiling 900, frame zero VALID. Bench, wheel clear.
+  Instruments: bridge pid21132, cam pid19992, mic pid12492 live. Landings now PHYSICALLY VALID.
+
+### RESULT — both spins PASS, bounded ramp verified, committed
+- SPIN#1 (g/FAS+, enc dir=-1): SPIN-GEN RELEASE reason=target omega=-0.382; pred stop
+  wedge=1 (DARE) -> action=STEER -> LANDED wedge=6 isDare=0 steered=1. durS~8s, no hang.
+- SPIN#2 (G/FAS-, enc dir=+1): SPIN-GEN START accel=450 targetHz=2400 -> RELEASE reason=target
+  omega=0.375; pred stop wedge=5 (DARE) -> STEER -> LANDED wedge=11 isDare=0 steered=1.
+- ZERO hangs, ZERO loop-WDT/panic/Reboot markers, ZERO "DARE RECOVERY FAILED" (latch untouched;
+  the only FAILED lines in log are the old 07:46 ones). Bounded 8-rev move released on target
+  both dirs — the 40-rev "never decelerate" hang mode is gone. targetErrorDeg (402.8/355.0)
+  is the known-cosmetic gated-move artifact; wedge numbers authoritative.
+- End state: board mode=10 DONE, coils floating (safe), angle=345.7 wedge=11, accel=900.
+- COMMITTED SPIN_GEN_MOVE_REVS 40->8 on claude/adaptive-v2. Working tree now clean except notes.
+
+### NEXT SESSION (critical path, frame zero VALID)
+1. LEGACY LATCH fix: staged verbatim in CLAUDE_VARIANT.md ("LEGACY LATCH located"). Apply
+   (float coils + fault + DRIFT_WATCH in the recoveryAttempts>=3 branch ~line 2662), flash,
+   then FORCE a fail-recovery test (deliberately land a dare + fail recovery 3x) to prove the
+   coils now float instead of gripping. This is the last firmware safety item.
+2. Resume T3 baseline: >=10 g + >=10 G through v4 (batches <=4/session), armed d + mic, log
+   engage speed/aborts/enc-vs-cam wedge/drift/acoustics. Then T6 acceptance (30-spin), REPORT.md.
+3. First g/G spins THIS session already gave 2 valid baseline data points (both steered dares).
+
+
 ## 2026-07-27 SUPERVISOR v2 SESSION 4 (~07:38) — g/G rebuilt on bounded k/K-style ramp (owner tooling directive)
 ### MOTOR RUN log (session 4)
 - MOTOR RUN: verify bounded g/G ramp — fire g (FAS+), G (FAS-), g+armed-d (dense enc

@@ -252,8 +252,15 @@ const float SPIN_GEN_MIN_REV_S = 0.35f;
 const float SPIN_GEN_MAX_REV_S = 0.45f;
 const uint16_t SPIN_GEN_CURRENT_MA = 600;   // enough torque to break stiction on
                                             // the unbalanced wheel (pole slip <600)
-const uint32_t SPIN_GEN_MOVE_REVS = 40;     // long enough that the ramp never
-                                            // decelerates before release fires
+// Bounded like the proven k/K cal move (owner directive 2026-07-27): size the
+// ramp so it comfortably reaches SPIN_GEN_MAX_REV_S before release fires, yet
+// self-terminates in a few seconds at modest speed if release never comes (dead
+// encoder / lost velocity). Worst realistic case reach-to-speed = maxHz^2/(2*accel)
+// with accel=ceiling/2 as low as ~150 sps2 => ~4.3 rev; 8 rev gives ~2x margin.
+// On move-end without release, serviceSpinGenerator freewheels (moveEnded path);
+// the loop WDT is the final net. This replaces the old 40-rev "never decelerate"
+// move, whose long high-rate cruise is the only mode that ever hung the ramp.
+const uint32_t SPIN_GEN_MOVE_REVS = 8;
 const uint32_t SPIN_GEN_TIMEOUT_MS = 12000; // abort+release if target never met
 /* Calibration move ('k'/'K'): a short bounded there-and-stop bench move used to
  * fit the camera vs the encoder.  Deliberately small and fast enough (<3 s) that
