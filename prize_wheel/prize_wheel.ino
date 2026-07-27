@@ -227,6 +227,21 @@ const uint16_t V4_RAMP_MAX_DS = 110;      // (deciseconds, randomized per spin)
 // Hardest brake a v4 ramp may command; beyond this, add a revolution.
 const uint16_t V4_SOFT_MAX_ACCEL_SPS2 = 400;
 
+/* Attended bench spin generator ('g' = FAS+, 'G' = FAS-).  Accelerates the
+ * wheel from rest at <= half the persisted accel ceiling to a target in the
+ * 0.35-0.45 rev/s band, then RELEASES to a free coast so the normal v4 spin
+ * pipeline sees a natural decaying spin.  The generated direction IS the spin
+ * direction, so the "never move opposite the spin" invariant is satisfied by
+ * construction.  Attended only: the wheel sweeps through dares while spinning
+ * up, exactly like the p and a probes. */
+const float SPIN_GEN_MIN_REV_S = 0.35f;
+const float SPIN_GEN_MAX_REV_S = 0.45f;
+const uint16_t SPIN_GEN_CURRENT_MA = 600;   // enough torque to break stiction on
+                                            // the unbalanced wheel (pole slip <600)
+const uint32_t SPIN_GEN_MOVE_REVS = 40;     // long enough that the ramp never
+                                            // decelerates before release fires
+const uint32_t SPIN_GEN_TIMEOUT_MS = 12000; // abort+release if target never met
+
 /* --------------------------- STATE --------------------------------------- */
 TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
 FastAccelStepperEngine engine = FastAccelStepperEngine();
@@ -237,7 +252,8 @@ enum Mode : uint8_t {
   IDLE, FREE_SPIN, PRECHARGE, TAKEOVER, SETTLE,
   RECOVERY_PRECHARGE, DARE_RECOVERY, RECOVERY_HOLD, SAFE_HOLD, DIR_PROBE, DONE,
   ACCEL_PROBE,  // appended after DONE so mode ordinals in old captures hold
-  DRIFT_WATCH   // post-release guard: motor-placed stops can roll off
+  DRIFT_WATCH,  // post-release guard: motor-placed stops can roll off
+  SPIN_GEN      // attended bench spin generator, releases into FREE_SPIN
 };
 Mode mode = IDLE;
 
@@ -345,6 +361,13 @@ uint32_t accelProbeStartedMs = 0;
 int32_t accelProbeStartCounts = 0;
 int32_t accelProbeMoveU = 0;
 uint16_t accelProbeLastPass = 0;
+
+// Attended spin-generator state.
+uint32_t spinGenStartedMs = 0;
+int spinGenFasDir = 1;
+float spinGenTargetRevS = 0.0f;
+uint32_t spinGenAccelSps2 = 0;
+int32_t spinGenStartCounts = 0;
 
 // Set between a creep-carry decision and its launch; selects the
 // motion-matched profile inside launchDareRecoveryMove().
@@ -1268,6 +1291,61 @@ void serviceAccelProbe() {
   beginAccelProbeStage();
 }
 
+/* ---------------- ATTENDED BENCH SPIN GENERATOR ('g'/'G') ---------------- */
+// Spins the wheel up from rest at half the persisted accel ceiling to a random
+// target in [0.35,0.45] rev/s, then releases the coils so the coast is handed
+// to the normal v4 pipeline as a natural decaying spin.  fasDir picks the FAS
+// electrical direction; the encoder direction that produces IS the spin
+// direction, so no invariant is at stake (motion never reverses).
+void startSpinGenerator(int fasDir) {
+  if (!stepper || !encoderHealthy()) {
+    Serial.println(F("# SPIN-GEN refused: encoder/stepper unavailable"));
+    return;
+  }
+  if (mode != IDLE && mode != DONE && mode != DRIFT_WATCH) {
+    Serial.println(F("# SPIN-GEN refused: wait for a fully stopped wheel"));
+    return;
+  }
+  long r = random(0, 1001);
+  spinGenTargetRevS = SPIN_GEN_MIN_REV_S +
+      (SPIN_GEN_MAX_REV_S - SPIN_GEN_MIN_REV_S) * (float)r / 1000.0f;
+  spinGenAccelSps2 = accelCeilingSps2 / 2;      // <= half the persisted ceiling
+  if (spinGenAccelSps2 < 60) spinGenAccelSps2 = 60;
+  spinGenFasDir = (fasDir >= 0) ? 1 : -1;
+  uint32_t targetHz = (uint32_t)lroundf(spinGenTargetRevS * WHEEL_USTEPS_PER_REV);
+  int32_t moveU = spinGenFasDir *
+      (int32_t)(SPIN_GEN_MOVE_REVS * (uint32_t)WHEEL_USTEPS_PER_REV);
+
+  stepper->forceStopAndNewPosition(0);
+  driverActive(SPIN_GEN_CURRENT_MA);
+  stepper->setSpeedInHz(targetHz);
+  stepper->setAcceleration(spinGenAccelSps2);
+  stepper->setJumpStart(0);
+  spinGenStartCounts = encoderCountsMT;
+  spinGenStartedMs = millis();
+  stepper->move(moveU);
+  mode = SPIN_GEN;
+  Serial.printf("# SPIN-GEN START fasDir=%+d targetRevS=%.3f targetHz=%lu accel=%lu curMa=%u ceiling=%lu (release into free coast)\n",
+                spinGenFasDir, spinGenTargetRevS, (unsigned long)targetHz,
+                (unsigned long)spinGenAccelSps2, (unsigned)SPIN_GEN_CURRENT_MA,
+                (unsigned long)accelCeilingSps2);
+}
+
+void serviceSpinGenerator() {
+  bool timedOut = (millis() - spinGenStartedMs) >= SPIN_GEN_TIMEOUT_MS;
+  bool reached = encoderVelocityValid && fabsf(omega) >= spinGenTargetRevS;
+  bool moveEnded = !(stepper && stepper->isRunning());
+  if (!(reached || timedOut || moveEnded)) return;
+
+  float releaseOmega = omega;
+  driverFreewheel();            // cut coils: forceStop + disableOutputs
+  spinAboveMs = 0;              // let the spin detector re-arm on the fresh coast
+  mode = DONE;                  // FREE_SPIN arms from IDLE/DONE and confirms it
+  Serial.printf("# SPIN-GEN RELEASE omega=%.3f angle=%.1f wedge=%d reason=%s (coast handed to pipeline)\n",
+                releaseOmega, wheelAngleDeg(), currentWedge(),
+                reached ? "target" : (timedOut ? "timeout" : "moveEnd"));
+}
+
 /* ---------------- CREEP-CARRY: DARE AVOIDANCE IN MOTION ------------------ */
 // First angle in the spin direction clear of any dare and its prediction
 // margin, plus a small cushion.  Dares are isolated, so this always exists
@@ -2097,6 +2175,8 @@ void help() {
     " v  toggle live takeover logs (disabled while d capture is armed)\n"
     " m  print dare mask\n"
     " a  attended accel-ceiling probe (wheel sweeps 120 deg per stage)\n"
+    " g  attended spin generator FAS+ (spin up to ~0.4 rev/s, release to coast)\n"
+    " G  attended spin generator FAS- (other direction)\n"
     " c  print calibration (friction fit, prediction error, accel ceiling)\n"
     " C  reset calibration to seed values\n"
     " ?  show this help"));
@@ -2149,6 +2229,12 @@ void handleSerial() {
       break;
     case 'a':
       startAccelProbe();
+      break;
+    case 'g':
+      startSpinGenerator(+1);
+      break;
+    case 'G':
+      startSpinGenerator(-1);
       break;
     case 'c':
       Serial.printf("# CAL friction cw(c=%.3f b=%.3f) ccw(c=%.3f b=%.3f) | maeDeg cw=%.1f ccw=%.1f margin=%.1f | accelCeiling=%u sps2\n",
@@ -2535,6 +2621,10 @@ void loop() {
 
     case ACCEL_PROBE:
       serviceAccelProbe();
+      break;
+
+    case SPIN_GEN:
+      serviceSpinGenerator();
       break;
 
     case DRIFT_WATCH:
