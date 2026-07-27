@@ -2,7 +2,7 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
-## >>> OWNER ACTION REQUIRED — ONE ACTION UNBLOCKS EVERYTHING (re-confirmed Session 8, 08:50, STATE STILL FROZEN) <<<
+## >>> OWNER ACTION REQUIRED — ONE ACTION UNBLOCKS EVERYTHING (re-confirmed Session 9, 08:53, STATE STILL FROZEN) <<<
 The encoder frame is out of sync with the physical wheel by ~156° and the mission cannot validly advance
 until you re-align it. Sessions 4, 5, and 6 have all independently verified this from the raw logs; it is
 sound. Motor work is HALTED; board is still on the validated latch-fix firmware (429e2a5), NOT reflashed.
@@ -31,6 +31,35 @@ currently untrustworthy — a firmware-"safe" landing could be a physical DARE. 
 Full three-way evidence (encoder jumped / camera flat / mic silent, no reboot/RTS/re-zero in the gap) is
 in the Session 4 & 5 records below and in CLAUDE_VARIANT.md. This is a candidate hardware wall (invariant
 #7); the re-zero above is the simplest fix and resolves it regardless of root cause.
+
+## 2026-07-27 SUPERVISOR v2 SESSION 9 (~08:53) — STILL BLOCKED on owner; LIVE 3-way re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash — unblock-signal check + live instrument integrity check + handoff)
+- Checked the two unblock signals: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
+  (grepped: only 07:24 / 07:46 / 07:54 exist). (2) No owner note atop this file. Block unchanged.
+- KEY DIFFERENCE vs Sessions 5-8: instead of re-reading stale logs, I verified all three instruments are
+  producing FRESH data at the same wall-clock second, which is the one thing that could have undermined the
+  "no physical motion" evidence (a frozen cam/mic process would echo stale flats forever):
+    * Serial: sent `s` → fresh reply 08:52:44 (age_us=690, sensor_pos=FRESH) angle=134.65 wedge=4 omega=0 mode=10.
+    * Camera: pw_cam.log timestamps advancing (…08:52:03), cam=-5423.81 d≈0 q=2.1 — live AND flat.
+    * Mic: pw_mic.log advancing (08:53:29), rms≈-96 dBFS band≈-47 dB flag=0 — live AND silent (no motion sound).
+  → All three LIVE and mutually agreeing NOW: encoder frozen at 134.65, wheel physically unmoved, room silent.
+  Block is now sextuple-confirmed, this time with a live (not stale-log) three-way. Did NOT re-derive the slip math.
+- Confirmed the LEGACY LATCH open item is already CLOSED: committed at 429e2a5 ("Latch fix: 3x-failed
+  dare-recovery floats coils (was infinite grip) - VERIFIED"), which is HEAD and the flashed image. No
+  owner-independent code work remains pending; working tree clean. So this session correctly stays a no-op.
+### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+- Board `s` 08:52:44: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera).
+- Instruments live (verified fresh this session): bridge, cam (flat), mic (silent). NO wheel/motor work left
+  running (all tool calls synchronous; started NO background task). 0 of <=4 motor spins used. Firmware UNFLASHED (429e2a5).
+- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete — stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
+   neither, re-confirm the block with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT
+   re-derive the analysis — it is verified across Sessions 4-9 (Session 9 added a live 3-way instrument check).
+2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
+   T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
+   acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
 ## 2026-07-27 SUPERVISOR v2 SESSION 8 (~08:50) — STILL BLOCKED on owner; 0 spins, NO flash (no-op, as prescribed)
 ### What I did (NO motor, NO flash — one status read + handoff only)
