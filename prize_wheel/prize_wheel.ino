@@ -39,6 +39,20 @@
 #include <Preferences.h>
 #include <TMCStepper.h>
 #include <FastAccelStepper.h>
+#include "esp_task_wdt.h"
+
+// Hardware task watchdog.  On 2026-07-27 a `g` spin-generator run stalled the
+// main loop mid-ramp (SPIN-GEN START printed, no RELEASE, no 12 s software
+// timeout ever executed => loop() was blocked inside a library/peripheral call
+// during the high step-rate motor ramp) and the board hung all night until a
+// manual RTS reset.  Nothing in this sketch busy-loops and every I2C read is
+// bounded (Wire.setTimeOut(3)), so the block is in a lower layer we cannot
+// isolate from the logs.  Subscribing the loop task to the TWDT with panic
+// makes any future stall self-recover within LOOP_WDT_TIMEOUT_MS: the reset
+// re-runs setup(), which floats the coils (driverFreewheel) leaving the wheel
+// a safe free wheel, and the panic backtrace on the next occurrence will pin
+// the exact blocking call.
+#define LOOP_WDT_TIMEOUT_MS 4000
 
 /* ----------------------------- PINS -------------------------------------- */
 #define TMC_SERIAL   Serial2
@@ -2370,9 +2384,26 @@ void setup() {
   help();
   driverFreewheel();
   mode = IDLE;
+
+  // Arm the loop-task watchdog last, after every blocking bring-up step
+  // (delay, TMC UART probe, initial I2C read) has completed.  Reconfigure the
+  // TWDT that the Arduino core already initialised, then subscribe this task.
+  esp_task_wdt_config_t wdtCfg = {
+    .timeout_ms = LOOP_WDT_TIMEOUT_MS,
+    .idle_core_mask = 0,
+    .trigger_panic = true,
+  };
+  if (esp_task_wdt_init(&wdtCfg) == ESP_ERR_INVALID_STATE) {
+    esp_task_wdt_reconfigure(&wdtCfg);   // already initialised by the core
+  }
+  esp_task_wdt_add(NULL);                 // watch the loop task
+  esp_task_wdt_reset();
+  Serial.printf("# loop watchdog armed: %u ms, panic+reset on stall\n",
+                (unsigned)LOOP_WDT_TIMEOUT_MS);
 }
 
 void loop() {
+  esp_task_wdt_reset();   // feed the loop watchdog; a stalled loop resets the board
   updateEncoder();
   handleSerial();
 

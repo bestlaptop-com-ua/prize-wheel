@@ -166,3 +166,83 @@ floor. Log line: SPIN#n V4-ENGAGE omega/target/fwdDeg/extraRevs/durS.
 Acceptance for guest use: over >=30 spins - zero fight aborts, zero rattles,
 zero dare rests (including after release), roughly uniform landings over the
 ten safe wedges, and the owner's eye/ear sign-off on the roll-out.
+## 2026-07-27 autonomous session (Claude Code): T1-T2
+
+### T1 - bench spin generator g/G (commit 16e1e14)
+Added attended serial commands g (FAS+) and G (FAS-): ramp from rest at
+accelCeiling/2 (450 sps2 at the 900 ceiling), 600 mA, to a random 0.35-0.45
+rev/s target, then release the coils the instant encoder omega reaches target,
+handing a natural decaying spin to the v4 pipeline (mode=DONE -> FREE_SPIN).
+Verified both directions: g -> omega=-0.356 (ccw), G -> omega=+0.418 (cw); both
+landed safe (wedge 3), pipeline picked them up as SPIN#n START/V4-ENGAGE. Release
+is gated on measured omega, not the commanded profile, so the wheel provably
+reached speed; target < GUEST_OVERRIDE (0.80) avoids re-latch.
+
+### Anomaly seen immediately (to characterize in T3, fix in T4)
+Every V4-ENGAGE -> TAKEOVER trips `# TK-END reason=wheel-speed-up` ~80 ms after
+TK-START (travelled ~1.8 deg). Root cause (evidence + code read): takeoverSensedSpeedup()
+aborts when forward speed rises >0.015 rev/s above the lowest-seen for >=30 ms.
+On this deliberately unbalanced wheel at ~0.30 rev/s, gravity accelerates the
+wheel on downhill arcs by more than that - a FALSE positive, not a guest push.
+IMPORTANT: finishTakeover() does NOT stop the stepper - it only drops current
+600->500 mA and switches to RECOVERY_HOLD, so the profiled move CONTINUES to the
+target. That is why both test spins still landed on the planner target (wedge 3).
+So "wheel-speed-up" is a near-cosmetic mislabel today, but the 600->500 mA drop
+mid-profile is a slip risk and the logic is confused. Candidate T4 fix: in the
+profiled-decel regime a gentle brake cannot "be helped" by the wheel, so raise
+the speedup threshold / lengthen the window / disable the speedup abort while
+takeoverDecelProfile is set (keep the fight watchdog + guestOverride).
+
+### T2 - camera calibration (commit c442323, net-rotation method)
+The 3072-sample diag ring (~3 s) only ever holds the tail of a real spin, and the
+v4 takeover stretches every spin to ~9 s, so a g-spin capture retained only the
+final ~13 deg creep - useless for a scale fit. Added k/K bounded there-and-stop
+cal moves (full-ceiling accel, 0.25 rev/s cap, 0.30 rev, self-stops in ~2.9 s).
+Streaming (position-vs-time) fit gave scale~0.92 but resid 7 deg - a time-alignment
+artifact (1 kHz encoder vs ~20 fps cam during 70 deg/s motion). Switched to a
+timing-free NET-ROTATION method: enc_net from firmware sweptDeg, cam_net from
+settled cam before/after (stable to +-0.01 deg).
+RESULT over 7 moves both directions: scale=0.83749 cam-deg/enc-deg, sign=+1,
+resid_RMS=0.29 deg, max 0.37 deg. Independent check on 3 fresh moves at new
+positions: err_RMS=0.76, max 0.86 deg -> PASS (<1.5 deg). Small (~0.8%) position
+dependence in cam scale (top-arc perspective), negligible vs the 5-deg alarm.
+Stored in %TEMP%\pw_cam_cal.txt. Host tools: pw_cam_cal_net.py (fit/check),
+pw_baseline.py (campaign summary). Camera sees ~84% of true sweep over the top arc.
+
+### T1 hang postmortem + loop-watchdog fix (2026-07-27 relaunch ~07:00)
+SYMPTOM: at 00:49:50 a `G` spin printed `# SPIN-GEN START fasDir=-1 targetRevS=0.436
+targetHz=2794` and then the board went fully silent — no RELEASE, no further serial
+all night — until a manual RTS reset. Identical params (fasDir=-1, target 0.436)
+had completed cleanly at 00:49:02, so the failure is INTERMITTENT, not a
+deterministic logic error. (Evidence: %TEMP%\pw_agent.log, last board line is that
+START.)
+DIAGNOSIS: the spin generator's own 12 s software timeout (SPIN_GEN_TIMEOUT_MS)
+provably never executed — it would have printed `# SPIN-GEN RELEASE reason=timeout`
+at 00:50:02. So `loop()` itself was blocked, not merely stuck in SPIN_GEN state.
+Static review of the whole hot path found NO software infinite loop (only the
+bounded I2C-drain `while(Wire.available())`), every AS5600 read is bounded by
+`Wire.setTimeOut(3)` and records failures instead of blocking, and serviceDiagnostic
+Capture is gated/bounded. That rules out I2C lockup and busy-loops and leaves the
+block inside a lower library/peripheral call reached during the high step-rate motor
+ramp (FastAccelStepper's ESP32 step engine is the sole remaining suspect). Spin-gen
+is the highest-stress operation on the rig — it is the only mode that accelerates the
+full wheel from rest at 600 mA up toward ~2800 Hz — which fits "worse during a g/G
+ramp." The exact blocking call could not be isolated from the logs.
+ROOT-CAUSE-CLASS FIX (minimal, additive, evidence-first): there was NO hardware
+watchdog, so ANY loop stall hangs forever needing a manual reset. Subscribed the
+loop task to the ESP32 Task WDT (esp_task_wdt) at 4000 ms with trigger_panic=true and
+feed it once per loop(). Now any future stall self-recovers by reset within 4 s;
+setup() re-runs and calls driverFreewheel() so the wheel comes back a safe free
+wheel, and the panic backtrace on any recurrence will finally pin the blocking call.
+Does not touch the proven TMC2209 init block (invariant 6). The core pre-inits the
+TWDT, so esp_task_wdt_init returns ESP_ERR_INVALID_STATE and the code falls back to
+esp_task_wdt_reconfigure (boot log shows the expected `E task_wdt: ... already
+initialized` followed by `# loop watchdog armed: 4000 ms`).
+VERIFY: compile clean (32% flash). Flashed COM3 (Hash of data verified + Hard
+resetting). 4 supervised spins alternating g/G all completed START->RELEASE(target)->
+SPIN#n->V4-ENGAGE->TAKEOVER->LANDED with zero hangs, zero watchdog resets, zero
+refusals: wedge 6/11/10/3, all isDare=0. Spin #4 hit target 0.442 rev/s (above the
+0.436 that hung the old build) and still completed. T1 hang: FIXED.
+OPEN: the underlying rare stall trigger is now masked by the watchdog but not
+eliminated. If a reset ever fires mid-campaign, capture the panic backtrace (it will
+name the blocking frame) to fix the true cause.
