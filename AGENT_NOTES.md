@@ -2,6 +2,26 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
+## >>> OWNER ACTION STILL REQUIRED — re-confirmed 08:42, STATE UNCHANGED, ONE BINARY QUESTION <<<
+Session 5 (08:39–08:42) independently re-verified the prior session's halt from the raw logs and found
+it SOUND. Nothing has changed since 08:31 — no owner `z`/spin/note; motor work stays HALTED; board still
+on the validated latch-fix firmware (429e2a5), NOT reflashed.
+NEW datum this session: the encoder reading is ROCK-STABLE at angle=134.65 (wedge 4) across 15+ min
+(08:30:52 → 08:41:08, zero drift/noise) and the camera is STILL at its post-landing flat lock
+(cam≈-5423.82, d≈0, q=2.1) → the physical wheel has NOT moved at all since the 08:25:56 landing. So the
+wheel you see NOW is the exact state at anomaly time — your single look is fully decisive.
+
+  THE ONE QUESTION (please look at the wheel and answer): which wedge number is PHYSICALLY under the red
+  pointer right now? Firmware CLAIMS wedge 4 (angle 134.65). The camera says the wheel never left the
+  wedge it landed on at 08:25:56 (≈ wedge 10/11).
+   • If you see wedge 10 or 11  → the ENCODER slipped ~156° (magnet decoupled from the wheel). Fix:
+     check/tighten the AS5600 magnet-hub set screw + sensor mount, then rotate rim-screw under the
+     pointer and send `z` with the loop stopped; verify wedge-3 center ≈ 103.5° (as on the 07:54 re-zero).
+   • If you see wedge 4         → the wheel really rolled 156° while floating and the CAMERA missed it;
+     re-check cam geometry (CX,CY,R) — unlikely (laptop/cam unmoved, quality healthy), but this resolves it.
+  Either answer unblocks the mission. Until an owner note confirms encoder==physical, ALL wedge identities
+  stay UNTRUSTWORTHY and no baseline/acceptance can validly run. Full evidence in the 08:31 block below.
+
 ## >>> OWNER ACTION REQUIRED (2026-07-27 ~08:31) — ENCODER FRAME MAY HAVE SILENTLY SLIPPED ~156°; CAMPAIGN HALTED <<<
 Anomaly #1 ("post-landing creep") investigated with the three-frame method — it is NOT passive
 physical creep. It is a **three-frame divergence of ~156°** (>30x the 5° STOP threshold in CLAUDE.md).
@@ -34,6 +54,44 @@ ATTENDED CHECK I NEED (owner is at the bench; I cannot see or rotate the wheel):
 
 This is a candidate HARDWARE WALL (invariant #7): three-way evidence is captured in the logs and written
 up in CLAUDE_VARIANT.md. Simplest fix proposed above (secure the magnet hub / sensor mount, then re-zero).
+
+## 2026-07-27 SUPERVISOR v2 SESSION 5 (~08:42) — INDEPENDENTLY RE-VERIFIED the halt; still BLOCKED on owner; 0 spins, NO flash
+### What I did (NO motor, NO flash — verification + handoff only)
+- Did NOT take the prior halt on faith: pulled the RAW serial around the jump. Confirmed the transition
+  from angle=338.55 (wedge 11, last reading 08:26:13) to angle=134.65 (wedge 4) occurred during a ~4-min
+  serial-SILENT gap (08:26:13→08:30:30) with NO boot banner, NO RTS reset, NO motor, NO `z` — the 08:30:30
+  and 08:35/08:39 "=== PRIZE WHEEL ===" lines are `?` help-probe echoes (board answered = no reset), not reboots.
+  AS5600 is a live single-turn absolute read (s shows sensor_pos=FRESH, small age_us), so a stable 134.65
+  means the magnet is physically presenting that angle to the sensor NOW. Camera (independent) = no motion.
+  => prior attribution "cam short + enc full = disc slipped" (magnet/hub decoupled ~156°) is SOUND. Not overturned.
+- Fresh `s` 08:41:08: angle=134.65 wedge=4 omega=0 mode=10 DONE — IDENTICAL to 08:30:52 (~11 min prior).
+  NEW EVIDENCE: encoder is rock-stable (no drift/noise over 15+ min) → consistent with a single discrete
+  mechanical decoupling (or a stuck/persistent fault), NOT an active intermittent AS5600 electrical glitch.
+- Camera 08:42:16 still cam≈-5423.82 d≈0 q=2.1 (= post-landing lock) → wheel physically unmoved since 08:25:56.
+  Told the owner (top block) that the wheel-state NOW == anomaly-time state, so a single look is decisive.
+### Why NO firmware this session (deliberate)
+- Considered adding an AS5600 magnitude/AGC/STATUS health readout. Rejected FOR NOW: the encoder IS the
+  only position sense, so NO in-firmware guard can detect a magnet-HUB slip (magnet still centered over the
+  sensor, just co-rotated wrong → STATUS/magnitude read normal). It would only catch magnet loss/weakening.
+  Low value for THIS fault, and flashing during the halt would move the board off the validated 429e2a5
+  image right before the owner must re-zero against known-good firmware. Left as a staged idea (below), not flashed.
+### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+- Board `s` 08:41:08: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
+  accel=900, cal unchanged cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera).
+- Instruments live: bridge pid30212 (verified ALIVE), cam pid19992 (flat), mic pid12492. NO wheel/motor work
+  left running (all Bash/PowerShell calls synchronous; started NO background task). 0 of <=4 motor spins used.
+- Repo: docs-only edit (this file) on claude/adaptive-v2. Firmware UNCHANGED + UNFLASHED (429e2a5 running).
+  Mission NOT complete — stay on branch, no REPORT.md.
+### NEXT SESSION (critical path — STILL BLOCKED on the owner binary question at the very top)
+1. Check for an owner note / a NEW `wedge-0 boundary set` in pw_serial.log after 08:31 answering the physical
+   pointer position. If none, the mission still cannot validly advance — re-confirm the block, do NOT do motor work.
+2. If owner reports wedge 10/11 → after they secure the magnet hub + attended re-zero, RE-VALIDATE encoder==cam
+   with ONE tiny attended k/K cam-cal move (net enc vs cam within a few deg) BEFORE resuming T3.
+3. If owner reports wedge 4 → the encoder is fine; investigate why the wheel rolled 156° while floating (a
+   naturalness/creep concern for acceptance) and re-check cam geometry; then resume T3 on the trusted mask.
+4. STAGED (only after frame re-validated, evidence-first): optional AS5600 magnitude/AGC/STATUS readout added
+   to `s`/diag as a continuous magnet-health signal for the reveal — will NOT catch a hub slip, but flags
+   magnet loss/weakening. Do not flash blind; verify it does not touch the proven TMC init or motor path.
 
 ## 2026-07-27 SUPERVISOR v2 SESSION 4 (~08:31) — ANOMALY #1 = ENCODER-FRAME SLIP (three-way proven); HALTED, 0 spins
 ### What I did (NO motor, NO flash — investigation only)
