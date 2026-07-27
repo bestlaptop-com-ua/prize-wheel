@@ -43,3 +43,28 @@ at least 4 verification spins before concluding; keep a rolling notes file
 (AGENT_NOTES.md) so a restarted session can resume; if the board stops
 responding, use the RTS reset procedure; if anything grips a latch, reset,
 record, continue.
+
+## Addendum (owner directive): acoustic instrumentation — do this FIRST
+The owner hears strange noises from your current experiments. Build ears,
+characterize those noises, then continue the mission with sound as a
+first-class acceptance signal. The goal is a smooth AND QUIET handover.
+
+T2b. Microphone monitor: background acoustic logger on the laptop mic
+(python sounddevice; pip install if missing) -> %TEMP%\pw_mic.log, one line
+per ~50 ms: RMS dBFS, 1-6 kHz band energy, crest factor. Stop file
+%TEMP%\pw_mic_stop, pid %TEMP%\pw_mic.pid. Same clock as the other logs.
+- Save a ~4 s WAV clip around every detected anomaly to %TEMP%\pw_clips\
+  (keep the last 20) so the owner can audition the evidence.
+- Calibrate: 10 s ambient floor, then one generated spin observed end to
+  end. The wheel's NATURAL sound is the rhythmic peg clack at ~12 x omega
+  impulses/s - predict the rhythm from encoder omega and treat matching
+  impulses as expected. Anomaly = sustained broadband energy above the
+  free-coast reference, impulses off the peg rhythm, or any sound in phases
+  that should be silent (pre-engage at low speed, holds, DRIFT_WATCH).
+- Cross-attribute every acoustic anomaly with encoder jitter (dense d dumps)
+  and the firmware phase from the serial log before concluding anything.
+
+Acceptance updates: T4 and T6 now include acoustic criteria - engage
+inaudible above peg noise; the ramp adds no sustained band energy above the
+matched-speed free-coast reference; holds and releases silent; zero anomaly
+clips across the final 30-spin acceptance run.
