@@ -26,10 +26,59 @@ rule / invariant #7): a spin now could land on a real dare while the firmware be
   scale drifted 0.84→0.71 with bad per-move quality. The tracker CX/CY/R and scale fit must be re-measured
   before the camera can certify absolute position again.
 
-NOTHING IS LOST BY WAITING: the FRZ stream now logs the raw register + magnet health every second, so if the
+NOTHING IS LOST BY WAITING: the FRZ stream logs the raw register + magnet health every second, so if the
 jump recurs on its own it will be CAUGHT LIVE and the layer convicted (raw jump vs prior line → transport/
 magnet; raw steady but dRes jumps → frame math) without needing a reboot. Leave the bridge + cam + mic running.
 (The old "156° re-zero" OWNER ACTION block further down is SUPERSEDED — that block was cleared at 22:38.)
+
+UPDATE Session 42 (2026-07-27 ~23:04, commit 4758475): the forensics kit now ALSO catches the two silent-jump
+mechanisms the 1 Hz dRes stream was blind to — a blind-gap re-prime (`# FRZ-EVT GAP`, logs snapDeg) and an
+impossible-delta rate-reject (`# FRZ-EVT RATE`, logs dDeg), each with magnet flags at the instant. So a
+recurrence is now even more convictable. ALSO: the wheel has since GRAVITY-ROLLED while coils float (it is
+free + unbalanced) — frame now reads ~wedge 3 (ang ~88–97, raw 2023), no longer the 44.65/wedge-1 of Session
+41. dRes stayed 0 the whole time (real physical roll, not a jump). This does NOT resolve the 95° absolute
+ambiguity — the owner glance + magnet-hub snug + `z` re-zero (steps above) is still the one action needed; it
+re-establishes encoder==wheel regardless of the wheel's current rolled position.
+
+## 2026-07-27 SUPERVISOR v2 SESSION 42 (~23:04) — SHIPPED FRZ-EVT (Priority-1 forensics completion); flashed; 0 spins
+### What I did (owner-independent firmware increment; NO motor, 0 spins)
+- Read CLAUDE.md/MISSION.md/AGENT_NOTES top + CLAUDE_VARIANT tail. Confirmed still BLOCKED on the owner for the
+  95° absolute-frame ambiguity (no new `# wedge-0 boundary set` after 19:12:57; no owner note). Motor HALTED.
+- Verified the deployed forensics kit is live and healthy: 606 FRZ lines, dRes=0 on EVERY one (no frame-math
+  jump), magnet nominal (stat=0x67 md=1 agc=28→30 mag~2070–2104 hOk=1). No natural jump to convict this session.
+- FOUND + CLOSED a real forensic blind spot: the 1 Hz dRes stream cannot convict the two mechanisms most likely
+  to cause a SILENT idle jump, because both leave dRes=0 on the next FRZ line — (1) a blind-gap nearest-turn
+  re-prime (updateEncoder ~L820) snaps the frame up to ±180° AND re-anchors K, so dRes resets to 0; (2) a
+  rate-reject holds the frame with no residual. Both were only in the on-demand 3 s RAM buffer (never armed
+  long enough during idle rests). This is exactly why the 156° AND 95° events were unconvictable.
+- Shipped `emitFrameEvent()` (commit 4758475): immediate always-on throttled serial line on each blind-gap
+  re-prime (`# FRZ-EVT GAP`, logs snapDeg = how far the frame jumped) and each impossible-delta rejection
+  (`# FRZ-EVT RATE`, logs rawDiff/delta/dDeg), each with fresh magnet-health flags at the event instant.
+  PURELY OBSERVATIONAL — control/dare path untouched (this is NOT the risky self-heal; see below). New `F`
+  command self-tests the emitter. Compiled clean (32%), flashed COM3 (Hash verified + Hard resetting).
+- VERIFIED: FRZ stream resumed, dRes=0, magnet nominal. `F` self-test printed both lines correctly:
+  `FRZ-EVT GAP-TEST snapDeg=155.9` and `FRZ-EVT RATE-TEST dDeg=155.9` — emitter links, reachable, math correct.
+- Observed the wheel gravity-rolled while coils float (frame 44→62→97, now ~wedge 3, raw 2023), dRes=0
+  throughout = real physical roll, not a jump. Expected for the unbalanced free disc; does NOT resolve the 95°.
+### Board / instrument state at end (SAFE — coils floating)
+- Board on NEW firmware (4758475). `s`/FRZ: raw=2023 ang~88–97 wedge~2/3 om=0 mode=0 idle, coils floating.
+  dRes=0. Absolute frame identity vs physical STILL the open owner-gated ambiguity (now at a rolled position).
+  Bridge pid = see %TEMP%\pw_bridge.pid (restarted this session); cam + mic still logging. 0 of ≤4 spins used.
+### NEXT SESSION
+1. Check for the owner glance/note (top block) OR a new `# wedge-0 boundary set` after 23:04. If neither, and
+   no fresh natural FRZ jump / FRZ-EVT line has appeared, re-confirm liveness with ONE `f` and no-op. Do NOT spin.
+2. If a natural jump appeared: grep `# FRZ` AND `# FRZ-EVT` around it. A `FRZ-EVT GAP` with snapDeg matching the
+   jump + a real dtGoodUs gap + healthy magnet → blind-gap re-prime path (frame-recovery, magnet likely fine).
+   A `FRZ-EVT RATE` burst with big dDeg → I2C transport OR magnet field (read stat/agc/mag). Raw steady + dRes
+   jump with NO EVT line → pure frame-math corruption. Write up the conviction (mission's core forensic goal).
+3. Owner-independent deferred work still available: the BEHAVIORAL half of Priority 1 (self-heal + slew-limit).
+   NOTE: slew-limit ALREADY EXISTS (updateEncoder rate guard, L840, rejects impossible deltas and holds the
+   frame). Only self-heal remains, and per CLAUDE_VARIANT it is deliberately GATED until a live jump is
+   characterized — snapping-to-raw would FOLLOW a genuine magnet slip and break the dare guarantee. Do NOT ship
+   it until FRZ/FRZ-EVT has convicted a real jump AND it points at frame-math (not magnet). Until then this is
+   correctly deferred, not skipped.
+4. Once owner re-zeros AND camera geometry is re-measured: re-validate encoder==cam with one tiny k/K move,
+   then resume T3 (batches ≤4, acoustic criteria), T4/T5, T6 attended acceptance, REPORT.md.
 
 ## 2026-07-27 SUPERVISOR v2 SESSION 41 (~22:45) — SHIPPED Priority-1 encoder forensics kit; flashed; 0 spins
 ### What I did (firmware change + flash + verify; NO motor)

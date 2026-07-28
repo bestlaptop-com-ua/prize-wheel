@@ -490,3 +490,44 @@ Design: at rest (omega≈0, fresh) if |dRes| exceeds a generous threshold for N 
 frame's within-turn residue to raw and log a HEAL event; the DIAG_RATE guard already slew-limits per-cycle.
 Guard carefully: if the jump is a genuine magnet slip, snapping-to-raw FOLLOWS the corrupted magnet, so
 self-heal must be paired with the magnet-health flags (only heal when md=1 and AGC/MAG are in the healthy band).
+
+## 2026-07-27 ~23:04 (Session 42) — FRZ-EVT: closed the forensics blind spot for silent jumps (commit 4758475)
+
+Completed the LOGGING side of Priority 1. The 1 Hz `# FRZ` dRes stream shipped in Session 41 is blind to the
+two mechanisms most likely to produce a silent, motionless idle jump (the 156°/95° class), because BOTH leave
+`dRes=0` on the very next FRZ line:
+- **Blind-gap re-prime** (`updateEncoder`, the `dtGoodUs > ENCODER_MAX_GOOD_GAP_US` branch → `primeEncoder(...,
+  preserveNearestTurn=true)`): snaps the frame to the nearest whole-turn of the current raw (up to ±180°) AND
+  re-anchors `frameRawOffsetK`. After it, `exp` is recomputed against the new K, so `dRes` reads 0 — the jump
+  is indistinguishable from a genuine physical rotation in the 1 Hz stream.
+- **Rate-reject** (the `absDelta > maxAllowed` slew guard): correctly HOLDS the frame (this is the already-
+  implemented "slew-limit impossible deltas" half of Priority 1 — it works), but produces no residual, so the
+  1 Hz stream shows nothing.
+Both were previously recorded ONLY in the on-demand 3 s P1-DIAG RAM buffer, which — per the 08:31 analysis — is
+"neither armed nor long enough" during the idle rests when the jump actually fires. That is precisely why both
+the 156° and the 95° events were unconvictable.
+
+**Fix (`emitFrameEvent`, purely observational, control/dare path untouched):** an immediate, always-on,
+throttled serial line at each of those two points:
+- `# FRZ-EVT GAP …snapDeg=…dtGoodUs=…` — how far the frame snapped at a blind-gap re-prime, over what dt gap.
+- `# FRZ-EVT RATE …rawDiff=…delta=…dDeg=…` — the impossible raw delta the guard refused.
+Both carry `stat/md/ml/mh/agc/mag/hOk` read AT the event instant. Throttled to ≥150 ms with a carried
+`supp=` count so a stuck fault cannot flood the log. New `F` command self-tests the emitter.
+
+**Conviction matrix now complete** for the next occurrence:
+- `FRZ-EVT GAP` snapDeg ≈ the jump, real dtGoodUs gap, magnet healthy → the frame-recovery (blind-gap) path
+  healed to a fresh absolute read; the magnet is probably fine, the gap is the story (why did sampling stall?).
+- `FRZ-EVT RATE` burst, big dDeg → the raw register itself lurched: I2C transport OR magnet field (read the
+  flags — a rising AGC / falling MAGNITUDE / ML trip indicts the magnet).
+- Raw steady + `dRes` jumps with NO EVT line → pure frame-math corruption (the DIAG_RATE/GAP guards never fired).
+
+**Verified:** compiled clean (32%), flashed COM3 (Hash verified + Hard resetting), FRZ stream resumed with
+dRes=0 and nominal magnet health; `F` printed `GAP-TEST snapDeg=155.9` and `RATE-TEST dDeg=155.9` (math + link
+confirmed). 0 spins, no motor. The wheel gravity-rolled across the reboot (frame 44→62→97, raw 2023, wedge~3,
+dRes=0 throughout = real roll) — expected for the unbalanced free disc; the 95° absolute ambiguity is unchanged
+and still owner-gated.
+
+**Not done (deliberately):** the self-heal half of Priority 1. Slew-limit already exists (the rate guard). Per
+the Session 41 design note, self-heal must wait until FRZ/FRZ-EVT has convicted a live jump AND it points at
+frame-math rather than a magnet slip — otherwise snapping-to-raw silently follows a corrupted magnet and breaks
+the dare guarantee. Correctly deferred, not skipped.
