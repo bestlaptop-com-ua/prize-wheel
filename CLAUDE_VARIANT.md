@@ -438,3 +438,55 @@ re-zero and re-verify wedge-3 ≈ 103.5°). Simplest proposed fix: mechanically 
 mount so it cannot slip, then re-zero; add a periodic AS5600 magnitude/AGC health read (`d` diag exposes
 it) as an early-warning flag for a weakening magnet. Do NOT implement the prior DRIFT_WATCH/creep-margin
 fixes — they target a physical-creep model that the camera has now disproven.
+
+## 2026-07-27 ~22:45 — ENCODER FORENSICS KIT deployed (Priority 1) + a partial forensic catch
+
+### What shipped (firmware, branch claude/adaptive-v2)
+Always-on 1 Hz `# FRZ` forensic stream, purely observational, never touches the control path:
+- New AS5600 health read `readMagnetHealth()` — STATUS (0x0B: MD/ML/MH), AGC (0x1A),
+  MAGNITUDE (0x1B, 3-byte burst from 0x1A). Bounded by Wire.setTimeOut(3); logs a read-miss flag.
+- New `frameRawOffsetK` invariant: raw == (ENCODER_DIR_SIGN*counts + K) mod 4096 while the frame
+  faithfully tracks the magnet. K is set ONLY in `primeEncoder` (first read / post-blind-gap snap) so
+  an honest re-prime is distinguishable from a silent jump. `dRes` = signed shortest (raw - frame-predicted
+  raw); it is 0 whenever the frame and the absolute register agree.
+- `emitForensicLine()` prints: raw, exp(=frame-predicted raw), dRes, counts, angle, wedge, omega,
+  fresh, STATUS/MD/ML/MH, AGC, MAGNITUDE, hOk, mode. Called every 1000 ms from loop via
+  `serviceForensics()` (suppressed only while the high-rate `d` capture is armed); `f` prints one on demand.
+- Conviction logic the stream enables: **raw jumps vs the prior FRZ line → I2C transport OR magnet field
+  (read the flags); raw steady but dRes jumps → firmware frame math.** The 156°/95° class only ever fires
+  during long idle rests, where the 3 s RAM diag buffer was neither armed nor long enough — this stream is
+  the missing continuous record.
+- Compiled clean (32% flash). Flashed COM3 (Hash of data verified + Hard resetting). Frame zero (wedge0)
+  survived the RTS reset (persisted double ≈ 89.6°, confirmed non-default). Stream live from 22:45:50,
+  dRes=0 every line, magnet health nominal.
+
+### Healthy magnet baseline captured (at rest, wheel still): stat=0x67 md=1 ml=0 mh=0 agc=28 mag≈2070.
+AGC=28 is low-ish (strong field, MH not tripped) — a good early-warning baseline: a rising AGC or a falling
+MAGNITUDE toward an ML trip would flag a weakening/moving magnet before a jump.
+
+### PARTIAL FORENSIC CATCH straddling the reboot (unconvictable — pre-reboot raw was never logged)
+Pre-flash (old fw, 22:45:01): wheelAngle=139.57 wedge=4. Post-reboot (new fw, re-primed from absolute
+raw=2221): wheelAngle=44.65 **wedge=1 (DARE)**. A ~95° frame change. The CAMERA proves the wheel did NOT
+move: span 0.06 cam-units across 22:45:00–45 (through the reset). wedge0 persisted unchanged, so this is a
+real frame-vs-physical divergence in the encoder domain, same silent/motionless signature as the 156° class.
+Two hypotheses remain consistent and I cannot separate them from reboot-straddling data:
+  (a) raw jumped and the frame's rate-guard (DIAG_RATE) correctly REJECTED it, holding the pre-jump value
+      (wedge 4); the reboot re-primed to the post-jump raw (wedge 1) → magnet/transport layer.
+  (b) accumulated-frame corruption that the reboot's fresh absolute read HEALED → frame-math layer.
+The FRZ stream is now running continuously, so the NEXT occurrence is caught live WITH the raw register and
+magnet flags at that instant — a clean conviction. That is the whole point of the kit.
+
+### Consequence (invariant #7 / >5° STOP rule)
+Frame vs physical is currently ambiguous by ~95° across the reboot and the absolute re-prime lands on a DARE
+wedge. Wedge identity is therefore untrustworthy for a spin, so NO motor work this session. One owner glance
+at the physical pointer resolves which reading is truth; a magnet-hub set-screw snug + re-zero re-establishes
+encoder==wheel and secures against recurrence. Camera geometry is ALSO stale (owner moved the laptop; scale
+drifted 0.84→0.71) so the camera cannot yet certify absolute either — both gate the resumption of campaigns.
+
+### NEXT deliberate increment (owner-independent, deferred by cadence discipline)
+Behavioral half of Priority 1 — self-heal + slew-limit — is designed but NOT shipped (it touches the dare-
+critical position path; land it as its own proven step once the FRZ stream has characterised a live jump).
+Design: at rest (omega≈0, fresh) if |dRes| exceeds a generous threshold for N consecutive samples, snap the
+frame's within-turn residue to raw and log a HEAL event; the DIAG_RATE guard already slew-limits per-cycle.
+Guard carefully: if the jump is a genuine magnet slip, snapping-to-raw FOLLOWS the corrupted magnet, so
+self-heal must be paired with the magnet-health flags (only heal when md=1 and AGC/MAG are in the healthy band).

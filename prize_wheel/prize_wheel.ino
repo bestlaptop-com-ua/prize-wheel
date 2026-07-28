@@ -69,6 +69,10 @@
 #define PIN_SCL  22
 #define AS5600_ADDR 0x36
 #define AS5600_RAW  0x0C
+// Magnet-field forensics registers (read at 1 Hz, off the hot encoder path):
+#define AS5600_STATUS 0x0B   // 1 byte: bit5 MD (detected), bit4 ML (too weak), bit3 MH (too strong)
+#define AS5600_AGC    0x1A   // 1 byte: automatic gain (mid-range = healthy field)
+#define AS5600_MAG    0x1B   // 2 bytes: CORDIC magnitude
 
 /* --------------------------- MECHANICAL ---------------------------------- */
 #define MOTOR_FULLSTEPS 200
@@ -449,6 +453,26 @@ double angleDegMT = 0.0;
 uint32_t lastVelocityUpdateUs = 0;
 int8_t lastDeltaSign = 0;
 
+/* --------------------- ENCODER-JUMP FORENSICS (always-on) ----------------- *
+ * The 156-deg-class corruption is a DISCRETE, silent, motionless jump that has
+ * only ever been seen during long idle rests - when the 3 s RAM diag buffer is
+ * neither armed nor long enough. This stream is the missing continuous record:
+ * once per second it logs the live raw AS5600 register, the raw value the frame
+ * PREDICTS (frameRawOffsetK is the fixed raw<->frame relationship, invariant
+ * across every accepted delta), their signed residual, and the magnet-health
+ * registers. When the next jump fires the log convicts the layer:
+ *   raw jumps vs the prior FRZ line -> I2C transport OR magnet field (check flags)
+ *   raw steady but dRes jumps        -> firmware frame math corrupted the frame
+ * Purely observational; it never touches encoderCountsMT or the control path. */
+int32_t  frameRawOffsetK = 0;      // raw == (DIR_SIGN*counts + K) mod 4096 while faithful
+bool     frameRawOffsetValid = false;
+uint8_t  magStatus = 0;            // last AS5600 STATUS byte (MD/ML/MH)
+uint8_t  magAgc = 0;
+uint16_t magMagnitude = 0;
+bool     magHealthOk = false;
+uint32_t lastForensicMs = 0;
+const uint32_t FORENSIC_PERIOD_MS = 1000;
+
 VelocityPoint velocityHistory[VELOCITY_HISTORY_LEN];
 uint8_t velocityHistoryHead = 0;
 uint8_t velocityHistoryCount = 0;
@@ -573,6 +597,12 @@ void primeEncoder(uint16_t raw, uint32_t doneUs, bool preserveNearestTurn) {
   lastGoodRaw = raw;
   lastGoodUs = doneUs;
   angleDegMT = (double)encoderCountsMT * 360.0 / 4096.0;
+  // Re-anchor the forensic frame<->raw relationship. A re-prime (first read or a
+  // post-blind-gap nearest-turn snap) is the one legitimate place K may change;
+  // logging it lets the analysis tell an honest re-prime from a silent jump.
+  frameRawOffsetK = ((int32_t)raw - ENCODER_DIR_SIGN * encoderCountsMT) % 4096;
+  if (frameRawOffsetK < 0) frameRawOffsetK += 4096;
+  frameRawOffsetValid = true;
   invalidateVelocity();
   pushVelocityPoint(doneUs, encoderCountsMT);
 }
@@ -617,6 +647,74 @@ bool readRawSample() {
   uint32_t elapsedUs = read.doneUs - startUs;
   read.i2cUs = elapsedUs > 65535U ? 65535U : (uint16_t)elapsedUs;
   return false;
+}
+
+// Read the AS5600 magnet-health registers (STATUS, then AGC+MAGNITUDE as one
+// 3-byte burst from 0x1A). Off the hot path: called once per second by the
+// forensic emitter. Bounded by Wire.setTimeOut(3); any failure leaves the last
+// good values in place and returns false so the log can flag a read miss.
+bool readMagnetHealth() {
+  uint8_t st;
+  Wire.beginTransmission(AS5600_ADDR);
+  Wire.write(AS5600_STATUS);
+  if (Wire.endTransmission(false) != 0) return false;
+  if (Wire.requestFrom((uint8_t)AS5600_ADDR, (size_t)1) != 1 || Wire.available() < 1) {
+    while (Wire.available()) Wire.read();
+    return false;
+  }
+  st = (uint8_t)Wire.read();
+
+  Wire.beginTransmission(AS5600_ADDR);
+  Wire.write(AS5600_AGC);                 // 0x1A AGC, 0x1B/0x1C MAGNITUDE - contiguous
+  if (Wire.endTransmission(false) != 0) return false;
+  if (Wire.requestFrom((uint8_t)AS5600_ADDR, (size_t)3) != 3 || Wire.available() < 3) {
+    while (Wire.available()) Wire.read();
+    return false;
+  }
+  uint8_t agc = (uint8_t)Wire.read();
+  uint16_t hi = (uint16_t)Wire.read();
+  uint16_t lo = (uint16_t)Wire.read();
+
+  magStatus = st;
+  magAgc = agc;
+  magMagnitude = ((hi << 8) | lo) & 0x0FFF;
+  magHealthOk = true;
+  return true;
+}
+
+// Always-on 1 Hz forensic line (see the frameRawOffsetK block above). Suppressed
+// only while the high-rate `d` capture is armed so it cannot perturb that timing.
+void serviceForensics() {
+  if (diagnosticCapture) return;
+  uint32_t nowMs = millis();
+  if ((uint32_t)(nowMs - lastForensicMs) < FORENSIC_PERIOD_MS) return;
+  lastForensicMs = nowMs;
+  emitForensicLine();
+}
+
+// Compute the frame-vs-raw residual and print one FRZ record. Uses the raw value
+// read by updateEncoder() this loop (encoderRead), so no extra angle transaction.
+void emitForensicLine() {
+  bool hOk = readMagnetHealth();
+  int32_t expRaw = -1;
+  int16_t dRes = 0;
+  if (frameRawOffsetValid) {
+    expRaw = (ENCODER_DIR_SIGN * encoderCountsMT + frameRawOffsetK) % 4096;
+    if (expRaw < 0) expRaw += 4096;
+    if (encoderRead.ok) {
+      dRes = (int16_t)encoderRead.raw - (int16_t)expRaw;
+      if (dRes > 2048) dRes -= 4096;
+      if (dRes < -2048) dRes += 4096;
+    }
+  }
+  Serial.printf(
+    "# FRZ t=%lu raw=%d exp=%ld dRes=%d cnt=%ld ang=%.2f w=%d om=%d fresh=%d "
+    "stat=0x%02X md=%d ml=%d mh=%d agc=%u mag=%u hOk=%d mode=%u\n",
+    (unsigned long)millis(), encoderRead.ok ? (int)encoderRead.raw : -1,
+    (long)expRaw, dRes, (long)encoderCountsMT, wheelAngleDeg(), currentWedge(),
+    milliRevS(omega), encoderPositionFresh() ? 1 : 0,
+    magStatus, (magStatus >> 5) & 1, (magStatus >> 4) & 1, (magStatus >> 3) & 1,
+    magAgc, magMagnitude, hOk ? 1 : 0, (unsigned)mode);
 }
 
 bool velocityFromWindow(uint32_t nowUs, float& velocityRevS) {
@@ -2240,6 +2338,7 @@ void help() {
     " d  arm high-rate RAM encoder capture (auto-dump after true stop)\n"
     " v  toggle live takeover logs (disabled while d capture is armed)\n"
     " m  print dare mask\n"
+    " f  forensic snapshot: raw AS5600 reg + frame-predicted raw + residual + magnet health (auto-logs 1 Hz)\n"
     " a  attended accel-ceiling probe (wheel sweeps 120 deg per stage)\n"
     " g  attended spin generator FAS+ (spin up to ~0.4 rev/s, release to coast)\n"
     " G  attended spin generator FAS- (other direction)\n"
@@ -2351,6 +2450,9 @@ void handleSerial() {
     case 'm':
       Serial.printf("# dare_mask=0x%03X; dare wedges: 1 5\n", dare_mask);
       break;
+    case 'f':
+      emitForensicLine();   // on-demand FRZ snapshot (also runs every 1 s always-on)
+      break;
     case '?':
       help();
       break;
@@ -2441,6 +2543,7 @@ void loop() {
   esp_task_wdt_reset();   // feed the loop watchdog; a stalled loop resets the board
   updateEncoder();
   handleSerial();
+  serviceForensics();     // always-on 1 Hz raw/frame/magnet-health forensic line
 
   bool sensorOK = encoderHealthy();
   uint32_t nowMs = millis();

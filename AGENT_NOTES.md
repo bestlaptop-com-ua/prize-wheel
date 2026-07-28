@@ -6,7 +6,65 @@
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
-## >>> OWNER ACTION REQUIRED â€” ONE ACTION UNBLOCKS EVERYTHING (re-confirmed Session 40, 09:49; blocked ~83 min) <<<
+## >>> OWNER ACTION REQUIRED (2026-07-27 ~22:47) — ONE GLANCE + RE-ZERO RESOLVES A 95° FRAME AMBIGUITY <<<
+The Priority-1 encoder forensics kit is DEPLOYED and running (always-on 1 Hz `# FRZ` stream; see Session 41
+below and CLAUDE_VARIANT.md). During its flash the reboot re-primed the frame from the absolute AS5600 raw
+register and it now reads **wedge 1 (a DARE), angle 44.65** — whereas the pre-flash frame read **wedge 4,
+angle 139.57**. The CAMERA proves the wheel did NOT physically move across the reboot (0.06-unit span). So
+the encoder frame diverged ~95° from the physical wheel (same silent, motionless signature as the 156° class),
+and I cannot tell from software which reading is the true physical position. Motor work is HALTED (>5° STOP
+rule / invariant #7): a spin now could land on a real dare while the firmware believes it is safe.
+
+  THE ONE ACTION (≈60 s):
+  1. (5 s) Glance at the wheel: which wedge number is physically under the red pointer? Jot it here.
+     - If it's ~wedge 1 → the post-reboot absolute read is truth (the old accumulated frame had jumped).
+     - If it's ~wedge 4 → the reboot re-prime is wrong and the raw register itself has shifted (magnet).
+  2. Snug the AS5600 magnet-hub set screw (and nudge-check the sensor mount) so it cannot slip mid-party.
+  3. Rotate the bright rim screw under the red pointer, send `z` ONCE (spin loop idle), verify `s` reads
+     wedge-3 center ≈ 103.5°. This re-establishes encoder==wheel by construction.
+  ALSO (Priority 2, needed before campaigns): the camera geometry is stale — you moved the laptop and the
+  scale drifted 0.84→0.71 with bad per-move quality. The tracker CX/CY/R and scale fit must be re-measured
+  before the camera can certify absolute position again.
+
+NOTHING IS LOST BY WAITING: the FRZ stream now logs the raw register + magnet health every second, so if the
+jump recurs on its own it will be CAUGHT LIVE and the layer convicted (raw jump vs prior line → transport/
+magnet; raw steady but dRes jumps → frame math) without needing a reboot. Leave the bridge + cam + mic running.
+(The old "156° re-zero" OWNER ACTION block further down is SUPERSEDED — that block was cleared at 22:38.)
+
+## 2026-07-27 SUPERVISOR v2 SESSION 41 (~22:45) — SHIPPED Priority-1 encoder forensics kit; flashed; 0 spins
+### What I did (firmware change + flash + verify; NO motor)
+- Read CLAUDE.md/MISSION.md/AGENT_NOTES top + CLAUDE_VARIANT tail. Block from Sessions 10–40 was already
+  RESOLVED (re-zero + accumulation test passed, 22:38). Executed the supervisor's Priority-1 mandate.
+- Implemented the encoder forensics kit in prize_wheel/prize_wheel.ino (purely observational, control path
+  untouched): `readMagnetHealth()` (AS5600 STATUS 0x0B / AGC 0x1A / MAGNITUDE 0x1B); `frameRawOffsetK`
+  invariant (raw == DIR_SIGN*counts + K mod 4096, K set only at prime) → live residual `dRes`;
+  `emitForensicLine()` + `serviceForensics()` = always-on 1 Hz `# FRZ` line from loop(); `f` = on-demand
+  snapshot; help() updated. Compiled clean (32% flash).
+- Flashed COM3 per procedure (stopped bridge → upload: Hash of data verified + Hard resetting → waited 7 s →
+  restarted bridge, new pid saved). wedge0 survived RTS reset (persisted ≈89.6°, non-default confirmed).
+- VERIFIED live: FRZ stream at 1 Hz, `dRes=0` every line (frame==raw), magnet health nominal
+  (stat=0x67 md=1 ml=0 mh=0 agc=28 mag≈2070). Healthy-magnet baseline recorded.
+- CAUGHT (partially) a ~95° frame-vs-physical divergence straddling the reboot — camera-confirmed still;
+  unconvictable because the OLD firmware never logged raw (exactly the gap the kit closes). See owner block
+  above + CLAUDE_VARIANT.md for the full analysis and the two remaining hypotheses.
+### Board / instrument state at end (SAFE — coils floating)
+- Board on NEW firmware (forensics kit, committed this session). `s`/FRZ: angle=44.65 wedge=1 omega=0 mode=0
+  DONE-idle, coils floating, accel=900. Frame self-consistent (dRes=0) but ABSOLUTE identity vs physical is
+  the open ambiguity above. Bridge pid saved to %TEMP%\pw_bridge.pid; cam + mic still logging. No background
+  motor task started; 0 of ≤4 spins used.
+### NEXT SESSION
+1. Check for the owner glance/note above OR a new `# wedge-0 boundary set` in pw_serial.log dated after 22:45.
+   If neither, and no fresh natural FRZ jump has appeared, re-confirm liveness with ONE `f` (also refreshes
+   magnet health) and no-op — do NOT re-derive; do NOT spin (frame identity unresolved).
+2. If a natural jump HAS appeared in the FRZ stream: grep `# FRZ` around it, compare raw vs the prior line
+   and dRes, read the magnet flags — convict the layer, write it up (this is the mission's core forensic goal).
+3. Once the owner re-zeros AND camera geometry is re-measured: re-validate encoder==cam with one tiny k/K
+   move, then resume T3 baseline (batches ≤4, acoustic criteria), T4/T5, T6 attended acceptance, REPORT.md.
+4. Owner-independent deferred work if you want to advance without the owner: land the BEHAVIORAL half of
+   Priority 1 (self-heal + slew-limit) as its own proven step — design is in CLAUDE_VARIANT.md (guard on
+   magnet-health flags so a genuine slip is not silently followed).
+
+## >>> OWNER ACTION REQUIRED â€” ONE ACTION UNBLOCKS EVERYTHING (re-confirmed Session 40, 09:49) <<<  [SUPERSEDED 22:47 — this 156° re-zero block was CLEARED at 22:38; see the new 95° frame block at the TOP of this file]
 The encoder frame is out of sync with the physical wheel by ~156Â° and the mission cannot validly advance
 until you re-align it. Sessions 4â€“10 have independently verified this; Session 10 re-derived it FROM SCRATCH
 off the raw logs (see the decisive numbers below), so it is not an inherited assumption â€” it is sound.
