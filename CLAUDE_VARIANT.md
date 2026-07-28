@@ -531,3 +531,47 @@ and still owner-gated.
 the Session 41 design note, self-heal must wait until FRZ/FRZ-EVT has convicted a live jump AND it points at
 frame-math rather than a magnet slip — otherwise snapping-to-raw silently follows a corrupted magnet and breaks
 the dare guarantee. Correctly deferred, not skipped.
+
+## 2026-07-27 ~23:14 (Session 43) — Priority 2: camera geometry CONVICTED stale; re-fit spec (no motor, 0 spins)
+
+Still owner-blocked on the 95° absolute-frame ambiguity (no new `# wedge-0 boundary set` after 19:12:57; no
+owner note). FRZ stream healthy since Session 42: 1328 `# FRZ` lines, `dRes=0` on EVERY one, magnet nominal
+(stat=0x67 md=1 agc=30 mag~2103 hOk=1); the only `FRZ-EVT` lines are the Session-42 `F` self-test. No natural
+jump appeared to convict. So the forensic instrument is armed and waiting — nothing to build there (self-heal
+stays gated per Session 41/42). I spent this bounded increment on the owner-INDEPENDENT half of Priority 2.
+
+**Measured the camera geometry directly (pw_cam_geom3.py → pw_cam_geom3.jpg).** Stopped the tracker (single
+camera), grabbed a fresh 1920x1080 frame, overlaid the tracker's hardcoded geometry (red) and a HoughCircles
+fit (green), restarted the tracker. Findings:
+- The wheel's TRUE rotation hub (the lit purple ring + centre bolt) is now at **top-centre ≈ (615, 85)**.
+- The tracker's hardcoded geometry is still `CX=1049, CY=1026, R=841` — that centre is near the frame BOTTOM,
+  **~940 px from the real hub**. Its 0.55/0.65/0.75·R sampling arcs sweep the lower wedges, NOT concentric with
+  the hub. Non-concentric arcs do not shift as a clean rotation → this fully explains the reported scale drift
+  (0.84→0.71) and "bad per-move quality." The at-rest output is stable but the degree-scale is meaningless.
+- HoughCircles is useless here: with the hub at the frame edge only a partial arc is visible, so it returned a
+  spurious circle off the right edge (center 1816,762 r=685 at the weakest param2=40, margins negative).
+
+**Actions taken (all reversible, verified):**
+- Restarted the tracker AS-IS (new pid saved to pw_cam.pid; new baseline cam≈0 at 23:13:40, at-rest d≈0.00,
+  q≈1.2–1.3). It still serves its ONLY active purpose — a stationary-wheel witness — since a still wheel reads
+  flat regardless of geometry. Its low q corroborates the weak lock.
+- Flagged `pw_cam_cal.txt` STALE (`stale=1` + header note); preserved scale=0.837 as history. Nothing downstream
+  should trust it for degree conversion until re-fit.
+
+**Deliberately NOT done:** rewriting the tracker geometry. A correct re-centre to a top-EDGE hub is not a
+CX/CY/R swap — the arc sweep must flip to go DOWNWARD into the visible wheel (the tracker samples `CY - R·sinθ`,
+i.e. ABOVE the centre; with the hub at y≈85 those samples fall off-frame). And the payoff (a correct scale) is
+only observable by CAL-MOVE spins, which are motor-halted. Shipping a geometry I cannot validate end-to-end
+would violate verify-before-commit and could leave a worse witness. Correctly deferred to when spins resume.
+
+**Geometry re-fit spec (do this when the owner has re-zeroed AND motor spins are allowed):**
+1. Re-measure the hub precisely: detect the bright hub ring (HSV high-V/high-S blob near top-centre) OR fit a
+   circle to the visible outer rim arc (the wheel/background boundary on the right). Seed hub ≈ (615, 85).
+   Establish R from the rim (the outer boundary is ~1000+ px from the hub — the wheel is large/close).
+2. Rework `pw_cam_tracker2.py`: set CX,CY to the hub; choose an arc window over the VISIBLE lower wedges and
+   flip the sampling to sweep downward from the hub (`CY + R·k·sinθ`, θ spanning the visible fan ≈ the left-to-
+   right wedge spread in the frame); pick ring radii k so all sample points stay in-frame and land on saturated
+   wedge colour (verify with an overlay like geom3, all points inside + on wedges).
+3. Restart the tracker; confirm at-rest d≈0 and a HIGHER q than the current ~1.3 (sharper lock = concentric).
+4. Run 5–7 CAL-MOVE spins (`pw_cam_cal_net.py fit <hhmmss>`); accept only if resid_RMS < ~0.4° and a `check`
+   pass on held-out moves is < 1.5°. Clear `stale=1`. Only THEN trust the camera for absolute-position certs.

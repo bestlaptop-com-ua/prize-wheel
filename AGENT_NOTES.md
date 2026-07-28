@@ -1,5 +1,51 @@
 # AGENT_NOTES - rolling resume state (branch claude/adaptive-v2)
 
+## >>> OWNER ACTION REQUIRED (2026-07-27 ~23:15, Session 43) — ONE ~60 s ACTION STILL UNBLOCKS EVERYTHING <<<
+Unchanged owner-gate: the encoder frame diverged ~95° from the physical wheel across the Session-41 reboot
+(camera-confirmed the wheel never moved). Motor is HALTED (>5° STOP rule) until you re-establish encoder==wheel.
+THE ACTION (details in the ~22:47 block below): (1) glance — which wedge # is physically under the red pointer?
+jot it; (2) snug the AS5600 magnet-hub set screw; (3) rim screw under pointer, send `z` once, verify `s` reads
+wedge-3 centre ≈103.5°. NOTHING IS LOST BY WAITING — the FRZ/FRZ-EVT stream will catch & convict any recurrence
+live (see below). This session I did NOT need you: I advanced Priority 2 (camera) as far as is owner-independent.
+
+  CAMERA (Priority 2) — now DIAGNOSED, not just suspected: I measured it (pw_cam_geom3.jpg). The laptop move put
+  the wheel's true hub at top-centre ~(615,85) while the tracker still assumes centre (1049,1026) ~940 px away →
+  non-concentric sampling → THIS is the scale drift 0.84→0.71. The tracker still works as a "wheel is stationary"
+  witness (restarted, live), but its degrees are invalid; I flagged pw_cam_cal.txt STALE. A correct geometry
+  re-fit needs motor CAL-MOVE spins to validate, so it is deferred to when you've re-zeroed and spins resume.
+  Full re-fit spec is in CLAUDE_VARIANT.md (Session 43). When you re-aim/settle the laptop, leave it put.
+
+## 2026-07-27 SUPERVISOR v2 SESSION 43 (~23:15) — Priority-2 camera geometry CONVICTED stale; tracker restored; 0 spins
+### What I did (owner-independent; NO motor, NO flash, 0 spins)
+- Confirmed STILL owner-blocked on the 95° ambiguity: no `# wedge-0 boundary set` after 19:12:57, no owner note.
+  Bridge alive (pid 9448, serial live 23:07). FRZ stream healthy: 1328 `# FRZ` lines all `dRes=0`, magnet nominal
+  (stat=0x67 md=1 agc=30 mag~2103 hOk=1); only FRZ-EVT lines are the Session-42 `F` self-test. NO natural jump to
+  convict this session (forensic kit armed & waiting — correct; self-heal stays gated). Wheel gravity-rolled to
+  rest at wedge 2 / ang 88.24 (dRes=0 throughout = real roll).
+- Advanced Priority 2 (camera), owner-independent slice: stopped tracker (single camera), grabbed a fresh frame,
+  ran geometry detection (pw_cam_geom3.py → pw_cam_geom3.jpg), read it. CONVICTED the geometry stale — true hub
+  top-centre ~(615,85) vs tracker centre (1049,1026), ~940 px off; non-concentric arcs = the scale-drift cause.
+  HoughCircles unusable (partial arc at frame edge → spurious circle). Restarted tracker AS-IS (new pid in
+  pw_cam.pid, baseline cam≈0 @23:13:40, at-rest d≈0.00, q≈1.3) so the stationary-wheel witness is intact.
+  Flagged pw_cam_cal.txt `stale=1`. Wrote the full geometry re-fit spec to CLAUDE_VARIANT.md.
+- Did NOT rewrite tracker geometry: correct re-centre to a top-edge hub needs the arc sweep flipped downward AND
+  a scale re-fit via CAL-MOVE spins (motor-halted) to validate — unverifiable now, so deferred (verify-first).
+### Board / instrument state at end (SAFE — coils floating)
+- Board on forensics firmware (4758475). FRZ: raw~2023 ang~88 wedge 2 dRes=0, coils floating, mode=0 idle.
+  Absolute frame identity vs physical = the open owner-gated 95° ambiguity. Bridge pid 9448; cam tracker pid in
+  pw_cam.pid (restarted this session, live); mic still logging. 0 of ≤4 spins used. Firmware UNFLASHED this session.
+- Repo: docs-only edits (AGENT_NOTES.md, CLAUDE_VARIANT.md) on claude/adaptive-v2. Mission NOT complete; no REPORT.md.
+### NEXT SESSION
+1. Check for owner glance/note OR new `# wedge-0 boundary set` after 23:15. Check FRZ/FRZ-EVT for any natural jump
+   since 23:07 (grep). If a jump appeared: convict the layer (raw jump/EVT-RATE→transport|magnet; snap/EVT-GAP→
+   blind-gap re-prime; raw steady+dRes jump, no EVT→frame-math). That write-up is the mission's core forensic goal.
+2. If still owner-blocked and no jump: re-confirm liveness with ONE `f` + a glance at cam.log; do NOT spin.
+   Owner-independent code work is exhausted (forensics armed+waiting, self-heal gated, camera geometry deferred to
+   spins). A clean documented no-op is correct here — do not manufacture risky changes.
+3. Once owner re-zeros AND spins allowed: execute the CLAUDE_VARIANT Session-43 geometry re-fit spec (re-centre
+   tracker to hub, flip arc, CAL-MOVE scale fit, clear stale=1), re-validate encoder==cam with one tiny k/K move,
+   then resume T3 (batches ≤4, acoustic criteria), T4/T5, T6 attended acceptance, REPORT.md.
+
 ## RESOLVED 27 Jul 22:38 - the re-zero block is CLEARED. Owner re-zeroed (screw at pointer), verification passed, and a 13-move / 3.84-rev accumulation test proved NO accumulating frame error (encoder matched the owner's eye to 0.5 deg at the end, held 3 h at rest). Frame corruption is discrete jumps only. Proceed per the supervisor prompt: encoder forensics kit first, then camera re-cal, then campaigns.
 
 # AGENT_NOTES â€” rolling resume state (branch claude/adaptive-v2)
