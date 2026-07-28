@@ -1,980 +1,984 @@
-# AGENT_NOTES — rolling resume state (branch claude/adaptive-v2)
+# AGENT_NOTES - rolling resume state (branch claude/adaptive-v2)
+
+## RESOLVED 27 Jul 22:38 - the re-zero block is CLEARED. Owner re-zeroed (screw at pointer), verification passed, and a 13-move / 3.84-rev accumulation test proved NO accumulating frame error (encoder matched the owner's eye to 0.5 deg at the end, held 3 h at rest). Frame corruption is discrete jumps only. Proceed per the supervisor prompt: encoder forensics kit first, then camera re-cal, then campaigns.
+
+# AGENT_NOTES â€” rolling resume state (branch claude/adaptive-v2)
 
 Purpose: a restarted session can read this and continue. Newest at top.
 
-## >>> OWNER ACTION REQUIRED — ONE ACTION UNBLOCKS EVERYTHING (re-confirmed Session 40, 09:49; blocked ~83 min) <<<
-The encoder frame is out of sync with the physical wheel by ~156° and the mission cannot validly advance
-until you re-align it. Sessions 4–10 have independently verified this; Session 10 re-derived it FROM SCRATCH
-off the raw logs (see the decisive numbers below), so it is not an inherited assumption — it is sound.
+## >>> OWNER ACTION REQUIRED â€” ONE ACTION UNBLOCKS EVERYTHING (re-confirmed Session 40, 09:49; blocked ~83 min) <<<
+The encoder frame is out of sync with the physical wheel by ~156Â° and the mission cannot validly advance
+until you re-align it. Sessions 4â€“10 have independently verified this; Session 10 re-derived it FROM SCRATCH
+off the raw logs (see the decisive numbers below), so it is not an inherited assumption â€” it is sound.
 Motor work is HALTED; board is still on the validated latch-fix firmware (429e2a5), NOT reflashed.
 
 WHAT'S WRONG (short version): the wheel landed on ~wedge 10/11 at 08:25:56 and has not physically moved
 since. But the firmware/encoder now reads wedge 4 (angle 134.65) and has held that rock-stable for 30+ min.
-So the encoder is ~156° off from where the wheel actually is.
-DECISIVE EVIDENCE (Session 10, first-hand): in the 08:26→08:30 gap the encoder angle moved 338.55°→134.65°
-(Δ≈156°) while the CALIBRATED camera (scale 0.837, fit resid 0.29°) stayed within a 0.18° span across 3918
-frames — i.e. the wheel physically did NOT move — and there was NO reboot banner and NO `z` re-zero in that
-gap. A stable, FRESH/VALID absolute reading that is 156° wrong with the wheel still = the AS5600 magnet has
+So the encoder is ~156Â° off from where the wheel actually is.
+DECISIVE EVIDENCE (Session 10, first-hand): in the 08:26â†’08:30 gap the encoder angle moved 338.55Â°â†’134.65Â°
+(Î”â‰ˆ156Â°) while the CALIBRATED camera (scale 0.837, fit resid 0.29Â°) stayed within a 0.18Â° span across 3918
+frames â€” i.e. the wheel physically did NOT move â€” and there was NO reboot banner and NO `z` re-zero in that
+gap. A stable, FRESH/VALID absolute reading that is 156Â° wrong with the wheel still = the AS5600 magnet has
 PHYSICALLY SLIPPED ON ITS HUB. This is a hardware slip, not a firmware glitch, so a board reboot will NOT
 fix it and I cannot fix it from software. Because the encoder is the ONLY absolute position sense, every
-wedge/dare identity is currently untrustworthy — a firmware-"safe" landing could be a physical DARE. That
-is why I will not spin. IMPORTANT: a re-zero ALONE won't hold — please snug the magnet hub set screw first
+wedge/dare identity is currently untrustworthy â€” a firmware-"safe" landing could be a physical DARE. That
+is why I will not spin. IMPORTANT: a re-zero ALONE won't hold â€” please snug the magnet hub set screw first
 (step 3), or it can slip again mid-party and silently break the dare guarantee during your reveal.
 
-  >>> THE ONE ACTION THAT UNBLOCKS ME (≈60 s, same re-zero as 07:54 + a set-screw snug): <<<
+  >>> THE ONE ACTION THAT UNBLOCKS ME (â‰ˆ60 s, same re-zero as 07:54 + a set-screw snug): <<<
   1. (5 s, helps confirm) Glance at the wheel and note which wedge number is physically under the red
      pointer. Expected: ~wedge 10/11 (that confirms the encoder slipped). Jot it here if you can.
-  2. (Required — do this FIRST, before re-zeroing) The AS5600 magnet hub on the shaft has slipped ~156°.
+  2. (Required â€” do this FIRST, before re-zeroing) The AS5600 magnet hub on the shaft has slipped ~156Â°.
      Snug its set screw (and nudge-check the sensor mount for looseness) so it can't slip again during the
-     party. If it feels already tight, still re-seat it — the evidence says it moved.
-  3. (Required) Rotate the wheel so the bright rim screw sits under the red pointer, then — with the spin
-     loop idle — send `z` ONCE. Verify `s` then reads wedge-3 center ≈ 103.5° (as on the 07:54 re-zero).
+     party. If it feels already tight, still re-seat it â€” the evidence says it moved.
+  3. (Required) Rotate the wheel so the bright rim screw sits under the red pointer, then â€” with the spin
+     loop idle â€” send `z` ONCE. Verify `s` then reads wedge-3 center â‰ˆ 103.5Â° (as on the 07:54 re-zero).
      This physically RE-ESTABLISHES encoder==wheel by construction.
 
   After you leave an owner note OR a new `# wedge-0 boundary set` appears in the serial log (dated after
   08:46), the next session will re-validate encoder==camera with one tiny attended cam-cal move and resume
-  the T3 baseline. Until then, sessions will keep safely no-op'ing — nothing is lost by the wait.
+  the T3 baseline. Until then, sessions will keep safely no-op'ing â€” nothing is lost by the wait.
 
 Full three-way evidence (encoder jumped / camera flat / mic silent, no reboot/RTS/re-zero in the gap) is
 in the Session 4 & 5 records below and in CLAUDE_VARIANT.md. This is a candidate hardware wall (invariant
 #7); the re-zero above is the simplest fix and resolves it regardless of root cause.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 40 (~09:49) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 40 (~09:49) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:49:07.435 reply): age_us=605 angle=134.65 wedge=4 omega=0 predStop=134.6(w4) mode=10 DONE
-  (coils floating). IDENTICAL to Sessions 10–39 — encoder frozen at 134.65 (~83 min stable since 08:26). Board
-  answered `s` → supervisor silence timer reset, no RTS needed. (Reply prefix garbled as `????…D` = corrupted
+  (coils floating). IDENTICAL to Sessions 10â€“39 â€” encoder frozen at 134.65 (~83 min stable since 08:26). Board
+  answered `s` â†’ supervisor silence timer reset, no RTS needed. (Reply prefix garbled as `????â€¦D` = corrupted
   "sensor_pos=FRESH velocity=VALID" text; age_us=605 + full valid tail confirm a live fresh reply.) Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge ALIVE (last cmd answered 09:49:07); cam ALIVE, flat at −5423.68 (no physical move,
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge ALIVE (last cmd answered 09:49:07); cam ALIVE, flat at âˆ’5423.68 (no physical move,
   consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree.
-  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 31st consecutive identical no-op session (10→40), ~83 min blocked on a single
+  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 31st consecutive identical no-op session (10â†’40), ~83 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:49:07: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 firmware = board). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–40.
+   analysis â€” verified across Sessions 4â€“40.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 39 (~09:47) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 39 (~09:47) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:47:18.592 reply): sensor_pos=FRESH velocity=VALID age_us=47 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–38 — encoder frozen at 134.65
-  (~82 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge ALIVE (last cmd answered 09:47:18); cam ALIVE, flat at −5423.69 (no physical move,
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“38 â€” encoder frozen at 134.65
+  (~82 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge ALIVE (last cmd answered 09:47:18); cam ALIVE, flat at âˆ’5423.69 (no physical move,
   consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree.
-  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 30th consecutive identical no-op session (10→39), ~82 min blocked on a single
+  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 30th consecutive identical no-op session (10â†’39), ~82 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:47:18: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 firmware = board). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–39.
+   analysis â€” verified across Sessions 4â€“39.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 38 (~09:45) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 38 (~09:45) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:45:39.798 reply): age_us=701 angle=134.65 wedge=4 omega=0 predStop=134.6(w4) mode=10 DONE
-  (coils floating). IDENTICAL to Sessions 10–37 — encoder frozen at 134.65 (~80 min stable since 08:26). Board
-  answered `s` → supervisor silence timer reset, no RTS needed. (Reply prefix garbled as "????…D" = corrupted
+  (coils floating). IDENTICAL to Sessions 10â€“37 â€” encoder frozen at 134.65 (~80 min stable since 08:26). Board
+  answered `s` â†’ supervisor silence timer reset, no RTS needed. (Reply prefix garbled as "????â€¦D" = corrupted
   "sensor_pos=FRESH velocity=VALID" text; age_us=701 + full valid tail confirm a live fresh reply.) Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered 09:45:39); cam ALIVE, flat at −5423.69 (no
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered 09:45:39); cam ALIVE, flat at âˆ’5423.69 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 29th consecutive identical no-op session (10→38), ~80 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 29th consecutive identical no-op session (10â†’38), ~80 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:45:39: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 firmware = board). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–38.
+   analysis â€” verified across Sessions 4â€“38.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 37 (~09:44) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 37 (~09:44) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:44:03.406 reply): sensor_pos=FRESH velocity=VALID age_us=356 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–36 — encoder frozen at 134.65
-  (~78 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge ALIVE (last cmd answered 09:44:03); cam ALIVE, flat at −5423.72 (no physical move,
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“36 â€” encoder frozen at 134.65
+  (~78 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge ALIVE (last cmd answered 09:44:03); cam ALIVE, flat at âˆ’5423.72 (no physical move,
   consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree.
-  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 28th consecutive identical no-op session (10→37), ~78 min blocked on a single
+  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 28th consecutive identical no-op session (10â†’37), ~78 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:44:03: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 firmware = board). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–37.
+   analysis â€” verified across Sessions 4â€“37.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 36 (~09:42) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 36 (~09:42) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:42:08.206 reply): velocity=VALID age_us=46 angle=134.65 wedge=4 omega=0 predStop=134.6(w4)
-  mode=10 DONE (coils floating). IDENTICAL to Sessions 10–35 — encoder frozen at 134.65 (~76 min stable since
-  08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. (Reply prefix garbled as "????D"
-  = corrupted "sensor_pos=…FRESH" text; age_us=46 + full valid tail confirm it is a live fresh reply.) Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.75 (no
+  mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“35 â€” encoder frozen at 134.65 (~76 min stable since
+  08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. (Reply prefix garbled as "????D"
+  = corrupted "sensor_pos=â€¦FRESH" text; age_us=46 + full valid tail confirm it is a live fresh reply.) Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.75 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 27th consecutive identical no-op session (10→36), ~76 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 27th consecutive identical no-op session (10â†’36), ~76 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:42:08: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 firmware = board). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–36.
+   analysis â€” verified across Sessions 4â€“36.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 35 (~09:40) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 35 (~09:40) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:40:11.443 reply): sensor_pos=FRESH velocity=VALID age_us=392 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–34 — encoder frozen at 134.65
-  (~74 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.69 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“34 â€” encoder frozen at 134.65
+  (~74 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.69 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 26th consecutive identical no-op session (10→35), ~74 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 26th consecutive identical no-op session (10â†’35), ~74 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:40:11: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 firmware = board). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–35.
+   analysis â€” verified across Sessions 4â€“35.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 34 (~09:38) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 34 (~09:38) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:38:33.805 reply): velocity=VALID age_us=719 angle=134.65 wedge=4 omega=0 predStop=134.6(w4)
-  mode=10 DONE (coils floating). IDENTICAL to Sessions 10–33 — encoder frozen at 134.65 (~72 min stable since
-  08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip
-  analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.70 (no
+  mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“33 â€” encoder frozen at 134.65 (~72 min stable since
+  08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip
+  analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.70 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 25th consecutive identical no-op session (10→34), ~72 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 25th consecutive identical no-op session (10â†’34), ~72 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:38:33: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 firmware = board). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–34.
+   analysis â€” verified across Sessions 4â€“34.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 33 (~09:37) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 33 (~09:37) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:37:02.684 reply): sensor_pos=FRESH velocity=VALID age_us=187 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–32 — encoder frozen at 134.65
-  (~71 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.70 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“32 â€” encoder frozen at 134.65
+  (~71 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.70 (no
   physical move, consistent with the block). Working tree clean at HEAD 84506a4; NO g/G tooling candidate fix
-  in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 24th consecutive identical no-op session (10→33), ~71 min blocked on a single
+  in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 24th consecutive identical no-op session (10â†’33), ~71 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:37:02: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 firmware = board; 84506a4 = repo HEAD). Repo: docs-only edit (this
   file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–33.
+   analysis â€” verified across Sessions 4â€“33.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 32 (~09:35) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 32 (~09:35) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:35:26.397 reply): velocity=VALID age_us=46 angle=134.65 wedge=4 omega=0 predStop=134.6(w4)
-  mode=10 DONE (coils floating). IDENTICAL to Sessions 10–31 — encoder frozen at 134.65 (~69 min stable since
-  08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip
-  analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.69 (no
+  mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“31 â€” encoder frozen at 134.65 (~69 min stable since
+  08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip
+  analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.69 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 23rd consecutive identical no-op session (10→32), ~69 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 23rd consecutive identical no-op session (10â†’32), ~69 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:35:26: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–32.
+   analysis â€” verified across Sessions 4â€“32.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 31 (~09:34) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 31 (~09:34) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:33:46.672 reply): sensor_pos=FRESH velocity=VALID age_us=555 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–30 — encoder frozen at 134.65
-  (~67 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.67 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“30 â€” encoder frozen at 134.65
+  (~67 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.67 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 22nd consecutive identical no-op session (10→31), ~67 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 22nd consecutive identical no-op session (10â†’31), ~67 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:33:46: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–31.
+   analysis â€” verified across Sessions 4â€“31.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 30 (~09:32) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 30 (~09:32) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:32:24.013 reply): sensor_pos=FRESH velocity=VALID age_us=46 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–29 — encoder frozen at 134.65
-  (~66 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.68 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“29 â€” encoder frozen at 134.65
+  (~66 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.68 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 21st consecutive identical no-op session (10→30), ~66 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 21st consecutive identical no-op session (10â†’30), ~66 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:32:24: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–30.
+   analysis â€” verified across Sessions 4â€“30.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 29 (~09:30) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 29 (~09:30) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:30:36.910 reply): sensor_pos=FRESH velocity=VALID age_us=149 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–28 — encoder frozen at 134.65
-  (~64 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.67 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“28 â€” encoder frozen at 134.65
+  (~64 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.67 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 20th consecutive identical no-op session (10→29), ~64 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 20th consecutive identical no-op session (10â†’29), ~64 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:30:36: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–29.
+   analysis â€” verified across Sessions 4â€“29.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 28 (~09:29) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 28 (~09:29) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:29:03.792 reply): sensor_pos=FRESH velocity=VALID age_us=785 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–27 — encoder frozen at 134.65
-  (~63 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.6 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“27 â€” encoder frozen at 134.65
+  (~63 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.6 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 19th consecutive identical no-op session (10→28), ~63 min blocked on a single
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 19th consecutive identical no-op session (10â†’28), ~63 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:29:03: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–28.
+   analysis â€” verified across Sessions 4â€“28.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 27 (~09:27) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 27 (~09:27) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:27:23.575 reply): sensor_pos=FRESH velocity=VALID age_us=65 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–26 — encoder frozen at 134.65
-  (~61 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.66 (no physical
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“26 â€” encoder frozen at 134.65
+  (~61 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.66 (no physical
   move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in
-  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 18th consecutive identical no-op session (10→27), ~61 min blocked on a single
+  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 18th consecutive identical no-op session (10â†’27), ~61 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:27:23: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–27.
+   analysis â€” verified across Sessions 4â€“27.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 26 (~09:25) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 26 (~09:25) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:25:55.523 reply): sensor_pos=FRESH velocity=VALID age_us=49 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–25 — encoder frozen at 134.65
-  (~60 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge ALIVE (last cmd answered), no stop file; cam ALIVE, flat at −5423.66 (no physical
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“25 â€” encoder frozen at 134.65
+  (~60 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge ALIVE (last cmd answered), no stop file; cam ALIVE, flat at âˆ’5423.66 (no physical
   move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in
-  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 17th consecutive identical no-op session (10→26), ~60 min blocked on a single
+  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 17th consecutive identical no-op session (10â†’26), ~60 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:25:55: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–26.
+   analysis â€” verified across Sessions 4â€“26.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 25 (~09:24) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 25 (~09:24) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:24:14.826 reply): sensor_pos=FRESH velocity=VALID age_us=65 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–24 — encoder frozen at 134.65
-  (~58 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE, no stop file; cam ALIVE, flat at −5423.68 (no physical move,
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“24 â€” encoder frozen at 134.65
+  (~58 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE, no stop file; cam ALIVE, flat at âˆ’5423.68 (no physical move,
   consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree.
-  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 16th consecutive identical no-op session (10→25), ~58 min blocked on a single
+  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 16th consecutive identical no-op session (10â†’25), ~58 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:24:14: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–25.
+   analysis â€” verified across Sessions 4â€“25.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 24 (~09:22) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 24 (~09:22) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
-  (grep = lines 4110/4381/7461 → 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
+  (grep = lines 4110/4381/7461 â†’ 07:24/07:46/07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:22:36.666 reply): sensor_pos=FRESH velocity=VALID age_us=45 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–23 — encoder frozen at 134.65
-  (~56 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT
-  re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at −5423.70 (no physical
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“23 â€” encoder frozen at 134.65
+  (~56 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT
+  re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at âˆ’5423.70 (no physical
   move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in
-  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-- NOTE FOR HUMANS: this is the 15th consecutive identical no-op session (10→24), ~56 min blocked on a single
+  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+- NOTE FOR HUMANS: this is the 15th consecutive identical no-op session (10â†’24), ~56 min blocked on a single
   ~60 s owner action. Relaunches add nothing until the owner re-zeros (or declines). Nothing is lost by the
   wait; nothing advances without it. If the owner is unavailable, the loop can safely be paused.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:22:36: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–24.
+   analysis â€” verified across Sessions 4â€“24.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 23 (~09:20) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 23 (~09:20) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:20:36.933 reply): sensor_pos=FRESH velocity=VALID age_us=499 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–22 — encoder still frozen at
-  134.65 (~54 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed.
-  Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam ALIVE, flat at −5423.71 (no physical
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“22 â€” encoder still frozen at
+  134.65 (~54 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed.
+  Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam ALIVE, flat at âˆ’5423.71 (no physical
   move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in
-  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:20:36: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–23.
+   analysis â€” verified across Sessions 4â€“23.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 22 (~09:18) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 22 (~09:18) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:18:46.808 reply): age_us=46 angle=134.65 wedge=4 omega=0 predStop=134.6(w4) mode=10 DONE
-  (coils floating). IDENTICAL to Sessions 10–21 — encoder still frozen at 134.65 (~53 min stable since 08:26).
-  Leading `????` on the line = supervisor's queued `?` probe bytes; status fields intact. Board answered `s` →
-  silence timer reset, no RTS needed. Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10).
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at −5423.71 (no
+  (coils floating). IDENTICAL to Sessions 10â€“21 â€” encoder still frozen at 134.65 (~53 min stable since 08:26).
+  Leading `????` on the line = supervisor's queued `?` probe bytes; status fields intact. Board answered `s` â†’
+  silence timer reset, no RTS needed. Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10).
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at âˆ’5423.71 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:18:46: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–22.
+   analysis â€” verified across Sessions 4â€“22.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 21 (~09:17) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 21 (~09:17) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:17:18.080 reply): sensor_pos=FRESH velocity=VALID age_us=435 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–20 — encoder still frozen at
-  134.65 (~51 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed.
-  Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam ALIVE, flat at −5423.71 (no physical
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“20 â€” encoder still frozen at
+  134.65 (~51 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed.
+  Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam ALIVE, flat at âˆ’5423.71 (no physical
   move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in
-  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:17:18: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–21.
+   analysis â€” verified across Sessions 4â€“21.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 20 (~09:15) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 20 (~09:15) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:15:49.303 reply): age_us=500 angle=134.65 wedge=4 omega=0 predStop=134.6(w4) mode=10 DONE
-  (coils floating). IDENTICAL to Sessions 10–19 — encoder still frozen at 134.65 (~49 min stable since 08:26).
-  Leading `?` garble on the line = supervisor's queued probe bytes; status fields intact. Board answered `s` →
-  silence timer reset, no RTS needed. Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10).
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid ALIVE, flat at −5423.75 (no physical
+  (coils floating). IDENTICAL to Sessions 10â€“19 â€” encoder still frozen at 134.65 (~49 min stable since 08:26).
+  Leading `?` garble on the line = supervisor's queued probe bytes; status fields intact. Board answered `s` â†’
+  silence timer reset, no RTS needed. Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10).
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid ALIVE, flat at âˆ’5423.75 (no physical
   move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree.
-  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:15:49: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–20.
+   analysis â€” verified across Sessions 4â€“20.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 19 (~09:14) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 19 (~09:14) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:14:10.562 reply): sensor_pos=FRESH velocity=VALID age_us=47 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–18 — encoder still frozen at
-  134.65 (~48 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed.
-  Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at −5423.71 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“18 â€” encoder still frozen at
+  134.65 (~48 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed.
+  Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at âˆ’5423.71 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:14:10: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–19.
+   analysis â€” verified across Sessions 4â€“19.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 18 (~09:12) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 18 (~09:12) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:12:30.328 reply): sensor_pos=FRESH velocity=VALID age_us=393 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–17 — encoder still frozen at
-  134.65 (~46 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed.
-  Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at −5423.71 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“17 â€” encoder still frozen at
+  134.65 (~46 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed.
+  Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at âˆ’5423.71 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:12:30: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–18.
+   analysis â€” verified across Sessions 4â€“18.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 17 (~09:10) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 17 (~09:10) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:10:49.992 reply): sensor_pos=FRESH velocity=VALID age_us=47 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–16 — encoder still frozen at
-  134.65 (~45 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed.
-  Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at −5423.79 (no
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“16 â€” encoder still frozen at
+  134.65 (~45 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed.
+  Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam pid 19992 ALIVE, flat at âˆ’5423.79 (no
   physical move, consistent with the block). Working tree: only this file modified; NO g/G tooling candidate
-  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  fix in tree. LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:10:49: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–17.
+   analysis â€” verified across Sessions 4â€“17.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 16 (~09:08) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 16 (~09:08) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:08:55 reply): sensor_pos=FRESH velocity=VALID age_us=720 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–15 — encoder still frozen at
-  134.65 (~43 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed.
-  Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Verified instruments live: bridge answering serial; cam flat at −5423.82 (no physical move, consistent with
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“15 â€” encoder still frozen at
+  134.65 (~43 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed.
+  Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Verified instruments live: bridge answering serial; cam flat at âˆ’5423.82 (no physical move, consistent with
   the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree. LEGACY LATCH item
-  remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:08:55: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–16.
+   analysis â€” verified across Sessions 4â€“16.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 15 (~09:07) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 15 (~09:07) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep lines 4110/4381/7461 = 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:07:08 reply): sensor_pos=FRESH velocity=VALID age_us=382 angle=134.65 wedge=4 omega=0
-  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10–14 — encoder still frozen at
-  134.65 (~41 min stable since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed.
-  Did NOT re-derive the slip analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs).
-- Verified instruments live: bridge answering serial; cam flat at −5423.82 (no physical move, consistent with
+  predStop=134.6(w4) mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“14 â€” encoder still frozen at
+  134.65 (~41 min stable since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed.
+  Did NOT re-derive the slip analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs).
+- Verified instruments live: bridge answering serial; cam flat at âˆ’5423.82 (no physical move, consistent with
   the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree. LEGACY LATCH item
-  remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:07:08: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–15.
+   analysis â€” verified across Sessions 4â€“15.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 14 (~09:05) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 14 (~09:05) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep: only 07:24 / 07:46 / 07:54). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:05:30 reply): age_us=45 angle=134.65 wedge=4 omega=0 predStop=134.6(w4) mode=10 DONE
-  (coils floating). IDENTICAL to Sessions 10–13 — encoder still frozen at 134.65 (~39 min stable since
-  08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip
-  analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs). Block holds.
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam flat at −5423.80 (no physical move,
+  (coils floating). IDENTICAL to Sessions 10â€“13 â€” encoder still frozen at 134.65 (~39 min stable since
+  08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip
+  analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs). Block holds.
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam flat at âˆ’5423.80 (no physical move,
   consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree.
-  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:05:30: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–14.
+   analysis â€” verified across Sessions 4â€“14.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 13 (~09:04) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 13 (~09:04) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep: only 07:24 / 07:46 / 07:54). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:03:45 reply): sensor_pos=FRESH velocity=VALID age_us=47 angle=134.65 wedge=4 omega=0
-  mode=10 DONE (coils floating). IDENTICAL to Sessions 10–12 — encoder still frozen at 134.65 (~37 min stable
-  since 08:26). Board answered `s` → supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip
-  analysis (first-hand verified Sessions 4–10; Session 10 re-derived from raw logs). Block holds.
-- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam flat at −5423.80 (no physical move,
+  mode=10 DONE (coils floating). IDENTICAL to Sessions 10â€“12 â€” encoder still frozen at 134.65 (~37 min stable
+  since 08:26). Board answered `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip
+  analysis (first-hand verified Sessions 4â€“10; Session 10 re-derived from raw logs). Block holds.
+- Verified instruments live: bridge pid 30212 ALIVE, no stop file; cam flat at âˆ’5423.80 (no physical move,
   consistent with the block). Working tree: only this file modified; NO g/G tooling candidate fix in tree.
-  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  LEGACY LATCH item remains CLOSED (429e2a5). No owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:03:45: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–13.
+   analysis â€” verified across Sessions 4â€“13.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 12 (~09:02) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 12 (~09:02) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Both unblock signals still absent: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grep: only 07:24 / 07:46 / 07:54). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:01:53 reply): DONE age_us=522 angle=134.65 wedge=4 omega=0 mode=10 (coils floating).
-  IDENTICAL to Sessions 10–11 — encoder still frozen at 134.65 (~35 min stable since 08:26). Board answered
-  `s` → supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip analysis (first-hand
-  verified Sessions 4–10; Session 10 re-derived from raw logs). Block holds.
+  IDENTICAL to Sessions 10â€“11 â€” encoder still frozen at 134.65 (~35 min stable since 08:26). Board answered
+  `s` â†’ supervisor silence timer reset, no RTS needed. Did NOT re-derive the slip analysis (first-hand
+  verified Sessions 4â€“10; Session 10 re-derived from raw logs). Block holds.
 - Checked working tree: only this file modified (Session 11's uncommitted edit); NO g/G tooling candidate fix
-  present (the OWNER PRIORITY note's uncommitted candidate is not in the tree — committed/reverted earlier).
-  LEGACY LATCH item remains CLOSED (429e2a5). So there is NO owner-independent code work pending → correct no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  present (the OWNER PRIORITY note's uncommitted candidate is not in the tree â€” committed/reverted earlier).
+  LEGACY LATCH item remains CLOSED (429e2a5). So there is NO owner-independent code work pending â†’ correct no-op.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:01:53: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5 = HEAD after commit). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–12.
+   analysis â€” verified across Sessions 4â€“12.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 11 (~09:00) — STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + one status read + handoff, as prescribed)
+## 2026-07-27 SUPERVISOR v2 SESSION 11 (~09:00) â€” STILL BLOCKED on owner re-zero; 1 `s` re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + one status read + handoff, as prescribed)
 - Checked both unblock signals: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05 (grep:
   only 07:24 / 07:46 / 07:54 exist). (2) No owner note atop this file. Block unchanged.
 - One fresh `s` (09:00:00 reply): sensor_pos=FRESH velocity=VALID age_us=773 angle=134.65 wedge=4 omega=0
-  mode=10 DONE (coils floating). IDENTICAL to Session 10's 08:57:48 reading — encoder still frozen at 134.65
-  (~34 min stable). Board answered `s` → supervisor silence timer reset, no RTS. Did NOT re-derive the slip
-  analysis; it is first-hand verified across Sessions 4–10 (Session 10 re-derived from raw logs). Block holds.
+  mode=10 DONE (coils floating). IDENTICAL to Session 10's 08:57:48 reading â€” encoder still frozen at 134.65
+  (~34 min stable). Board answered `s` â†’ supervisor silence timer reset, no RTS. Did NOT re-derive the slip
+  analysis; it is first-hand verified across Sessions 4â€“10 (Session 10 re-derived from raw logs). Block holds.
 - LEGACY LATCH open item remains CLOSED (429e2a5 = HEAD = flashed). No owner-independent code work pending;
   working tree clean apart from this docs edit. So this session correctly stays a no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 09:00:00: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera, calibrated).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera, calibrated).
 - NO wheel/motor work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor
   spins used. Firmware UNFLASHED (429e2a5). Repo: docs-only edit (this file) on claude/adaptive-v2.
-- Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT re-derive the
-   analysis — verified across Sessions 4–11.
+   analysis â€” verified across Sessions 4â€“11.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 10 (~08:57) — BLOCKED; block re-derived FIRST-HAND from raw logs; 0 spins, NO flash
-### What I did (NO motor, NO flash — independent re-verification + sharpened owner ask)
+## 2026-07-27 SUPERVISOR v2 SESSION 10 (~08:57) â€” BLOCKED; block re-derived FIRST-HAND from raw logs; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” independent re-verification + sharpened owner ask)
 - Checked both unblock signals: (1) NO new `# wedge-0 boundary set` after 07:54:05 (grep: only 07:24/07:46/
   07:54). (2) No owner note atop this file. Block unchanged.
-- KEY DIFFERENCE vs Sessions 5–9: I did NOT trust the inherited narrative — I re-derived the block from the
+- KEY DIFFERENCE vs Sessions 5â€“9: I did NOT trust the inherited narrative â€” I re-derived the block from the
   raw serial + calibrated camera logs myself:
-    * Serial: encoder angle 338.55 (08:26:13) → 134.65 (08:30:32), Δ≈156°, stable at 134.65 through 08:57:48
+    * Serial: encoder angle 338.55 (08:26:13) â†’ 134.65 (08:30:32), Î”â‰ˆ156Â°, stable at 134.65 through 08:57:48
       (fresh `s`: FRESH/VALID age_us=402, omega=0, mode=10).
-    * Camera (cam_cal.txt: scale 0.837, sign +1, fit resid_rms 0.29°): across the 08:26:14→08:30:35 gap,
-      3918 frames spanned only 0.18 cam-deg (−5423.68..−5423.86); still −5423.74 at 08:56:39. A real 156°
-      wheel move = ~131 cam-deg. → wheel physically did NOT move.
+    * Camera (cam_cal.txt: scale 0.837, sign +1, fit resid_rms 0.29Â°): across the 08:26:14â†’08:30:35 gap,
+      3918 frames spanned only 0.18 cam-deg (âˆ’5423.68..âˆ’5423.86); still âˆ’5423.74 at 08:56:39. A real 156Â°
+      wheel move = ~131 cam-deg. â†’ wheel physically did NOT move.
     * No reboot: no boot/`rst:` banner in serial during the gap (08:30:30 lines are the supervisor `?`
-      help-echo, board answered → no RTS); no `z` in the gap.
-  → CONCLUSION (root cause, first-hand): the AS5600 magnet hub PHYSICALLY SLIPPED ~156°. A stable FRESH/VALID
-    absolute reading that is 156° wrong with the wheel still and no reboot cannot be a firmware glitch. So a
-    remote RTS reset would NOT unblock (magnet is where it physically is) — confirmed no owner-independent fix.
+      help-echo, board answered â†’ no RTS); no `z` in the gap.
+  â†’ CONCLUSION (root cause, first-hand): the AS5600 magnet hub PHYSICALLY SLIPPED ~156Â°. A stable FRESH/VALID
+    absolute reading that is 156Â° wrong with the wheel still and no reboot cannot be a firmware glitch. So a
+    remote RTS reset would NOT unblock (magnet is where it physically is) â€” confirmed no owner-independent fix.
 - Sharpened the top owner ask: promoted "snug the magnet-hub set screw" to a REQUIRED first step (not
   conditional), added the decisive numbers and elapsed-time, so the re-zero durably holds through the reveal.
 - LEGACY LATCH item remains CLOSED (429e2a5 = HEAD = flashed). No owner-independent code work pending; tree clean.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 08:57:48: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically ≈ wedge 10/11 (camera, calibrated).
-- Instruments live (verified this session): serial bridge (answered `s`), cam (flat, −5423.74). NO wheel/motor
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically â‰ˆ wedge 10/11 (camera, calibrated).
+- Instruments live (verified this session): serial bridge (answered `s`), cam (flat, âˆ’5423.74). NO wheel/motor
   work left running (all tool calls synchronous; started NO background task). 0 of <=4 motor spins used. UNFLASHED (429e2a5).
-- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
-   neither, re-confirm with ONE `s` and no-op. The block is now first-hand verified (Session 10) — do NOT
+   neither, re-confirm with ONE `s` and no-op. The block is now first-hand verified (Session 10) â€” do NOT
    re-derive again; a supervisor `?` probe keeps the board alive between sessions if you send nothing.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 9 (~08:53) — STILL BLOCKED on owner; LIVE 3-way re-confirm; 0 spins, NO flash
-### What I did (NO motor, NO flash — unblock-signal check + live instrument integrity check + handoff)
+## 2026-07-27 SUPERVISOR v2 SESSION 9 (~08:53) â€” STILL BLOCKED on owner; LIVE 3-way re-confirm; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” unblock-signal check + live instrument integrity check + handoff)
 - Checked the two unblock signals: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05
   (grepped: only 07:24 / 07:46 / 07:54 exist). (2) No owner note atop this file. Block unchanged.
 - KEY DIFFERENCE vs Sessions 5-8: instead of re-reading stale logs, I verified all three instruments are
   producing FRESH data at the same wall-clock second, which is the one thing that could have undermined the
   "no physical motion" evidence (a frozen cam/mic process would echo stale flats forever):
-    * Serial: sent `s` → fresh reply 08:52:44 (age_us=690, sensor_pos=FRESH) angle=134.65 wedge=4 omega=0 mode=10.
-    * Camera: pw_cam.log timestamps advancing (…08:52:03), cam=-5423.81 d≈0 q=2.1 — live AND flat.
-    * Mic: pw_mic.log advancing (08:53:29), rms≈-96 dBFS band≈-47 dB flag=0 — live AND silent (no motion sound).
-  → All three LIVE and mutually agreeing NOW: encoder frozen at 134.65, wheel physically unmoved, room silent.
+    * Serial: sent `s` â†’ fresh reply 08:52:44 (age_us=690, sensor_pos=FRESH) angle=134.65 wedge=4 omega=0 mode=10.
+    * Camera: pw_cam.log timestamps advancing (â€¦08:52:03), cam=-5423.81 dâ‰ˆ0 q=2.1 â€” live AND flat.
+    * Mic: pw_mic.log advancing (08:53:29), rmsâ‰ˆ-96 dBFS bandâ‰ˆ-47 dB flag=0 â€” live AND silent (no motion sound).
+  â†’ All three LIVE and mutually agreeing NOW: encoder frozen at 134.65, wheel physically unmoved, room silent.
   Block is now sextuple-confirmed, this time with a live (not stale-log) three-way. Did NOT re-derive the slip math.
 - Confirmed the LEGACY LATCH open item is already CLOSED: committed at 429e2a5 ("Latch fix: 3x-failed
   dare-recovery floats coils (was infinite grip) - VERIFIED"), which is HEAD and the flashed image. No
   owner-independent code work remains pending; working tree clean. So this session correctly stays a no-op.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 08:52:44: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera).
 - Instruments live (verified fresh this session): bridge, cam (flat), mic (silent). NO wheel/motor work left
   running (all tool calls synchronous; started NO background task). 0 of <=4 motor spins used. Firmware UNFLASHED (429e2a5).
-- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm the block with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT
-   re-derive the analysis — it is verified across Sessions 4-9 (Session 9 added a live 3-way instrument check).
+   re-derive the analysis â€” it is verified across Sessions 4-9 (Session 9 added a live 3-way instrument check).
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 8 (~08:50) — STILL BLOCKED on owner; 0 spins, NO flash (no-op, as prescribed)
-### What I did (NO motor, NO flash — one status read + handoff only)
-- Checked the two unblock signals: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05 —
+## 2026-07-27 SUPERVISOR v2 SESSION 8 (~08:50) â€” STILL BLOCKED on owner; 0 spins, NO flash (no-op, as prescribed)
+### What I did (NO motor, NO flash â€” one status read + handoff only)
+- Checked the two unblock signals: (1) NO new `# wedge-0 boundary set` in pw_serial.log after 07:54:05 â€”
   last real re-zero unchanged (grepped: 07:24 / 07:46 / 07:54 only). (2) No owner note atop this file.
 - One fresh `s` (08:50:42): sensor_pos=FRESH age_us=256 angle=134.65 wedge=4 omega=0 mode=10 DONE (coils
-  floating). Camera 08:50:45 cam=-5423.77 d≈0 q=2.1 — IDENTICAL to the 08:25:56 post-landing lock. State
+  floating). Camera 08:50:45 cam=-5423.77 dâ‰ˆ0 q=2.1 â€” IDENTICAL to the 08:25:56 post-landing lock. State
   FROZEN, identical to Sessions 4/5/6/7 (encoder rock-stable ~24 min, wheel physically unmoved). Block is
-  now QUINTUPLE-verified; did NOT re-derive. Board answered `s` → supervisor silence timer reset, no RTS.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  now QUINTUPLE-verified; did NOT re-derive. Board answered `s` â†’ supervisor silence timer reset, no RTS.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 08:50:42: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera).
 - Instruments live: bridge pid30212, cam pid19992 (flat), mic pid12492. NO wheel/motor work left running
   (all tool calls synchronous; started NO background task). 0 of <=4 motor spins used. Firmware UNFLASHED (429e2a5).
-- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 07:54, OR an owner note atop this file. If
    neither, re-confirm the block with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT
-   re-derive the analysis — it is verified across Sessions 4/5/6/7/8.
+   re-derive the analysis â€” it is verified across Sessions 4/5/6/7/8.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 7 (~08:49) — STILL BLOCKED on owner; 0 spins, NO flash (no-op, as prescribed)
-### What I did (NO motor, NO flash — one status read + handoff only)
-- Checked the two unblock signals: (1) no NEW `# wedge-0 boundary set` in pw_serial.log after 08:46 — last
+## 2026-07-27 SUPERVISOR v2 SESSION 7 (~08:49) â€” STILL BLOCKED on owner; 0 spins, NO flash (no-op, as prescribed)
+### What I did (NO motor, NO flash â€” one status read + handoff only)
+- Checked the two unblock signals: (1) no NEW `# wedge-0 boundary set` in pw_serial.log after 08:46 â€” last
   real re-zero is STILL 07:54:05 (the 08:45:22 `=== PRIZE WHEEL ===` block is a `?` help-probe echo, board
-  ANSWERED it → no reset). (2) No owner note at the top of this file answering the pointer question.
+  ANSWERED it â†’ no reset). (2) No owner note at the top of this file answering the pointer question.
 - One fresh `s` (08:49:04): angle=134.65 wedge=4 mode=10 DONE, coils FLOATING, FRESH (age_us=155). Camera
-  08:49:06 cam≈-5423.75 d≈0 q=2.1 — IDENTICAL to the 08:25:56 post-landing lock. State FROZEN and identical
+  08:49:06 camâ‰ˆ-5423.75 dâ‰ˆ0 q=2.1 â€” IDENTICAL to the 08:25:56 post-landing lock. State FROZEN and identical
   to Sessions 4/5/6 (encoder rock-stable ~23 min, wheel physically unmoved). Did NOT re-derive the analysis
-  (it is quadruple-verified now). The board answered `s` → supervisor silence timer reset, no RTS needed.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+  (it is quadruple-verified now). The board answered `s` â†’ supervisor silence timer reset, no RTS needed.
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 08:49:04: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera).
 - Instruments live: bridge pid30212, cam pid19992 (flat), mic pid12492. NO wheel/motor work left running
   (all tool calls synchronous; started NO background task). 0 of <=4 motor spins used. Firmware UNFLASHED (429e2a5).
-- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (unchanged critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (unchanged critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` after 08:49, OR an owner note in this file. If
    neither, re-confirm the block with ONE `s` (keeps serial alive, avoids RTS reset) and no-op. Do NOT
-   re-derive the analysis — it is verified across Sessions 4/5/6/7.
+   re-derive the analysis â€” it is verified across Sessions 4/5/6/7.
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move BEFORE resuming
    T3 baseline (currently ~4 g / 3 G valid, all pre-anomaly). Then T4 anomaly items, T5, T6 ATTENDED
    acceptance (>=30 owner hand spins), REPORT.md, checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 6 (~08:46) — STILL BLOCKED on owner; consolidated the ask; 0 spins, NO flash
-### What I did (NO motor, NO flash — verification + handoff clean-up only)
+## 2026-07-27 SUPERVISOR v2 SESSION 6 (~08:46) â€” STILL BLOCKED on owner; consolidated the ask; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” verification + handoff clean-up only)
 - Re-confirmed the block is genuinely owner-only and unchanged: last real re-zero is still 07:54:05
   (`# wedge-0 boundary set`); the `z ...` lines at 08:30/08:35/08:39 are HELP-MENU echoes from the
   supervisor's `?` silence-probes, NOT zero events. No owner note answering the pointer question.
-- Fresh readings 08:46: encoder angle=134.65 wedge=4 (rock-stable now 20+ min, 08:26→08:46, zero drift);
-  camera cam=-5423.84 d=0 q=2.1 (identical to post-landing lock) → wheel physically unmoved since 08:25:56.
-  State is FROZEN and identical to Sessions 4/5 — encoder ~156° off physical. Did NOT re-derive a 4th time.
+- Fresh readings 08:46: encoder angle=134.65 wedge=4 (rock-stable now 20+ min, 08:26â†’08:46, zero drift);
+  camera cam=-5423.84 d=0 q=2.1 (identical to post-landing lock) â†’ wheel physically unmoved since 08:25:56.
+  State is FROZEN and identical to Sessions 4/5 â€” encoder ~156Â° off physical. Did NOT re-derive a 4th time.
 - CONSOLIDATED the owner ask: replaced the two stacked owner-action blocks with ONE crisp, low-friction
-  action at the very top — the attended rim-screw re-zero (same as 07:54), which fixes BOTH candidate
+  action at the very top â€” the attended rim-screw re-zero (same as 07:54), which fixes BOTH candidate
   causes (encoder slip OR wheel roll) by re-establishing encoder==wheel by construction, so the owner no
   longer needs a look-then-report-back round-trip to unblock. Kept the optional wedge-number glance for
   diagnosis and the magnet-hub/sensor-mount check for the slip case. Evidence trail (Sessions 4/5) preserved.
 - Did NOT flash the staged AS5600 magnet-health readout (Session 5's reasoning still holds: it can't detect
   a hub slip, and flashing now would move the board off the validated 429e2a5 image right before the owner
   must re-zero against known-good firmware).
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 08:46:20: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera).
+  accel=900, cal cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera).
 - Instruments live: bridge pid30212, cam pid19992 (flat), mic pid12492. NO wheel/motor work left running
   (all tool calls synchronous; started NO background task). 0 of <=4 motor spins used. Firmware UNFLASHED.
-- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (critical path — STILL BLOCKED on the ONE owner action at the very top)
+- Repo: docs-only edit (this file) on claude/adaptive-v2. Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (critical path â€” STILL BLOCKED on the ONE owner action at the very top)
 1. Check pw_serial.log for a NEW `# wedge-0 boundary set` dated after 08:46, OR an owner note in this file.
-   If neither, the mission still cannot validly advance — re-confirm the block briefly and no-op (do NOT
+   If neither, the mission still cannot validly advance â€” re-confirm the block briefly and no-op (do NOT
    re-derive the analysis again; it is triple-verified). Keep serial from going silent (a stray `s` resets
    the supervisor's 4-min silence timer and avoids an unnecessary RTS reset).
 2. Once the owner re-zeros: RE-VALIDATE encoder==cam with ONE tiny attended k/K cam-cal move (net enc vs
@@ -983,85 +987,85 @@ in the Session 4 & 5 records below and in CLAUDE_VARIANT.md. This is a candidate
 3. Then T4 anomaly items (slow-engage click, ccw brake rattle, uphill recovery slip), T5, then T6
    ACCEPTANCE = ATTENDED >=30 owner HAND spins via the relay protocol, then REPORT.md + checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 5 (~08:42) — INDEPENDENTLY RE-VERIFIED the halt; still BLOCKED on owner; 0 spins, NO flash
-### What I did (NO motor, NO flash — verification + handoff only)
+## 2026-07-27 SUPERVISOR v2 SESSION 5 (~08:42) â€” INDEPENDENTLY RE-VERIFIED the halt; still BLOCKED on owner; 0 spins, NO flash
+### What I did (NO motor, NO flash â€” verification + handoff only)
 - Did NOT take the prior halt on faith: pulled the RAW serial around the jump. Confirmed the transition
   from angle=338.55 (wedge 11, last reading 08:26:13) to angle=134.65 (wedge 4) occurred during a ~4-min
-  serial-SILENT gap (08:26:13→08:30:30) with NO boot banner, NO RTS reset, NO motor, NO `z` — the 08:30:30
+  serial-SILENT gap (08:26:13â†’08:30:30) with NO boot banner, NO RTS reset, NO motor, NO `z` â€” the 08:30:30
   and 08:35/08:39 "=== PRIZE WHEEL ===" lines are `?` help-probe echoes (board answered = no reset), not reboots.
   AS5600 is a live single-turn absolute read (s shows sensor_pos=FRESH, small age_us), so a stable 134.65
   means the magnet is physically presenting that angle to the sensor NOW. Camera (independent) = no motion.
-  => prior attribution "cam short + enc full = disc slipped" (magnet/hub decoupled ~156°) is SOUND. Not overturned.
-- Fresh `s` 08:41:08: angle=134.65 wedge=4 omega=0 mode=10 DONE — IDENTICAL to 08:30:52 (~11 min prior).
-  NEW EVIDENCE: encoder is rock-stable (no drift/noise over 15+ min) → consistent with a single discrete
+  => prior attribution "cam short + enc full = disc slipped" (magnet/hub decoupled ~156Â°) is SOUND. Not overturned.
+- Fresh `s` 08:41:08: angle=134.65 wedge=4 omega=0 mode=10 DONE â€” IDENTICAL to 08:30:52 (~11 min prior).
+  NEW EVIDENCE: encoder is rock-stable (no drift/noise over 15+ min) â†’ consistent with a single discrete
   mechanical decoupling (or a stuck/persistent fault), NOT an active intermittent AS5600 electrical glitch.
-- Camera 08:42:16 still cam≈-5423.82 d≈0 q=2.1 (= post-landing lock) → wheel physically unmoved since 08:25:56.
+- Camera 08:42:16 still camâ‰ˆ-5423.82 dâ‰ˆ0 q=2.1 (= post-landing lock) â†’ wheel physically unmoved since 08:25:56.
   Told the owner (top block) that the wheel-state NOW == anomaly-time state, so a single look is decisive.
 ### Why NO firmware this session (deliberate)
 - Considered adding an AS5600 magnitude/AGC/STATUS health readout. Rejected FOR NOW: the encoder IS the
   only position sense, so NO in-firmware guard can detect a magnet-HUB slip (magnet still centered over the
-  sensor, just co-rotated wrong → STATUS/magnitude read normal). It would only catch magnet loss/weakening.
+  sensor, just co-rotated wrong â†’ STATUS/magnitude read normal). It would only catch magnet loss/weakening.
   Low value for THIS fault, and flashing during the halt would move the board off the validated 429e2a5
   image right before the owner must re-zero against known-good firmware. Left as a staged idea (below), not flashed.
-### Board / instrument state at end (SAFE — coils floating — ENCODER FRAME STILL SUSPECT)
+### Board / instrument state at end (SAFE â€” coils floating â€” ENCODER FRAME STILL SUSPECT)
 - Board `s` 08:41:08: angle=134.65 wedge=4(firmware, NOT trustworthy) omega=0 mode=10 DONE, coils FLOATING,
-  accel=900, cal unchanged cw(0.300/0.150) ccw(0.352/0.119). Physically believed still ≈ wedge 10/11 (camera).
+  accel=900, cal unchanged cw(0.300/0.150) ccw(0.352/0.119). Physically believed still â‰ˆ wedge 10/11 (camera).
 - Instruments live: bridge pid30212 (verified ALIVE), cam pid19992 (flat), mic pid12492. NO wheel/motor work
   left running (all Bash/PowerShell calls synchronous; started NO background task). 0 of <=4 motor spins used.
 - Repo: docs-only edit (this file) on claude/adaptive-v2. Firmware UNCHANGED + UNFLASHED (429e2a5 running).
-  Mission NOT complete — stay on branch, no REPORT.md.
-### NEXT SESSION (critical path — STILL BLOCKED on the owner binary question at the very top)
+  Mission NOT complete â€” stay on branch, no REPORT.md.
+### NEXT SESSION (critical path â€” STILL BLOCKED on the owner binary question at the very top)
 1. Check for an owner note / a NEW `wedge-0 boundary set` in pw_serial.log after 08:31 answering the physical
-   pointer position. If none, the mission still cannot validly advance — re-confirm the block, do NOT do motor work.
-2. If owner reports wedge 10/11 → after they secure the magnet hub + attended re-zero, RE-VALIDATE encoder==cam
+   pointer position. If none, the mission still cannot validly advance â€” re-confirm the block, do NOT do motor work.
+2. If owner reports wedge 10/11 â†’ after they secure the magnet hub + attended re-zero, RE-VALIDATE encoder==cam
    with ONE tiny attended k/K cam-cal move (net enc vs cam within a few deg) BEFORE resuming T3.
-3. If owner reports wedge 4 → the encoder is fine; investigate why the wheel rolled 156° while floating (a
+3. If owner reports wedge 4 â†’ the encoder is fine; investigate why the wheel rolled 156Â° while floating (a
    naturalness/creep concern for acceptance) and re-check cam geometry; then resume T3 on the trusted mask.
 4. STAGED (only after frame re-validated, evidence-first): optional AS5600 magnitude/AGC/STATUS readout added
-   to `s`/diag as a continuous magnet-health signal for the reveal — will NOT catch a hub slip, but flags
+   to `s`/diag as a continuous magnet-health signal for the reveal â€” will NOT catch a hub slip, but flags
    magnet loss/weakening. Do not flash blind; verify it does not touch the proven TMC init or motor path.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 4 (~08:31) — ANOMALY #1 = ENCODER-FRAME SLIP (three-way proven); HALTED, 0 spins
-### What I did (NO motor, NO flash — investigation only)
+## 2026-07-27 SUPERVISOR v2 SESSION 4 (~08:31) â€” ANOMALY #1 = ENCODER-FRAME SLIP (three-way proven); HALTED, 0 spins
+### What I did (NO motor, NO flash â€” investigation only)
 - Resumed the critical-path task #1 (investigate Anomaly #1 post-landing creep) using the exact
-  post-LANDED polling method the prior session prescribed — but the wheel was ALREADY sitting in a
+  post-LANDED polling method the prior session prescribed â€” but the wheel was ALREADY sitting in a
   post-landing DONE state (landed w10 @08:25:56), so I got the creep curve for FREE (no motor budget).
 - Polled `s` x12 @~2 s: wheel was at angle=134.65 wedge=4 and DEAD STILL (zero change across 23 s).
-  But the PRIOR reading (08:26:13) was angle=338.55 wedge=11 -> a ~156° shift had occurred in between.
-- Cross-checked the camera over 08:26:14–08:30:31 (3844 samples): cam-angle range 0.18 units (~0.2°
+  But the PRIOR reading (08:26:13) was angle=338.55 wedge=11 -> a ~156Â° shift had occurred in between.
+- Cross-checked the camera over 08:26:14â€“08:30:31 (3844 samples): cam-angle range 0.18 units (~0.2Â°
   physical via scale 0.837491), sum d=-0.18, max|d|=0.020, quality steady ~2.1 (never <1.0). => the
-  physical wheel did NOT move. Confirmed the wheel settle-oscillated ~40° then locked flat at 08:26:02.
-- Cross-checked the mic (08:26:02–08:30:32): band max -47.2 dB, zero anomaly flags => no acoustic event.
+  physical wheel did NOT move. Confirmed the wheel settle-oscillated ~40Â° then locked flat at 08:26:02.
+- Cross-checked the mic (08:26:02â€“08:30:32): band max -47.2 dB, zero anomaly flags => no acoustic event.
 - Ruled out reboot/RTS/re-zero: no boot banner / no `z` execution in serial for the window; the 08:30:30
   burst was only the supervisor's `?` help-probe (board ANSWERED it -> no RTS reset). Encoder single-turn
-  absolute -> a 156° firmware-angle change REQUIRES the magnet to have moved ~156° relative to the sensor;
+  absolute -> a 156Â° firmware-angle change REQUIRES the magnet to have moved ~156Â° relative to the sensor;
   camera proves the wheel rim did not -> magnet/sensor decoupling ("disc slipped"), not physical creep.
 ### Reinterpretation of prior sessions
-- The prior "post-landing creep +22.5°" (316->338.55 @08:26:13) is now split: the immediate post-landing
+- The prior "post-landing creep +22.5Â°" (316->338.55 @08:26:13) is now split: the immediate post-landing
   part is a REAL physical settle-oscillation (camera saw it, ~8 s, damped). The LATER large drift is the
   ENCODER-frame slip, not gravity creep. The prior candidate fixes (extend DRIFT_WATCH / add creep-margin
-  buffer) would NOT help — they assume physical creep. DO NOT implement them; this is an encoder fault.
-- The historic 33/78/150/255° face-vs-encoder divergences were attributed to grind/stall/latch events.
-  THIS one has NO motor event at all (static float) — a new/worse class if it's a mechanical hub slip.
-### Board / instrument state at end (motor SAFE — coils floating — but ENCODER FRAME SUSPECT)
+  buffer) would NOT help â€” they assume physical creep. DO NOT implement them; this is an encoder fault.
+- The historic 33/78/150/255Â° face-vs-encoder divergences were attributed to grind/stall/latch events.
+  THIS one has NO motor event at all (static float) â€” a new/worse class if it's a mechanical hub slip.
+### Board / instrument state at end (motor SAFE â€” coils floating â€” but ENCODER FRAME SUSPECT)
 - Board `s` 08:30:52: angle=134.65 wedge=4(firmware) omega=0 mode=10 DONE, coils FLOATING, accel=900,
   cal unchanged cw(0.300/0.150) ccw(0.352/0.119). Physically the wheel is believed to still be at the
-  08:25:56 landing (~wedge 10/11 per camera) — firmware wedge is NOT trustworthy (see owner block).
+  08:25:56 landing (~wedge 10/11 per camera) â€” firmware wedge is NOT trustworthy (see owner block).
 - Instruments live: bridge pid30212, cam pid19992 (stable), mic pid12492 (ambient). NO wheel/motor work
   left running (all Bash calls synchronous; started no background task). 0 of <=4 motor spins used.
 - Repo: docs-only edits (this file + CLAUDE_VARIANT.md) on claude/adaptive-v2. Mission NOT complete
   (stay on branch; no REPORT.md). Firmware unchanged (429e2a5 latch fix still flashed + running).
-### NEXT SESSION (critical path — BLOCKED on the owner check above)
+### NEXT SESSION (critical path â€” BLOCKED on the owner check above)
 1. Read the OWNER ACTION block at the top; check the serial log / this file for an owner note confirming
    the physical pointer position and whether the encoder slipped. Do NOT do motor work until encoder
    frame is re-validated (attended re-zero + magnet-hub/sensor-mount secured if slip confirmed).
 2. If the owner re-secures + re-zeros: RE-VERIFY the encoder/camera agree with a single tiny attended
-   `k`/`K` cam-cal move (net enc vs cam within a few deg) BEFORE resuming — this event means we can no
+   `k`/`K` cam-cal move (net enc vs cam within a few deg) BEFORE resuming â€” this event means we can no
    longer assume the encoder is trustworthy just because `s` reads FRESH/VALID. Then resume T3 baseline.
 3. Consider a firmware guard: a cheap camera-independent encoder sanity check is hard, but at minimum a
    startup/periodic AS5600 magnitude/AGC (`d` diag) read could flag a weak/failing magnet. Evidence-first.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 3 (~08:22) — T3 BASELINE batch (latch fix DONE last session)
+## 2026-07-27 SUPERVISOR v2 SESSION 3 (~08:22) â€” T3 BASELINE batch (latch fix DONE last session)
 ### Entry state (verified this session)
 - Firmware = committed latch fix 429e2a5 (board runs it; no flash needed). Working tree clean.
 - Frame zero VALID (owner re-zero 07:54, wedge-3 center=103.5). Board `s` 08:22:15: angle=106.35
@@ -1072,7 +1076,7 @@ in the Session 4 & 5 records below and in CLAUDE_VARIANT.md. This is a candidate
 - Prior VALID (post-07:54) baseline points: g->w6, G->w11 (~08:05), g->w3 (08:19 SPIN#1 steered dare1).
   Counts so far g~2 / G~1; need >=10 each. This batch adds toward that (G-weighted, scarcer dir).
 
-### MOTOR RUN log (this session) — T3 baseline batch, <=4 spins
+### MOTOR RUN log (this session) â€” T3 baseline batch, <=4 spins
 - MOTOR RUN: T3 baseline batch of 4 alternating G,g,G,g through v4. Arm d on spin 1 only (dense enc
   reference for acoustic cross-attribution; d auto-dumps after stop, WDT-safe Fix A), spins 2-4 without
   d to keep landing/acoustic data clean. Per spin capture: SPIN-GEN release omega (engage speed), accel,
@@ -1080,7 +1084,7 @@ in the Session 4 & 5 records below and in CLAUDE_VARIANT.md. This is a candidate
   Expect each: SPIN-GEN START->RELEASE reason=target -> SPIN#n V4 -> LANDED isDare=0. Ceiling 900, frame
   zero VALID, bench, wheel clear. Firmware 429e2a5.
 
-### RESULT — 4-spin T3 batch, ALL SAFE, zero aborts/latch/mic-anomaly (batch budget spent)
+### RESULT â€” 4-spin T3 batch, ALL SAFE, zero aborts/latch/mic-anomaly (batch budget spent)
 Fired G,g,G,g (2 per FAS dir). Release speeds spanned 0.365-0.442 rev/s (full T1 range). Every spin:
 SPIN-GEN START->RELEASE reason=target -> V4 STEER -> LANDED isDare=0 steered=1. No fight-abort, no
 RECOVERY-FAIL (the only FAILED lines in log remain the historic 07:46 pre-fix ones), no WDT/panic.
@@ -1132,19 +1136,19 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
 4. Then T5, then T6 ACCEPTANCE = ATTENDED >=30 OWNER HAND spins via the relay protocol (write request at
    TOP of this file + exit), then REPORT.md + checkout clean main.
 
-## 2026-07-27 SUPERVISOR v2 SESSION (~08:10) — LEGACY LATCH FIX applied + IN-SESSION verified (wheel already on dare)
+## 2026-07-27 SUPERVISOR v2 SESSION (~08:10) â€” LEGACY LATCH FIX applied + IN-SESSION verified (wheel already on dare)
 ### Entry state
 - Frame zero VALID (owner re-zero 07:54, persisted NVS; wheel physically moving does not change it).
 - Board `s` at 08:15:37: angle=156.71 wedge=5 (DARE) omega=0 mode=10 DONE, coils floating, accel=900,
   cal cw(0.300/0.150) ccw(0.352/0.119). The wheel is passively RESTING ON DARE WEDGE 5 (drifted/placed
-  there while in DONE; DONE never recovers a static rest — a known benign gap, coils floating = safe).
+  there while in DONE; DONE never recovers a static rest â€” a known benign gap, coils floating = safe).
 - Working tree at entry: clean (last session committed SPIN_GEN 40->8). Bridge pid21132 LIVE.
 
-### Firmware change (prize_wheel.ino only) — reviewed staged fix, FOUND A BUG in it, corrected
+### Firmware change (prize_wheel.ino only) â€” reviewed staged fix, FOUND A BUG in it, corrected
 - Applied the LEGACY LATCH fix (recoveryAttempts>=3 branch of RECOVERY_HOLD, ~line 2669). The staged
-  patch in CLAUDE_VARIANT.md used `mode = DRIFT_WATCH` — REJECTED: DRIFT_WATCH re-detects the dare rest
+  patch in CLAUDE_VARIANT.md used `mode = DRIFT_WATCH` â€” REJECTED: DRIFT_WATCH re-detects the dare rest
   and re-calls startDareRecovery(), which has NO attempt cap (only tryCreepCarry checks >=4). That would
-  loop-re-energize (twitch) forever — WORSE than the static grip. Corrected terminal = `mode = DONE`
+  loop-re-energize (twitch) forever â€” WORSE than the static grip. Corrected terminal = `mode = DONE`
   (fully passive; only a genuine new spin re-arms; recoveryAttempts clears then via startSpinEvent).
 - New branch body: driverFreewheel() + print "# DARE RECOVERY FAILED: floating coils; hardware/cal fault
   - re-spin to clear" + sawSpinThisCycle=false + settleT0=0 + mode=DONE. NO LANDED line emitted (fault,
@@ -1160,16 +1164,16 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
   "# L latch-test: dare wedge=5 ... entering RECOVERY_HOLD" then within RECOVERY_HOLD_MS
   "# DARE RECOVERY FAILED: floating coils ..." then mode->DONE (coils float). Then `s` confirms floating.
   <=4 motor actions; owner at bench; wheel clear. Ceiling 900, frame zero VALID.
-- MOTOR RUN: post-fix regression spin — one `g` (FAS+) to confirm the RECOVERY_HOLD edit did not
+- MOTOR RUN: post-fix regression spin â€” one `g` (FAS+) to confirm the RECOVERY_HOLD edit did not
   break the normal spin/steer pipeline AND to move the wheel OFF dare wedge 5 to a safe rest. Expect
   SPIN-GEN START->RELEASE->SPIN#n V4 -> LANDED isDare=0. (2nd of <=4 motor actions.)
 
-### RESULT — LATCH FIX VERIFIED + regression PASS, committed (LEGACY LATCH open item CLOSED)
+### RESULT â€” LATCH FIX VERIFIED + regression PASS, committed (LEGACY LATCH open item CLOSED)
 - Flashed COM3 (Hash of data verified + Hard resetting). Frame zero survived RTS reset (wedge 5 pre/post).
 - `L` test (wheel on dare wedge 5): 08:18:19 "entering RECOVERY_HOLD" -> 08:18:20 "# DARE RECOVERY
   FAILED: floating coils; hardware/cal fault - re-spin to clear" -> 08:18:21 status mode=10 DONE, coils
   FLOATING, still wedge 5 (rotor snapped ~3.5deg on 500mA energize, expected). NO repeat, NO twitch loop,
-  NO panic/WDT. Contrast: OLD fw printed "held; do not use" x5 at 07:46 (the infinite grip) — now GONE.
+  NO panic/WDT. Contrast: OLD fw printed "held; do not use" x5 at 07:46 (the infinite grip) â€” now GONE.
 - Regression `g`: RELEASE omega=-0.386 -> v4 predicted wedge 1 (DARE) -> STEER -> LANDED wedge=3 isDare=0
   targetErrorDeg=1.9. Normal pipeline + dare-avoidance intact; wheel moved OFF the dare to safe wedge 3.
 - End state: board angle=106.35 wedge=3 (SAFE) omega=0 mode=10 DONE, coils floating, accel=900,
@@ -1182,12 +1186,12 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
 2. Resume T3 baseline: >=10 g + >=10 G through v4, supervised batches <=4/session, armed d + mic; log
    engage speed/aborts/enc-vs-cam wedge/drift/acoustics. Valid baseline points so far: 08:18 g (steered
    dare1->wedge3), plus the 2 from the ~08:05 session. (g/G = iteration tooling ONLY.)
-3. Then T4 anomaly fixes (slow-engage click, ccw brake rattle, uphill recovery slip — evidence-first),
+3. Then T4 anomaly fixes (slow-engage click, ccw brake rattle, uphill recovery slip â€” evidence-first),
    T5, then T6 ACCEPTANCE = ATTENDED: >=30 OWNER HAND spins via the relay protocol (write the request at
    the TOP of this file and exit; motor spins are for iteration only, never final acceptance), then REPORT.md.
 
 
-## 2026-07-27 SUPERVISOR v2 (new loop) SESSION 1 (~08:05) — FLASHED bounded 8-rev spin-gen; verifying g/G
+## 2026-07-27 SUPERVISOR v2 (new loop) SESSION 1 (~08:05) â€” FLASHED bounded 8-rev spin-gen; verifying g/G
 ### State at entry
 - Frame zero VALID (owner re-zero 07:54:05, wedge-3 center = 103.5 deg, persisted NVS).
 - Uncommitted .ino change reviewed: SPIN_GEN_MOVE_REVS 40 -> 8. VERIFIED SAFE against code:
@@ -1196,7 +1200,7 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
 - Compiled clean (32% flash). FLASHED COM3 (Hash of data verified + Hard resetting).
 - Bridge stopped(pid31968)->flash->waited 7s->restarted(pid21132), confirmed LIVE (s/c replied).
 - Post-flash s: angle~8.7 wedge=0 mode=0 IDLE, accel=900, seeds c=0.300 b=0.150 / c=0.352 b=0.119.
-  Wheel physically drifted to ~wedge0 boundary after 07:56 (floating coils, unbalanced) — wedge0
+  Wheel physically drifted to ~wedge0 boundary after 07:56 (floating coils, unbalanced) â€” wedge0
   OFFSET persisted (Fix B, same RTS reset that was round-trip-verified) so mask STILL VALID.
 
 ### MOTOR RUN log (this session)
@@ -1206,14 +1210,14 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
   Firmware = bb6d211 + SPIN_GEN_MOVE_REVS 8. Ceiling 900, frame zero VALID. Bench, wheel clear.
   Instruments: bridge pid21132, cam pid19992, mic pid12492 live. Landings now PHYSICALLY VALID.
 
-### RESULT — both spins PASS, bounded ramp verified, committed
+### RESULT â€” both spins PASS, bounded ramp verified, committed
 - SPIN#1 (g/FAS+, enc dir=-1): SPIN-GEN RELEASE reason=target omega=-0.382; pred stop
   wedge=1 (DARE) -> action=STEER -> LANDED wedge=6 isDare=0 steered=1. durS~8s, no hang.
 - SPIN#2 (G/FAS-, enc dir=+1): SPIN-GEN START accel=450 targetHz=2400 -> RELEASE reason=target
   omega=0.375; pred stop wedge=5 (DARE) -> STEER -> LANDED wedge=11 isDare=0 steered=1.
 - ZERO hangs, ZERO loop-WDT/panic/Reboot markers, ZERO "DARE RECOVERY FAILED" (latch untouched;
   the only FAILED lines in log are the old 07:46 ones). Bounded 8-rev move released on target
-  both dirs — the 40-rev "never decelerate" hang mode is gone. targetErrorDeg (402.8/355.0)
+  both dirs â€” the 40-rev "never decelerate" hang mode is gone. targetErrorDeg (402.8/355.0)
   is the known-cosmetic gated-move artifact; wedge numbers authoritative.
 - End state: board mode=10 DONE, coils floating (safe), angle=345.7 wedge=11, accel=900.
 - COMMITTED SPIN_GEN_MOVE_REVS 40->8 on claude/adaptive-v2. Working tree now clean except notes.
@@ -1232,18 +1236,18 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
    owner can perform them. Motor spins are for iteration only, never for final acceptance.
 
 
-## 2026-07-27 SUPERVISOR v2 SESSION 4 (~07:38) — g/G rebuilt on bounded k/K-style ramp (owner tooling directive)
+## 2026-07-27 SUPERVISOR v2 SESSION 4 (~07:38) â€” g/G rebuilt on bounded k/K-style ramp (owner tooling directive)
 ### MOTOR RUN log (session 4)
-- MOTOR RUN: verify bounded g/G ramp — fire g (FAS+), G (FAS-), g+armed-d (dense enc
+- MOTOR RUN: verify bounded g/G ramp â€” fire g (FAS+), G (FAS-), g+armed-d (dense enc
   trace), G. <=4 spins. Expect each: SPIN-GEN START(release into free coast) ->
   RELEASE reason=target -> SPIN#n V4-ENGAGE -> LANDED, NO hang, NO loop-WDT reset.
   Firmware = SPIN_GEN_MOVE_REVS 40->8 (bounded) atop WDT+FixA/B. Ceiling 900, coils
   floating at start, mode IDLE, angle~345 wedge11. NOTE: frame zero is still the
-  ARBITRARY PLACEHOLDER (no attended z since 07:24:32) — landing wedges are NOT
+  ARBITRARY PLACEHOLDER (no attended z since 07:24:32) â€” landing wedges are NOT
   physically valid; this run only verifies RAMP ROBUSTNESS, not landings. Bench,
   wheel clear. Instruments: bridge pid31968, cam pid19992, mic pid12492 all live.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 3 (~07:31) — BLOCKED on frame zero; latch located; 0 spins
+## 2026-07-27 SUPERVISOR v2 SESSION 3 (~07:31) â€” BLOCKED on frame zero; latch located; 0 spins
 
 ### >>> STILL THE #1 BLOCKER: FRAME ZERO IS AN ARBITRARY PLACEHOLDER <<<
 - Verified this session: the ONLY wedge-0 event in pw_serial.log is the placeholder at
@@ -1253,12 +1257,12 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
 - Consequence: T3 baseline, T6 acceptance, and any latch-fix verification are ALL blocked.
   A "30-spin acceptance run" on this mask would be a FALSE guarantee (a physically-dare
   wedge can read safe). I refuse to produce acceptance data on a wrong mask.
-- UNBLOCK (physical, owner/attended — I cannot rotate the wheel): rotate so the bright rim
+- UNBLOCK (physical, owner/attended â€” I cannot rotate the wheel): rotate so the bright rim
   screw is under the red pointer (physical wedge-0 boundary), send `z` ONCE. It now
   persists across reboots/RTS resets (Fix B, session 1). Then `s` should read a sane wedge.
 - LIKELY-PRESENT-OWNER SIGNAL: at 07:31:27 and 07:31:42 someone HAND-SPUN the wheel
   (SPIN#1 omegaPeak 0.220 dir+1; SPIN#2 0.257 dir-1; NO SPIN-GEN markers; no campaign
-  process alive). A human was at the bench this morning — that is exactly when the one
+  process alive). A human was at the bench this morning â€” that is exactly when the one
   attended re-zero should be done. Bench idle since 07:31:59.
 
 ### What I did (frame-independent, no motor, no flash)
@@ -1283,18 +1287,18 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
   (Cleaned up an orphaned `tail -f | grep` serial-watcher pipe left from a prior session.)
 - git: only doc edits (CLAUDE_VARIANT.md, AGENT_NOTES.md) this session; committing on
   claude/adaptive-v2. NO code change. Repo stays on claude/adaptive-v2 (mission NOT
-  complete — do not checkout main / do not write REPORT.md until a valid acceptance run
+  complete â€” do not checkout main / do not write REPORT.md until a valid acceptance run
   exists on a correct frame zero).
 
 ### NEXT SESSION (unchanged critical path)
 1. Confirm whether an attended `z` at the true rim-screw position has happened (grep
    pw_serial.log for a NEW `wedge-0 boundary set` after 07:24:32). If not, the mission
-   cannot validly advance — surface the physical re-zero need again.
+   cannot validly advance â€” surface the physical re-zero need again.
 2. Once frame zero is valid: (a) apply+flash+verify the staged LEGACY LATCH fix with a
    forced fail-recovery test; (b) resume T3 baseline (>=10 g + >=10 G, batches <=4/session,
    armed d + mic); then T4 fixes, T6 acceptance, REPORT.md.
 
-## 2026-07-27 SUPERVISOR v2 SESSION 1 OUTCOMES — 2 firmware robustness fixes VERIFIED
+## 2026-07-27 SUPERVISOR v2 SESSION 1 OUTCOMES â€” 2 firmware robustness fixes VERIFIED
 
 ### >>> OWNER ACTION REQUIRED BEFORE ANY VALID CAMPAIGN <<<
 - FRAME ZERO IS CURRENTLY WRONG (arbitrary). The WDT reboot at 07:15:20 wiped the
@@ -1302,7 +1306,7 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
   sat at 07:24:32 (to prove the persistence path). Wedge numbers since are NOT the
   physical wedge map, so the dare-mask is misaligned. Owner/next session must:
   rotate wheel so the bright rim screw is under the red pointer (physical wedge-0
-  boundary), send `z` ONCE. It now PERSISTS across reboots/RTS resets — do it once.
+  boundary), send `z` ONCE. It now PERSISTS across reboots/RTS resets â€” do it once.
 - Until re-zeroed, do NOT treat any LANDED wedge / isDare as physically valid.
 
 ### Fix A (committed): d-dump no longer self-resets the board
@@ -1357,7 +1361,7 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
 
 ---
 
-## 2026-07-27 SUPERVISOR v2 SESSION 1 (~07:10-) — T2b mic logger built; peg-clack cal + T3
+## 2026-07-27 SUPERVISOR v2 SESSION 1 (~07:10-) â€” T2b mic logger built; peg-clack cal + T3
 - Board health CONFIRMED at start: s -> sensor FRESH, velocity VALID, angle=108.72
   wedge=3 omega=0 mode=10(DONE) ceiling=900 seeds c=0.300 b=0.150. No RTS reset in
   events log (supervisor v2 started 07:07). Frame zero intact from prior session.
@@ -1372,13 +1376,13 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
   ambient calibration; wheel silent). Same wall clock as serial/cam logs.
 
 ## MOTOR RUN log (session 1)
-- MOTOR RUN: peg-clack acoustic cal + T3 batch — arm d (dense enc), fire g (FAS+)
+- MOTOR RUN: peg-clack acoustic cal + T3 batch â€” arm d (dense enc), fire g (FAS+)
   spin-gen, wait LANDED+dump; then G (FAS-). 2 spins total (<=4 rule). Instruments:
   serial bridge, cam tracker v2, mic logger all live. Bench, wheel clear. Firmware
   6ab587a. Purpose: re-confirm g/G+WDT in fresh loop, first 3-frame+acoustic T3 data,
   predict peg rhythm ~12x omega for the mic natural-sound reference.
 
-## 2026-07-27 relaunch (~07:00) — T1 HANG FIXED; RESUME AT T3
+## 2026-07-27 relaunch (~07:00) â€” T1 HANG FIXED; RESUME AT T3
 
 ### FIRST-PRIORITY RESOLVED
 - The 00:49:50 `G` spin hang is FIXED. Root cause class: `loop()` blocked inside a
@@ -1387,7 +1391,7 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
   Wire.setTimeOut(3)), and there was NO hardware watchdog to recover. Fix: loop task
   now subscribed to ESP32 Task WDT, 4000 ms, panic+reset; fed once per loop().
   Full postmortem in CLAUDE_VARIANT.md ("T1 hang postmortem + loop-watchdog fix").
-- Firmware change: prize_wheel.ino only — added `#include "esp_task_wdt.h"`,
+- Firmware change: prize_wheel.ino only â€” added `#include "esp_task_wdt.h"`,
   `LOOP_WDT_TIMEOUT_MS 4000`, WDT init/reconfigure+add at end of setup(),
   `esp_task_wdt_reset()` as first line of loop(). TMC init block untouched.
 - COMPILED clean (32% flash) + FLASHED to COM3 (Hash of data verified + Hard
@@ -1401,7 +1405,7 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
 - Board healthy, mode=IDLE, coils floating (safe). Boot banner shows
   `# loop watchdog armed: 4000 ms`.
 - Serial bridge RESTARTED and live, new pid in %TEMP%\pw_bridge.pid (was dead-handle
-  once after flash; fixed by full stop+restart — remember the >=5 s wait rule, and
+  once after flash; fixed by full stop+restart â€” remember the >=5 s wait rule, and
   if pid alive but log stays empty, stop+restart the bridge). Cam tracker v2 assumed
   still running (not re-checked this session). No wheel work left running.
 - Firmware now = commit 16e1e14 (spin-gen) + this WDT commit. Ceiling 900, cal seed.
@@ -1426,7 +1430,7 @@ only accepts targets whose [center +/- creepEnvelope] stays off both dare wedges
 - Persisted accel ceiling reported by `c`: 900 sps2. Friction seeds still at
   c=0.300 b=0.150 both dirs (calibration is fresh/seed).
 
-### T1 — spin generator `g`/`G`  (IN PROGRESS)
+### T1 â€” spin generator `g`/`G`  (IN PROGRESS)
 Added to prize_wheel.ino:
 - Tunables SPIN_GEN_* (target 0.35-0.45 rev/s, 600 mA, accel = ceiling/2,
   40-rev move, 12 s timeout).
@@ -1449,28 +1453,28 @@ mandatory. Judge upload by 'Hash of data verified' + 'Hard resetting'.
 
 ## MOTOR RUN log
 - 2026-07-27 ~00:17 flashed T1 (commit 16e1e14). Verified help shows g/G.
-- MOTOR RUN: first `g` (FAS+) spin-generator test — expect SPIN-GEN START -> RELEASE -> SPIN#n V4-ENGAGE coast. Bench, wheel clear.
+- MOTOR RUN: first `g` (FAS+) spin-generator test â€” expect SPIN-GEN START -> RELEASE -> SPIN#n V4-ENGAGE coast. Bench, wheel clear.
 
 - MOTOR RUN: `G` (FAS-) spin-generator test, opposite direction.
 
-- MOTOR RUN: T2 cal capture — arm d (dense encoder), fire g, dump, fit cam vs enc.
+- MOTOR RUN: T2 cal capture â€” arm d (dense encoder), fire g, dump, fit cam vs enc.
 
-- MOTOR RUN: T2 cal — arm d, fire k (bounded 108 deg cal move), dump, fit.
+- MOTOR RUN: T2 cal â€” arm d, fire k (bounded 108 deg cal move), dump, fit.
 
-- MOTOR RUN: T2 cal series — 6 alternating k/K bounded moves for net-rotation scale fit.
+- MOTOR RUN: T2 cal series â€” 6 alternating k/K bounded moves for net-rotation scale fit.
 
-- MOTOR RUN: T2 verify — 3 fresh k/K moves, check vs stored scale.
+- MOTOR RUN: T2 verify â€” 3 fresh k/K moves, check vs stored scale.
 
 ## T2 DONE (00:38): scale=0.837491 sign=+1, resid 0.29deg RMS (7 moves), check 0.76/0.86deg PASS.
 Host tools in %TEMP%: pw_cam_cal_net.py (fit/check net-rotation), pw_cam_cal.py (streaming, deprecated), pw_baseline.py.
 Cal file %TEMP%\pw_cam_cal.txt written.
 NEXT: T3 baseline campaign - >=10 g-spins + >=10 G-spins through v4, catalog wheel-speed-up aborts, landings, cam-enc net agreement.
 
-- MOTOR RUN: T3 baseline campaign — 20 spins alternating g/G (10 each) through v4 pipeline.
-- MOTOR RUN: T3 baseline campaign (resumed) — driving 20 fresh spins alternating G/g via bridge, waiting for each LANDED. Build=T2 (c442323), ceiling=900, cal seed. Bench, wheel clear.
+- MOTOR RUN: T3 baseline campaign â€” 20 spins alternating g/G (10 each) through v4 pipeline.
+- MOTOR RUN: T3 baseline campaign (resumed) â€” driving 20 fresh spins alternating G/g via bridge, waiting for each LANDED. Build=T2 (c442323), ceiling=900, cal seed. Bench, wheel clear.
 
-## 2026-07-27 session (relaunch, ~07:00) — T1 hang fix
-- MOTOR RUN: watchdog-fix verification — one `g` (FAS+) then one `G` (FAS-) spin generator run, expect SPIN-GEN START -> RELEASE -> SPIN#n V4-ENGAGE -> LANDED, no hang. Bench, wheel clear. Firmware = spin-gen + loop TWDT (4000ms panic).
+## 2026-07-27 session (relaunch, ~07:00) â€” T1 hang fix
+- MOTOR RUN: watchdog-fix verification â€” one `g` (FAS+) then one `G` (FAS-) spin generator run, expect SPIN-GEN START -> RELEASE -> SPIN#n V4-ENGAGE -> LANDED, no hang. Bench, wheel clear. Firmware = spin-gen + loop TWDT (4000ms panic).
 
 ## SUPERVISOR HANDOFF 07:0x (session killed by owner re-steer, no fault of yours)
 Hang diagnosis so far: Wire.setTimeOut(3) already set, so I2C lockup RULED OUT; remaining suspect = FastAccelStepper ISR/queue block during high-rate spin-gen ramp. Per new OWNER PRIORITY in prompt: do NOT root-cause further - rebuild g/G on the k/K bounded-move ramp style + enable ESP32 task WDT, verify, move on to T3.
