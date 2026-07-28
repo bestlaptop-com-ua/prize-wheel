@@ -717,6 +717,46 @@ void emitForensicLine() {
     magAgc, magMagnitude, hOk ? 1 : 0, (unsigned)mode);
 }
 
+// Immediate always-on capture of the two frame events the 1 Hz dRes stream
+// CANNOT convict, because both leave dRes=0 on the next FRZ line:
+//   GAP  - a blind-gap nearest-turn re-prime (updateEncoder line ~817). It snaps
+//          the frame up to +/-180 deg AND re-anchors K, so the jump is invisible
+//          to dRes. snapDeg = how far the frame jumped at the re-prime.
+//   RATE - an impossible raw delta the slew guard refused. The frame is HELD
+//          (snap=0); rawDiff/delta/dDeg quantify what the register tried to do.
+// Together with the flags they convict the layer live: a GAP whose snapDeg
+// matches the 156/95 class with healthy magnet + a real dt gap points at the
+// blind-gap re-prime path; a RATE burst with big dDeg points at I2C transport
+// or a magnet field event (read stat/agc/mag). Throttled so a stuck fault cannot
+// flood the log; the count suppressed since the last printed line is carried.
+uint32_t lastFrameEvtMs = 0;
+uint16_t frameEvtSuppressed = 0;
+const uint32_t FRAME_EVT_MIN_GAP_MS = 150;
+
+void emitFrameEvent(const char* tag, int32_t snapCounts, int16_t rawDiff,
+                    int16_t delta, uint32_t dtGoodUs, int32_t rawNow) {
+  uint32_t nowMs = millis();
+  if (lastFrameEvtMs != 0 &&
+      (uint32_t)(nowMs - lastFrameEvtMs) < FRAME_EVT_MIN_GAP_MS) {
+    ++frameEvtSuppressed;
+    return;
+  }
+  lastFrameEvtMs = nowMs;
+  bool hOk = readMagnetHealth();   // fresh magnet flags AT the event instant
+  float snapDeg = (float)snapCounts * 360.0f / 4096.0f;
+  float dDeg = (float)delta * 360.0f / 4096.0f;
+  Serial.printf(
+    "# FRZ-EVT %s t=%lu supp=%u raw=%ld rawDiff=%d delta=%d dDeg=%.1f "
+    "snapCnt=%ld snapDeg=%.1f dtGoodUs=%lu cnt=%ld ang=%.2f w=%d "
+    "stat=0x%02X md=%d ml=%d mh=%d agc=%u mag=%u hOk=%d mode=%u\n",
+    tag, (unsigned long)nowMs, frameEvtSuppressed, (long)rawNow, rawDiff, delta,
+    dDeg, (long)snapCounts, snapDeg, (unsigned long)dtGoodUs,
+    (long)encoderCountsMT, wheelAngleDeg(), currentWedge(),
+    magStatus, (magStatus >> 5) & 1, (magStatus >> 4) & 1, (magStatus >> 3) & 1,
+    magAgc, magMagnitude, hOk ? 1 : 0, (unsigned)mode);
+  frameEvtSuppressed = 0;
+}
+
 bool velocityFromWindow(uint32_t nowUs, float& velocityRevS) {
   if (velocityHistoryCount < 2) return false;
 
@@ -814,9 +854,14 @@ void updateEncoder() {
 
   if (dtGoodUs == 0 || dtGoodUs > ENCODER_MAX_GOOD_GAP_US) {
     // We cannot safely choose a turn count across an extended blind interval.
+    int32_t preCounts = encoderCountsMT;
     primeEncoder(read.raw, read.doneUs, true);
     flags = DIAG_LONG_GAP | DIAG_PRIMED;
     recordDiagnostic(dtGoodUs, 0, 0, flags);
+    // Always-on: the nearest-turn re-prime re-anchors K, so this jump would read
+    // dRes=0 on the next FRZ line. Log the snap now so a silent idle jump that
+    // arrives via the blind-gap path is convicted instead of hidden.
+    emitFrameEvent("GAP", encoderCountsMT - preCounts, 0, 0, dtGoodUs, read.raw);
     return;
   }
 
@@ -843,6 +888,9 @@ void updateEncoder() {
     flags = DIAG_RATE;
     invalidateVelocity();
     recordDiagnostic(dtGoodUs, rawDiff, delta, flags);
+    // Always-on: an impossible raw delta the guard refused (frame held). rawDiff/
+    // delta over dtGoodUs convict the transport/magnet layer live.
+    emitFrameEvent("RATE", 0, rawDiff, delta, dtGoodUs, read.raw);
     return;
   }
 
@@ -2339,6 +2387,7 @@ void help() {
     " v  toggle live takeover logs (disabled while d capture is armed)\n"
     " m  print dare mask\n"
     " f  forensic snapshot: raw AS5600 reg + frame-predicted raw + residual + magnet health (auto-logs 1 Hz)\n"
+    " F  self-test the always-on FRZ-EVT emitter (GAP re-prime / RATE reject capture)\n"
     " a  attended accel-ceiling probe (wheel sweeps 120 deg per stage)\n"
     " g  attended spin generator FAS+ (spin up to ~0.4 rev/s, release to coast)\n"
     " G  attended spin generator FAS- (other direction)\n"
@@ -2453,6 +2502,18 @@ void handleSerial() {
     case 'f':
       emitForensicLine();   // on-demand FRZ snapshot (also runs every 1 s always-on)
       break;
+    case 'F': {
+      // Forensic-event self-test: prove the always-on FRZ-EVT emitter links and
+      // prints. Synthetic ~156 deg values (the jump class we hunt); no state
+      // change beyond the throttle stamp. Reset the throttle so both lines print.
+      lastFrameEvtMs = 0; frameEvtSuppressed = 0;
+      emitFrameEvent("GAP-TEST", 1774, 0, 0, 999999UL,
+                     encoderRead.ok ? (int32_t)encoderRead.raw : -1);
+      lastFrameEvtMs = 0; frameEvtSuppressed = 0;
+      emitFrameEvent("RATE-TEST", 0, 1774, 1774, 1000UL,
+                     encoderRead.ok ? (int32_t)encoderRead.raw : -1);
+      break;
+    }
     case '?':
       help();
       break;
