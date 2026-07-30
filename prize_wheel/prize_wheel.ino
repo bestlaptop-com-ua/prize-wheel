@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Prize Wheel firmware - mid-spin-only intervention
  *
  * Objective:
@@ -8,6 +8,15 @@
  *     direction and speed, then smoothly decelerates toward a safe wedge.
  *   - The firmware never reverses and never starts a second powered move after
  *     the wheel has stopped.
+ *
+ * v2 additions (2026-07-29):
+ *   - Static label-true wedge frame anchored on rawZero (NVS "rawZero").
+ *     Reboots and blind-gap re-primes can no longer corrupt wedge identity.
+ *   - Automatic friction-model calibration: every free coast is fitted to
+ *     domega/dt = -(c + b*omega) per direction and blended into NVS-persisted
+ *     coefficients. Prediction error is logged on every unsteered landing.
+ *   - Safe-target choice is uniform-random among all reachable safe wedges
+ *     instead of nearest-first.
  *
  * Hardware:
  *   ESP32-WROOM-32, BTT TMC2209 V1.3 over UART, NEMA17, 2:1 GT2 belt,
@@ -45,6 +54,7 @@ constexpr int NUM_WEDGES = 12;
 constexpr float WEDGE_DEG = 360.0f / (float)NUM_WEDGES;
 constexpr int ENCODER_DIR_SIGN = -1;
 
+enum Mode : uint8_t { IDLE, FREE_SPIN, SYNC_FIELD, SYNC_CAPTURE, TAKEOVER, SETTLE, DIR_PROBE, DONE, FAULT };
 uint16_t dareMask = (1U << 1) | (1U << 5);
 bool isDare(int wedge) {
   wedge %= NUM_WEDGES;
@@ -103,14 +113,27 @@ constexpr uint32_t VELOCITY_FILTER_TAU_US = 25000;
 constexpr uint8_t VELOCITY_HISTORY_LEN = 64;
 constexpr uint32_t DIRECTION_CAL_VERSION = 0x00020001UL;
 
+// Friction auto-calibration (free-coast fit of domega/dt = -(c + b*omega)).
+constexpr uint32_t FIT_SAMPLE_PERIOD_MS = 120;
+constexpr uint8_t FIT_MAX_SAMPLES = 96;
+constexpr uint8_t FIT_PAIR_STRIDE = 4;
+constexpr uint8_t FIT_MIN_SAMPLES = 26;
+constexpr float FIT_MIN_SPAN_RAD_S = 1.2f;
+constexpr float FIT_MIN_SPEED_REV_S = 0.045f;
+constexpr float FIT_MAX_SPEED_REV_S = 3.0f;
+constexpr float FIT_C_MIN = 0.02f, FIT_C_MAX = 3.0f;
+constexpr float FIT_B_MIN = 0.005f, FIT_B_MAX = 1.5f;
+constexpr float FIT_BLEND = 0.35f;
+
 TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
 Preferences preferences;
 
-enum Mode : uint8_t { IDLE, FREE_SPIN, SYNC_FIELD, SYNC_CAPTURE, TAKEOVER, SETTLE, DIR_PROBE, DONE, FAULT };
 Mode mode = IDLE;
 bool debugLog = false;
 bool takeoverEnabled = ENABLE_MOTOR_TAKEOVER;
-double wedge0OffsetDeg = 0.0;
+// Label-true frame anchor: AS5600 raw count at the leading edge of wedge 0.
+// Owner-measured 2026-07-28 for this wheel; 'z' re-anchors and persists.
+uint16_t rawZero = 3807;
 bool motorDirectionCalibrated = false;
 int dirHighEncoderSign = 0;
 uint32_t spinCounter = 0;
@@ -143,6 +166,14 @@ int32_t directionProbeStartCounts = 0;
 bool directionProbeOutputsEnabled = false;
 float cwC = 0.30f, cwB = 0.15f;
 float ccwC = 0.30f, ccwB = 0.15f;
+uint16_t cwFitCount = 0, ccwFitCount = 0;
+
+struct FitSample { uint32_t ms; float omegaRadS; };
+FitSample fitSamples[FIT_MAX_SAMPLES];
+uint8_t fitSampleCount = 0;
+int fitDir = 0;
+uint32_t fitLastSampleMs = 0;
+bool fitFinished = false;
 
 struct EncoderRead {
   bool ok;
@@ -180,15 +211,24 @@ uint8_t historyIndexFromNewest(uint8_t samplesBack) {
   return (velocityHistoryHead + VELOCITY_HISTORY_LEN - 1U - samplesBack) % VELOCITY_HISTORY_LEN;
 }
 void invalidateVelocity() { encoderVelocityValid = false; omega = 0.0f; clearVelocityHistory(); }
+// Static label-true frame: raw -> wheel counts, invariant across reboots.
+// ENCODER_DIR_SIGN is -1, so the wheel angle grows as raw decreases; the
+// count for a given raw is therefore (rawZero - raw) folded into [0, 4096).
+int32_t staticCountsFromRaw(uint16_t raw) {
+  int32_t counts = (int32_t)rawZero - (int32_t)raw;
+  counts %= 4096;
+  if (counts < 0) counts += 4096;
+  return counts;
+}
 void primeEncoder(uint16_t raw, uint32_t doneUs, bool preserveNearestTurn) {
-  if (!encoderPrimed || !preserveNearestTurn) encoderCountsMT = raw;
+  int32_t staticCounts = staticCountsFromRaw(raw);
+  if (!encoderPrimed || !preserveNearestTurn) encoderCountsMT = staticCounts;
   else {
-    int32_t turnBase = encoderCountsMT - (encoderCountsMT % 4096);
-    int32_t candidate = turnBase + raw;
-    int32_t difference = candidate - encoderCountsMT;
-    if (difference > 2048) candidate -= 4096;
-    if (difference < -2048) candidate += 4096;
-    encoderCountsMT = candidate;
+    // Snap to the multiple of 4096 nearest the running multiturn count so a
+    // blind gap keeps the turn number while restoring the label-true phase.
+    int32_t diff = encoderCountsMT - staticCounts;
+    int32_t turns = (int32_t)lroundf((float)diff / 4096.0f);
+    encoderCountsMT = staticCounts + turns * 4096;
   }
   encoderPrimed = true;
   lastGoodRaw = raw;
@@ -273,7 +313,7 @@ void updateEncoder() {
   updateVelocityEstimate(encoderRead.doneUs);
 }
 
-float wheelAngleDeg() { double angle = fmod(angleDegMT - wedge0OffsetDeg, 360.0); if (angle < 0.0) angle += 360.0; return (float)angle; }
+float wheelAngleDeg() { double angle = fmod(angleDegMT, 360.0); if (angle < 0.0) angle += 360.0; return (float)angle; }
 int wedgeAtAngle(float angle) { angle = fmodf(angle, 360.0f); if (angle < 0.0f) angle += 360.0f; return ((int)(angle / WEDGE_DEG)) % NUM_WEDGES; }
 int currentWedge() { return wedgeAtAngle(wheelAngleDeg()); }
 float forwardDistanceDeg(int dir, float fromAngle, float toAngle) { float distance = dir > 0 ? (toAngle - fromAngle) : (fromAngle - toAngle); distance = fmodf(distance, 360.0f); if (distance < 0.0f) distance += 360.0f; return distance; }
@@ -358,23 +398,110 @@ bool predictedStopCouldBeDare(float predictedAngle) {
   return false;
 }
 float requiredRunwayDeg(float speedRevS) { float stoppingRev = (speedRevS * speedRevS) / (2.0f * TAKEOVER_DECEL_REV_S2); return stoppingRev * 360.0f + TAKEOVER_RUNWAY_MARGIN_DEG; }
+// Uniform-random choice among ALL reachable safe wedges. Nearest-first was a
+// deterministic pattern (same entry conditions always produced the same
+// wedge); a uniform pick among qualifying candidates removes that tell while
+// keeping the identical runway feasibility checks.
 bool chooseSafeTarget(int dir, float currentAngle, float minimumRunwayDeg, float& targetAngle, float& runwayDeg) {
-  float bestRunway = 1000000.0f, bestTarget = 0.0f;
+  float candTarget[NUM_WEDGES]; float candRunway[NUM_WEDGES]; uint8_t candCount = 0;
   for (int wedge = 0; wedge < NUM_WEDGES; ++wedge) {
     if (isDare(wedge)) continue;
     float jitterLimit = fminf(SAFE_TARGET_JITTER_DEG, WEDGE_DEG * 0.5f - SAFE_EDGE_MARGIN_DEG); float jitter = 0.0f;
     if (jitterLimit > 0.0f) { long centiLimit = lroundf(jitterLimit * 100.0f); jitter = (float)random(-centiLimit, centiLimit + 1) / 100.0f; }
     float target = ((float)wedge + 0.5f) * WEDGE_DEG + jitter; float forward = forwardDistanceDeg(dir, currentAngle, target);
     if (forward < minimumRunwayDeg || forward > TAKEOVER_MAX_RUNWAY_DEG) continue;
-    if (forward < bestRunway) { bestRunway = forward; bestTarget = target; }
+    candTarget[candCount] = target; candRunway[candCount] = forward; ++candCount;
   }
-  if (bestRunway >= 999999.0f) return false;
-  targetAngle = bestTarget; runwayDeg = bestRunway; return true;
+  if (candCount == 0U) return false;
+  uint8_t pick = (uint8_t)random((long)candCount);
+  targetAngle = candTarget[pick]; runwayDeg = candRunway[pick]; return true;
 }
 
+// --- Friction auto-calibration -------------------------------------------
+// Every free coast is a measurement of this wheel's own physics. Samples of
+// (t, omega) collected while the coils float are fitted to
+//   domega/dt = -(c + b*omega)
+// by least squares over stride-spaced pairs, then blended into the running
+// per-direction coefficients and persisted to NVS. The seeded values only
+// matter until the first few real spins have been observed.
+void resetFrictionCapture(int dir) {
+  fitSampleCount = 0; fitDir = dir; fitLastSampleMs = 0; fitFinished = false;
+}
+void captureFrictionSample(uint32_t nowMs) {
+  if (fitFinished || fitDir == 0 || fitSampleCount >= FIT_MAX_SAMPLES) return;
+  if (!encoderVelocityValid) return;
+  float forward = omega * (float)fitDir;
+  if (forward < FIT_MIN_SPEED_REV_S || forward > FIT_MAX_SPEED_REV_S) return;
+  if (fitSampleCount > 0U && nowMs - fitLastSampleMs < FIT_SAMPLE_PERIOD_MS) return;
+  fitSamples[fitSampleCount].ms = nowMs;
+  fitSamples[fitSampleCount].omegaRadS = forward * TWO_PI;
+  ++fitSampleCount; fitLastSampleMs = nowMs;
+}
+void finishFrictionCapture(const char* reason) {
+  if (fitFinished) return;
+  fitFinished = true;
+  if (fitDir == 0 || fitSampleCount < FIT_MIN_SAMPLES) return;
+  float span = fitSamples[0].omegaRadS - fitSamples[fitSampleCount - 1U].omegaRadS;
+  if (span < FIT_MIN_SPAN_RAD_S) return;
+  float sx = 0.0f, sy = 0.0f, sxx = 0.0f, sxy = 0.0f; int pairs = 0;
+  for (uint8_t i = 0; i + FIT_PAIR_STRIDE < fitSampleCount; ++i) {
+    uint8_t j = i + FIT_PAIR_STRIDE;
+    float dtS = (float)(fitSamples[j].ms - fitSamples[i].ms) / 1000.0f;
+    if (dtS < 0.2f || dtS > 3.0f) continue;
+    float dropRadS = fitSamples[i].omegaRadS - fitSamples[j].omegaRadS;
+    if (dropRadS <= 0.0f) continue;
+    float alpha = dropRadS / dtS;
+    float x = 0.5f * (fitSamples[i].omegaRadS + fitSamples[j].omegaRadS);
+    sx += x; sy += alpha; sxx += x * x; sxy += x * alpha; ++pairs;
+  }
+  if (pairs < (int)(FIT_MIN_SAMPLES - FIT_PAIR_STRIDE)) return;
+  float denom = (float)pairs * sxx - sx * sx;
+  if (fabsf(denom) < 1e-3f) return;
+  float fitB = ((float)pairs * sxy - sx * sy) / denom;
+  float fitC = (sy - fitB * sx) / (float)pairs;
+  if (fitC < FIT_C_MIN || fitC > FIT_C_MAX || fitB < FIT_B_MIN || fitB > FIT_B_MAX) {
+    Serial.printf("SPIN#%lu FRICTION_REJECT dir=%+d fitC=%.4f fitB=%.4f pairs=%d reason=%s\n",
+                  (unsigned long)activeSpinNumber, fitDir, fitC, fitB, pairs, reason);
+    return;
+  }
+  float keep = 1.0f - FIT_BLEND;
+  if (fitDir > 0) {
+    cwC = keep * cwC + FIT_BLEND * fitC; cwB = keep * cwB + FIT_BLEND * fitB; ++cwFitCount;
+    preferences.putFloat("cwC", cwC); preferences.putFloat("cwB", cwB); preferences.putUShort("cwN", cwFitCount);
+    Serial.printf("SPIN#%lu FRICTION dir=+1 fitC=%.4f fitB=%.4f pairs=%d -> cwC=%.4f cwB=%.4f fits=%u reason=%s\n",
+                  (unsigned long)activeSpinNumber, fitC, fitB, pairs, cwC, cwB, cwFitCount, reason);
+  } else {
+    ccwC = keep * ccwC + FIT_BLEND * fitC; ccwB = keep * ccwB + FIT_BLEND * fitB; ++ccwFitCount;
+    preferences.putFloat("ccwC", ccwC); preferences.putFloat("ccwB", ccwB); preferences.putUShort("ccwN", ccwFitCount);
+    Serial.printf("SPIN#%lu FRICTION dir=-1 fitC=%.4f fitB=%.4f pairs=%d -> ccwC=%.4f ccwB=%.4f fits=%u reason=%s\n",
+                  (unsigned long)activeSpinNumber, fitC, fitB, pairs, ccwC, ccwB, ccwFitCount, reason);
+  }
+}
+void printFrictionStatus() {
+  Serial.printf("# friction cw: c=%.4f b=%.4f fits=%u | ccw: c=%.4f b=%.4f fits=%u\n",
+                cwC, cwB, cwFitCount, ccwC, ccwB, ccwFitCount);
+}
+void resetFrictionModel() {
+  cwC = 0.30f; cwB = 0.15f; ccwC = 0.30f; ccwB = 0.15f; cwFitCount = 0; ccwFitCount = 0;
+  preferences.remove("cwC"); preferences.remove("cwB"); preferences.remove("cwN");
+  preferences.remove("ccwC"); preferences.remove("ccwB"); preferences.remove("ccwN");
+  Serial.println(F("# friction model reset to seeds"));
+}
+// --------------------------------------------------------------------------
+
+// Window prediction: the stop prediction captured the first time the wheel
+// decelerates into the takeover decision band. For unsteered spins this is
+// compared against the actual landing to measure real prediction error
+// without influencing the steer/leave decision in any way.
+bool activeSpinWindowPredValid = false;
+float activeSpinWindowPredAngle = 0.0f;
+
 void startSpinEvent(int confirmedDir) {
+  finishFrictionCapture("respin");
   ++spinCounter; activeSpinNumber = spinCounter; spinDir = confirmedDir; activeSpinPeakOmega = fabsf(omega);
   activeSpinSteered = false; activeSpinHasDecision = false; activeSpinPredAngle = 0.0f; activeSpinPredWedge = -1; activeSpinTargetWedge = -1; settleStartMs = 0;
+  activeSpinWindowPredValid = false; activeSpinWindowPredAngle = 0.0f;
+  resetFrictionCapture(confirmedDir);
   Serial.printf("SPIN#%lu START dir=%+d omega=%.3f\n", (unsigned long)activeSpinNumber, spinDir, omega);
 }
 void recordDecision(float predictedAngle, int predictedWedge, bool steer, int targetWedge) {
@@ -385,6 +512,12 @@ void recordDecision(float predictedAngle, int predictedWedge, bool steer, int ta
 void printLandedEvent() {
   int wedge = currentWedge();
   Serial.printf("SPIN#%lu LANDED wedge=%d angle=%.1f isDare=%d steered=%d predWedgeWas=%d predAngleWas=%.1f targetWedgeWas=%d\n", (unsigned long)activeSpinNumber, wedge, wheelAngleDeg(), isDare(wedge) ? 1 : 0, activeSpinSteered ? 1 : 0, activeSpinPredWedge, activeSpinPredAngle, activeSpinTargetWedge);
+  if (!activeSpinSteered && activeSpinWindowPredValid) {
+    float errDeg = fmodf(wheelAngleDeg() - activeSpinWindowPredAngle + 540.0f, 360.0f) - 180.0f;
+    Serial.printf("SPIN#%lu PRED_ERR deg=%+.1f windowPred=%.1f(w%d) landed=%.1f(w%d)\n",
+                  (unsigned long)activeSpinNumber, errDeg, activeSpinWindowPredAngle,
+                  wedgeAtAngle(activeSpinWindowPredAngle), wheelAngleDeg(), wedge);
+  }
   if (isDare(wedge)) Serial.println(F("# UNSAFE FINAL: no post-stop recovery was attempted; inspect prediction/sync log"));
 }
 
@@ -468,12 +601,14 @@ bool tryBeginTakeover() {
   float speed = fabsf(omega); if (speed > TAKEOVER_TRIGGER_REV_S || speed < TAKEOVER_MIN_REV_S) return false;
   if (omega * spinDir <= 0.0f) return false;
   float predictedAngle = predictStopAngle(); int predictedWedge = wedgeAtAngle(predictedAngle);
+  if (!activeSpinWindowPredValid) { activeSpinWindowPredValid = true; activeSpinWindowPredAngle = predictedAngle; }
   if (!predictedStopCouldBeDare(predictedAngle)) return false;
   float targetAngle = 0.0f, runwayDeg = 0.0f, minimumRunway = requiredRunwayDeg(speed);
   if (!chooseSafeTarget(spinDir, wheelAngleDeg(), minimumRunway, targetAngle, runwayDeg)) {
     if (debugLog) Serial.printf("# TK defer: no safe target cur=%.1f omega=%.3f minRunway=%.1f\n", wheelAngleDeg(), omega, minimumRunway);
     return false;
   }
+  finishFrictionCapture("pre-steer");
   int targetWedge = wedgeAtAngle(targetAngle); recordDecision(predictedAngle, predictedWedge, true, targetWedge);
   if (!beginTakeover(targetAngle, runwayDeg)) { activeSpinHasDecision = false; activeSpinSteered = false; activeSpinTargetWedge = -1; return false; }
   return true;
@@ -486,18 +621,25 @@ const char* modeName(Mode value) {
   }
 }
 void printHelp() {
-  Serial.println(F("\n=== PRIZE WHEEL: MID-SPIN-ONLY BUILD ===\n z  set current pointer position as wedge-0 boundary and save\n p  attended DIR=HIGH direction probe (safe wedge center only)\n s  status\n v  toggle verbose takeover logging\n e  toggle automatic takeover\n x  clear stored motor direction calibration\n m  print dare mask\n ?  help\nThere is no post-stop recovery move in this build."));
+  Serial.println(F("\n=== PRIZE WHEEL: MID-SPIN-ONLY BUILD v2 ===\n z  set current pointer position as wedge-0 boundary and save (wheel at rest)\n p  attended DIR=HIGH direction probe (safe wedge center only)\n s  status\n v  toggle verbose takeover logging\n e  toggle automatic takeover\n f  print friction model (auto-calibrated from free coasts)\n F  reset friction model to seed values\n x  clear stored motor direction calibration\n m  print dare mask\n ?  help\nThere is no post-stop recovery move in this build."));
 }
 void printStatus() {
   float predicted = predictStopAngle();
-  Serial.printf("# mode=%s angle=%.2f wedge=%d omega=%.4f pred=%.1f(w%d) encoderPos=%s velocity=%s takeover=%d dirCal=%d dirHighSign=%+d\n", modeName(mode), wheelAngleDeg(), currentWedge(), omega, predicted, wedgeAtAngle(predicted), encoderPositionFresh() ? "FRESH" : "STALE", encoderVelocityValid ? "VALID" : "REPRIME", takeoverEnabled ? 1 : 0, motorDirectionCalibrated ? 1 : 0, dirHighEncoderSign);
+  Serial.printf("# mode=%s angle=%.2f wedge=%d omega=%.4f pred=%.1f(w%d) encoderPos=%s velocity=%s takeover=%d dirCal=%d dirHighSign=%+d rawZero=%u\n", modeName(mode), wheelAngleDeg(), currentWedge(), omega, predicted, wedgeAtAngle(predicted), encoderPositionFresh() ? "FRESH" : "STALE", encoderVelocityValid ? "VALID" : "REPRIME", takeoverEnabled ? 1 : 0, motorDirectionCalibrated ? 1 : 0, dirHighEncoderSign, rawZero);
 }
 void handleSerial() {
   if (!Serial.available()) return; char command = (char)Serial.read();
   switch (command) {
     case 'z':
       if (!encoderPositionFresh()) Serial.println(F("# wedge calibration ignored: encoder position stale"));
-      else { wedge0OffsetDeg = angleDegMT; preferences.putDouble("wedge0", wedge0OffsetDeg); preferences.putBool("wedge0_ok", true); Serial.println(F("# wedge-0 boundary saved at current pointer position")); }
+      else if (mode != IDLE && mode != DONE && mode != FAULT) Serial.println(F("# wedge calibration ignored: wheel controller is busy"));
+      else if (encoderVelocityValid && fabsf(omega) > STILL_REV_S) Serial.println(F("# wedge calibration ignored: wheel must be at rest"));
+      else {
+        rawZero = lastGoodRaw;
+        preferences.putUShort("rawZero", rawZero);
+        primeEncoder(lastGoodRaw, lastGoodUs, false);
+        Serial.printf("# wedge-0 anchor saved: rawZero=%u (angle now %.2f, wedge %d)\n", rawZero, wheelAngleDeg(), currentWedge());
+      }
       break;
     case 'p': startDirectionProbe(); break;
     case 's': printStatus(); break;
@@ -506,6 +648,11 @@ void handleSerial() {
       takeoverEnabled = !takeoverEnabled;
       if (!takeoverEnabled && (mode == SYNC_FIELD || mode == SYNC_CAPTURE || mode == TAKEOVER)) releaseTakeover("disabled-by-user", false);
       Serial.printf("# takeoverEnabled=%d\n", takeoverEnabled ? 1 : 0); break;
+    case 'f': printFrictionStatus(); break;
+    case 'F':
+      if (mode == IDLE || mode == DONE || mode == FAULT) resetFrictionModel();
+      else Serial.println(F("# cannot reset friction model while controller is busy"));
+      break;
     case 'x':
       if (mode == IDLE || mode == DONE || mode == FAULT) invalidateDirectionCalibration("serial command");
       else Serial.println(F("# cannot clear direction calibration while controller is busy"));
@@ -519,7 +666,11 @@ void handleSerial() {
 
 void setup() {
   Serial.begin(115200); delay(300); randomSeed(esp_random()); preferences.begin("prizewheel", false);
-  if (preferences.getBool("wedge0_ok", false)) wedge0OffsetDeg = preferences.getDouble("wedge0", 0.0);
+  rawZero = preferences.getUShort("rawZero", 3807);
+  preferences.remove("wedge0"); preferences.remove("wedge0_ok");
+  cwC = preferences.getFloat("cwC", 0.30f); cwB = preferences.getFloat("cwB", 0.15f);
+  ccwC = preferences.getFloat("ccwC", 0.30f); ccwB = preferences.getFloat("ccwB", 0.15f);
+  cwFitCount = preferences.getUShort("cwN", 0); ccwFitCount = preferences.getUShort("ccwN", 0);
   uint32_t storedSignature = preferences.getUInt("dir_sig", 0U); dirHighEncoderSign = preferences.getInt("dir_hi_sign", 0);
   motorDirectionCalibrated = preferences.getBool("dir_ok", false) && storedSignature == directionCalibrationSignature() && (dirHighEncoderSign == 1 || dirHighEncoderSign == -1);
   if (!motorDirectionCalibrated) dirHighEncoderSign = 0;
@@ -531,6 +682,8 @@ void setup() {
   bool ledcReady = ledcAttach(PIN_STEP, 100U, 8U); Serial.printf("# LEDC step clock attach=%d\n", ledcReady ? 1 : 0);
   uint8_t connection = driver.test_connection(); Serial.printf("# TMC UART test_connection (0=OK): %u\n", connection);
   Serial.printf("# direction calibration=%s dirHighSign=%+d signature=0x%08lX\n", motorDirectionCalibrated ? "VALID" : "REQUIRED", dirHighEncoderSign, (unsigned long)directionCalibrationSignature());
+  Serial.printf("# frame: label-true static, rawZero=%u (wedge-0 leading edge)\n", rawZero);
+  printFrictionStatus();
   printHelp(); driverFreewheel(); mode = IDLE;
 }
 
@@ -556,8 +709,9 @@ void loop() {
     case FREE_SPIN:
       if (!sensorReady) break;
       if (fabsf(omega) > activeSpinPeakOmega) activeSpinPeakOmega = fabsf(omega);
+      captureFrictionSample(nowMs);
       if (tryBeginTakeover()) break;
-      if (fabsf(omega) <= STILL_REV_S) { settleStartMs = 0; mode = SETTLE; }
+      if (fabsf(omega) <= STILL_REV_S) { finishFrictionCapture("coast-end"); settleStartMs = 0; mode = SETTLE; }
       break;
     case SYNC_FIELD:
       if (guestOverride) { abortToFreeSpin("guest-override-sync-field"); startSpinEvent(omega >= 0.0f ? 1 : -1); break; }
@@ -583,3 +737,4 @@ void loop() {
     case DIR_PROBE: serviceDirectionProbe(); break;
   }
 }
+
