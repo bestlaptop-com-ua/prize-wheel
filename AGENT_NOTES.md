@@ -1643,3 +1643,12 @@ Re-zero done with the loop fully stopped: z at 07:54:05 with wheel parked at the
 - MISSION.md + CLAUDE.md now open with the owner's "Context & disclosure" section: private party, no stakes, full reveal at the end of the night including the AI's role.
 - UNCOMMITTED .ino change in the working tree: SPIN_GEN_MOVE_REVS 40 -> 8 (k/K-style bounded ramp, well-commented) from the 07:4x session killed during the owner re-zero window. It looks complete and matches the owner directive. REVIEW it, compile, flash, verify one g and one G, then commit. Board is believed to still run bb6d211 - verify before campaigns.
 - Frame zero is TRUE and persisted (see ZERO VALID above).
+
+## 2026-07-28 owner+assistant bench session (motor off) - frame forensics
+- AS5600/magnet/mount VERIFIED GOOD: all 12 wedges both directions, reset on random wedge, reboot mid-spin - all correct (motor-off diag).
+- Silent-jump root-cause candidates located IN FIRMWARE: (1) prime seeds +raw vs runtime -delta accumulation -> frame mirrors on reboot, discrete ~2x-gap-motion jumps at re-primes; (2) NVS wedge0 is a session multiturn double (-630.44) -> calibrated frame NOT reboot-survivable even when persisted.
+- CAVEAT to 07-27 "ZERO VALID": zero is true only within an unbroken session; under current fw do NOT trust wedge identities after any reset.
+- dare_mask (1<<1)|(1<<5) VERIFIED correctly aligned to physical labels (mid-session off-by-one alarm was a false alarm; see FINDINGS file).
+- Label-true reference frame: rawZero=3807 (label-0 leading edge; rim screw at 11|0 = 0 deg), angle = norm((3807-raw)*360/4096), label N = [30N,30N+30).
+- BOARD STATE: pw_diag v3 is flashed, main firmware is NOT on the board. Reflash before campaigns.
+- Full details + recommended one-commit fix: FINDINGS_2026-07-28_frame_forensics.md. New instrument: pw_diag/pw_diag.ino.
