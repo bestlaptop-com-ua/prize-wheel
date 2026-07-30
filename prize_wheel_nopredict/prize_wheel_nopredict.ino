@@ -69,15 +69,22 @@ constexpr uint32_t SPIN_CONFIRM_TIMEOUT_MS = 1200;
 constexpr float SPIN_CONFIRM_TRAVEL_DEG = 6.0f;
 constexpr float SPIN_CANCEL_BACKTRACK_DEG = 2.0f;
 constexpr bool ENABLE_MOTOR_TAKEOVER = true;
-constexpr float TAKEOVER_TRIGGER_REV_S = 0.28f;
+constexpr float TAKEOVER_TRIGGER_REV_S = 0.45f;  // VARIANT2: 0.28 waited until the wheel was dying
 constexpr float TAKEOVER_MIN_REV_S = 0.075f;
 constexpr float TAKEOVER_MIN_PEAK_REV_S = 0.30f;
-constexpr float TAKEOVER_MAX_START_REV_S = 0.30f;
+constexpr float TAKEOVER_MAX_START_REV_S = 0.45f;  // VARIANT2: sync at the raised engage speed
 constexpr float PREDICTION_DARE_MARGIN_DEG = 10.0f;
 constexpr float TAKEOVER_DECEL_REV_S2 = 650.0f / WHEEL_USTEPS_PER_REV;
 constexpr float TAKEOVER_RUNWAY_MARGIN_DEG = 18.0f;
 constexpr float TAKEOVER_MAX_RUNWAY_DEG = 540.0f;  // VARIANT: >= min-runway + 360 so every safe wedge stays reachable (uniform distribution)
 constexpr float ENGAGE_AT_PEAK_FRACTION = 0.50f;   // VARIANT: engage once omega decays to half of spin peak
+constexpr float ENGAGE_BAND_LO = 0.75f;            // VARIANT2: engage when target sits at 0.75..1.35x natural stop distance
+constexpr float ENGAGE_BAND_HI = 1.35f;
+constexpr float ENGAGE_FORCE_REV_S = 0.10f;        // VARIANT2: below this speed stop waiting for the band
+constexpr uint32_t RELEASE_TAPER_STEP_MS = 350;    // VARIANT2: held-stop torque fade stage length
+float pendingTargetAngle = 0.0f; bool pendingTargetValid = false; int pendingTargetWedge = -1;
+float takeoverDecelScale = 1.0f;
+uint8_t releaseTaperStage = 0; uint32_t releaseTaperMs = 0; bool releaseTaperActive = false;
 constexpr float SAFE_EDGE_MARGIN_DEG = 9.0f;
 constexpr float SAFE_TARGET_JITTER_DEG = 2.0f;
 constexpr float TAKEOVER_RELEASE_REMAIN_DEG = 2.2f;
@@ -501,7 +508,7 @@ float activeSpinWindowPredAngle = 0.0f;
 void startSpinEvent(int confirmedDir) {
   finishFrictionCapture("respin");
   ++spinCounter; activeSpinNumber = spinCounter; spinDir = confirmedDir; activeSpinPeakOmega = fabsf(omega);
-  activeSpinSteered = false; activeSpinHasDecision = false; activeSpinPredAngle = 0.0f; activeSpinPredWedge = -1; activeSpinTargetWedge = -1; settleStartMs = 0;
+  activeSpinSteered = false; activeSpinHasDecision = false; activeSpinPredAngle = 0.0f; activeSpinPredWedge = -1; activeSpinTargetWedge = -1; settleStartMs = 0; pendingTargetValid = false; pendingTargetWedge = -1; if (releaseTaperActive) { releaseTaperActive = false; driverFreewheel(); }
   activeSpinWindowPredValid = false; activeSpinWindowPredAngle = 0.0f;
   resetFrictionCapture(confirmedDir);
   Serial.printf("SPIN#%lu START dir=%+d omega=%.3f\n", (unsigned long)activeSpinNumber, spinDir, omega);
@@ -527,8 +534,13 @@ int32_t takeoverTravelledCounts() { return takeoverDir * (encoderCountsMT - take
 float takeoverRemainingDeg() { int32_t remainingCounts = takeoverTargetTravelCounts - takeoverTravelledCounts(); return (float)remainingCounts * 360.0f / 4096.0f; }
 void releaseTakeover(const char* reason, bool fault) {
   float remaining = takeoverRemainingDeg(); float travelled = (float)takeoverTravelledCounts() * 360.0f / 4096.0f;
-  driverFreewheel(); settleStartMs = 0; mode = fault ? FAULT : SETTLE;
-  Serial.printf("SPIN#%lu TAKEOVER_END reason=%s travelledDeg=%.1f remainingDeg=%.1f omega=%.3f\n", (unsigned long)activeSpinNumber, reason, travelled, remaining, omega);
+  bool heldStop = (!fault) && (fabsf(omega) <= 0.05f);
+  if (heldStop) {  // VARIANT2: field-held near-zero stop - fade torque instead of dropping it
+    stopStepClock(); driver.rms_current(TAKEOVER_INITIAL_CURRENT_MA, 1.0f);
+    releaseTaperActive = true; releaseTaperStage = 0; releaseTaperMs = millis();
+  } else { driverFreewheel(); }
+  settleStartMs = 0; mode = fault ? FAULT : SETTLE;
+  Serial.printf("SPIN#%lu TAKEOVER_END reason=%s travelledDeg=%.1f remainingDeg=%.1f omega=%.3f taper=%d\n", (unsigned long)activeSpinNumber, reason, travelled, remaining, omega, heldStop ? 1 : 0);
 }
 bool beginTakeover(float targetAngle, float runwayDeg) {
   if (!takeoverEnabled || !motorDirectionCalibrated || !encoderMotionReady()) return false;
@@ -585,10 +597,12 @@ void serviceTakeover() {
   if (remainingDeg < -2.0f) { releaseTakeover("target-passed", false); return; }
   if (forwardSpeed <= TAKEOVER_EARLY_STOP_REV_S && remainingDeg > TAKEOVER_EARLY_STOP_REMAIN_DEG) { releaseTakeover("early-stop", false); return; }
   float usableRemainingDeg = fmaxf(remainingDeg - TAKEOVER_RELEASE_REMAIN_DEG, 0.0f);
-  float profileRevS = sqrtf(2.0f * TAKEOVER_DECEL_REV_S2 * (usableRemainingDeg / 360.0f));
-  if (profileRevS < TAKEOVER_RELEASE_REV_S) profileRevS = TAKEOVER_RELEASE_REV_S;
-  float maxDrop = TAKEOVER_DECEL_REV_S2 * dt;
-  if (takeoverCommandRevS > profileRevS) takeoverCommandRevS = fmaxf(profileRevS, takeoverCommandRevS - maxDrop);
+  // VARIANT2: natural-shape deceleration (fitted friction curve, scaled to land on target)
+  float natDecel = takeoverDecelScale * naturalDecelRevS2(takeoverCommandRevS, takeoverDir);
+  takeoverCommandRevS -= natDecel * dt;
+  float ceilRevS = sqrtf(2.0f * fmaxf(natDecel, 0.05f) * (usableRemainingDeg / 360.0f));
+  if (takeoverCommandRevS > ceilRevS) takeoverCommandRevS = ceilRevS;
+  if (takeoverCommandRevS < TAKEOVER_RELEASE_REV_S) takeoverCommandRevS = TAKEOVER_RELEASE_REV_S;
   setStepClockRevS(takeoverCommandRevS);
   if (takeoverCurrentRaisedMs != 0U && millis() - takeoverCurrentRaisedMs >= TAKEOVER_CURRENT_RAMP_MS) { driver.rms_current(TAKEOVER_BRAKE_CURRENT_MA, 1.0f); takeoverCurrentRaisedMs = 0; }
   static uint32_t lastLogMs = 0;
@@ -596,6 +610,23 @@ void serviceTakeover() {
     lastLogMs = millis();
     Serial.printf("# TK dir=%+d angle=%.1f target=%.1f remaining=%.1f omega=%.3f cmd=%.3f slip=%.3f current=%u\n", takeoverDir, wheelAngleDeg(), takeoverTargetDeg, remainingDeg, omega, takeoverCommandRevS, forwardSpeed - takeoverCommandRevS, takeoverCurrentRaisedMs == 0U ? TAKEOVER_BRAKE_CURRENT_MA : TAKEOVER_INITIAL_CURRENT_MA);
   }
+}
+// VARIANT2: friction-shaped takeover + geometric engage + soft release
+float naturalDecelRevS2(float w, int dir) { float C = (dir > 0) ? cwC : ccwC; float B = (dir > 0) ? cwB : ccwB; return C + B * w; }
+float naturalStopDistanceDeg(float w, int dir) {
+  float C = (dir > 0) ? cwC : ccwC; float B = (dir > 0) ? cwB : ccwB;
+  if (C < 0.02f) C = 0.02f;
+  if (B < 0.02f) return (w * w) / (2.0f * C) * 360.0f;
+  return ((w - (C / B) * logf(1.0f + B * w / C)) / B) * 360.0f;
+}
+void serviceReleaseTaper() {
+  if (!releaseTaperActive) return;
+  uint8_t stage = (uint8_t)((millis() - releaseTaperMs) / RELEASE_TAPER_STEP_MS);
+  if (stage == releaseTaperStage) return;
+  releaseTaperStage = stage;
+  if (stage == 1) driver.rms_current(120, 1.0f);
+  else if (stage == 2) driver.rms_current(70, 1.0f);
+  else if (stage >= 3) { releaseTaperActive = false; driverFreewheel(); }
 }
 bool tryBeginTakeover() {
   if (!takeoverEnabled || !motorDirectionCalibrated || activeSpinHasDecision || !encoderMotionReady()) return false;
@@ -605,14 +636,29 @@ bool tryBeginTakeover() {
   if (omega * spinDir <= 0.0f) return false;
   float predictedAngle = predictStopAngle(); int predictedWedge = wedgeAtAngle(predictedAngle);
   if (!activeSpinWindowPredValid) { activeSpinWindowPredValid = true; activeSpinWindowPredAngle = predictedAngle; }
-  float targetAngle = 0.0f, runwayDeg = 0.0f, minimumRunway = requiredRunwayDeg(speed);
-  if (!chooseSafeTarget(spinDir, wheelAngleDeg(), minimumRunway, targetAngle, runwayDeg)) {
-    if (debugLog) Serial.printf("# TK defer: no safe target cur=%.1f omega=%.3f minRunway=%.1f\n", wheelAngleDeg(), omega, minimumRunway);
-    return false;
+  if (!pendingTargetValid) {  // VARIANT2: pick wedge once per spin (uniform), then wait for geometry
+    int safeW[NUM_WEDGES]; int nSafe = 0;
+    for (int w = 0; w < NUM_WEDGES; ++w) if (!isDare(w)) safeW[nSafe++] = w;
+    if (nSafe == 0) return false;
+    int pick = safeW[random((long)nSafe)];
+    float jitterLimit = fminf(SAFE_TARGET_JITTER_DEG, WEDGE_DEG * 0.5f - SAFE_EDGE_MARGIN_DEG); float jitter = 0.0f;
+    if (jitterLimit > 0.0f) { long cl = lroundf(jitterLimit * 100.0f); jitter = (float)random(-cl, cl + 1) / 100.0f; }
+    pendingTargetAngle = ((float)pick + 0.5f) * WEDGE_DEG + jitter;
+    pendingTargetWedge = pick; pendingTargetValid = true;
+    if (debugLog) Serial.printf("# TK pending wedge=%d angle=%.1f\n", pick, pendingTargetAngle);
   }
+  float natural = naturalStopDistanceDeg(speed, spinDir);
+  float d = forwardDistanceDeg(spinDir, wheelAngleDeg(), pendingTargetAngle);
+  if (d < TAKEOVER_RELEASE_REMAIN_DEG + 15.0f) d += 360.0f;
+  while (d < natural * 0.5f) d += 360.0f;
+  bool inBand = (d >= natural * ENGAGE_BAND_LO && d <= natural * ENGAGE_BAND_HI);
+  if (!inBand && speed > ENGAGE_FORCE_REV_S) return false;  // keep coasting; the sweep brings the target into band
+  takeoverDecelScale = natural / d;
+  if (takeoverDecelScale < 0.5f) takeoverDecelScale = 0.5f; if (takeoverDecelScale > 2.0f) takeoverDecelScale = 2.0f;
   finishFrictionCapture("pre-steer");
-  int targetWedge = wedgeAtAngle(targetAngle); recordDecision(predictedAngle, predictedWedge, true, targetWedge);
-  if (!beginTakeover(targetAngle, runwayDeg)) { activeSpinHasDecision = false; activeSpinSteered = false; activeSpinTargetWedge = -1; return false; }
+  recordDecision(predictedAngle, predictedWedge, true, pendingTargetWedge);
+  if (!beginTakeover(pendingTargetAngle, d)) { activeSpinHasDecision = false; activeSpinSteered = false; activeSpinTargetWedge = -1; return false; }
+  if (debugLog) Serial.printf("# TK engage natural=%.1f runway=%.1f scale=%.2f\n", natural, d, takeoverDecelScale);
   return true;
 }
 
@@ -690,6 +736,7 @@ void setup() {
 }
 
 void loop() {
+  serviceReleaseTaper();
   updateEncoder(); handleSerial(); bool sensorReady = encoderMotionReady(); uint32_t nowMs = millis();
   int32_t confirmTravelCounts = countsForDegrees(SPIN_CONFIRM_TRAVEL_DEG); int32_t cancelBacktrackCounts = countsForDegrees(SPIN_CANCEL_BACKTRACK_DEG); bool spinConfirmed = false;
   bool canArmSpin = mode == IDLE || mode == DONE || mode == SETTLE || mode == FAULT;
@@ -739,4 +786,6 @@ void loop() {
     case DIR_PROBE: serviceDirectionProbe(); break;
   }
 }
+
+
 
