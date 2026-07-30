@@ -288,7 +288,16 @@ enum Mode : uint8_t {
 };
 Mode mode = IDLE;
 
-double wedge0OffsetDeg = 0.0;
+/* Label-true absolute anchor (FINDINGS 2026-07-28): raw AS5600 count at the
+ * leading edge of label 0 under the pointer.  Wedge identity derives ONLY from
+ * (rawZero - raw) mod 4096 - static, reboot-proof, immune to boot order and
+ * blind I2C gaps.  Multiturn counts remain for spin ballistics alone. */
+uint16_t rawZero = 3807;
+static inline int32_t staticCountsFromRaw(uint16_t raw) {
+  int32_t sc = ((int32_t)rawZero - (int32_t)raw) % 4096;
+  if (sc < 0) sc += 4096;
+  return sc;
+}
 float omega = 0.0f;                 // signed wheel rev/s; valid only when flagged
 bool debugLog = false;
 
@@ -582,11 +591,12 @@ void invalidateVelocity() {
 // nearest whole-turn count; modulo-360 position remains correct, while no
 // takeover can start until a new valid velocity window has been collected.
 void primeEncoder(uint16_t raw, uint32_t doneUs, bool preserveNearestTurn) {
+  int32_t staticCounts = staticCountsFromRaw(raw);  // label-true, mod 4096
   if (!encoderPrimed || !preserveNearestTurn) {
-    encoderCountsMT = raw;
+    encoderCountsMT = staticCounts;
   } else {
     int32_t wholeTurnBase = encoderCountsMT - (encoderCountsMT % 4096);
-    int32_t candidate = wholeTurnBase + raw;
+    int32_t candidate = wholeTurnBase + staticCounts;
     int32_t difference = candidate - encoderCountsMT;
     if (difference > 2048) candidate -= 4096;
     if (difference < -2048) candidate += 4096;
@@ -910,7 +920,7 @@ void updateEncoder() {
 }
 
 float wheelAngleDeg() {
-  double angle = fmod(angleDegMT - wedge0OffsetDeg, 360.0);
+  double angle = (double)staticCountsFromRaw(lastGoodRaw) * (360.0 / 4096.0);
   if (angle < 0) angle += 360.0;
   return (float)angle;
 }
@@ -2419,9 +2429,10 @@ void handleSerial() {
     case 'z':
       if (!encoderPrimed) Serial.println(F("# encoder is not primed; calibration ignored"));
       else {
-        wedge0OffsetDeg = angleDegMT;
-        preferences.putDouble("wedge0", wedge0OffsetDeg);  // survive WDT reboot / RTS reset
-        Serial.println(F("# wedge-0 boundary set at current encoder angle (persisted)"));
+        rawZero = lastGoodRaw;  // park label-0 leading edge at pointer first
+        preferences.putUShort("rawZero", rawZero);
+        primeEncoder(lastGoodRaw, lastGoodUs, false);  // re-seed MT frame on new anchor
+        Serial.printf("# raw-zero anchor set: raw=%u (persisted, label-true)\n", rawZero);
       }
       break;
     case 'p':
@@ -2539,7 +2550,8 @@ void setup() {
   predMaeDeg[0] = preferences.getFloat("mae_cw", predMaeDeg[0]);
   predMaeDeg[1] = preferences.getFloat("mae_ccw", predMaeDeg[1]);
   accelCeilingSps2 = preferences.getUInt("accel", accelCeilingSps2);
-  wedge0OffsetDeg = preferences.getDouble("wedge0", wedge0OffsetDeg);  // frame zero persists across resets
+  rawZero = preferences.getUShort("rawZero", rawZero);  // label-true anchor, default 3807
+  if (preferences.isKey("wedge0")) preferences.remove("wedge0");  // retire session-relative zero
   frictionResetSpin();
 
   Wire.begin(PIN_SDA, PIN_SCL);
