@@ -63,6 +63,7 @@ bool INVERT_DIR = true;
 // build may enter the high-speed path; it never guesses from INVERT_DIR.
 const bool ENABLE_MOTOR_TAKEOVER = true;
 const bool ENABLE_DARE_RECOVERY = false;  // owner 2026-07-29: no post-stop recovery - every spin is steered instead
+uint32_t spinConfirmMs = 0;               // hand-release gate reference
 
 #define TAKEOVER_REV_S     0.55f  // owner 2026-07-29: intercept earlier, while the wheel is visibly alive
 #define SPIN_DETECT_REV_S  0.12f  // deliberate weak hand spins must enter FREE_SPIN
@@ -739,7 +740,7 @@ bool chooseRandomSafeTargetAngle(int dir, float currentAngle, float minRunwayDeg
   uint8_t candidateCount = 0;
 
   for (int wedge = 0; wedge < NUM_WEDGES; ++wedge) {
-    if (isDare(wedge)) continue;
+    if (isDare(wedge) || isDare((wedge + 1) % NUM_WEDGES) || isDare((wedge + NUM_WEDGES - 1) % NUM_WEDGES)) continue;  // never aim next to a dare: landing scatter is ~1 wedge
 
     long jitterCentiDeg = lroundf(SAFE_TARGET_JITTER_DEG * 100.0f);
     float jitter = (float)random(-jitterCentiDeg, jitterCentiDeg + 1) / 100.0f;
@@ -1030,6 +1031,7 @@ void startSpinEvent(int confirmedDir) {
   activeSpinTargetErrorValid = false;
   recoveryAttempts = 0;
 
+  spinConfirmMs = millis();
   Serial.printf("SPIN#%lu START dir=%+d omegaPeak=%.3f\n",
                 (unsigned long)activeSpinNumber, spinDir,
                 activeSpinPeakOmega);
@@ -1289,6 +1291,8 @@ bool trySlowDareGuard() {
   float speed = fabsf(omega);
   if (activeSpinPeakOmega < TAKEOVER_MIN_PEAK_REV_S) return false;
   if (speed > TAKEOVER_REV_S || speed < TAKEOVER_MIN_REV_S) return false;
+  if (millis() - spinConfirmMs < 500U) return false;       // let the hand leave the wheel
+  if (speed > 0.92f * activeSpinPeakOmega) return false;   // engage only on a decaying spin
 
   float predAngle = predictStopAngle();
   int predWedge = wedgeAtAngle(predAngle);
@@ -1683,6 +1687,7 @@ void loop() {
             if (motorDirectionCalibrated && ENABLE_DARE_RECOVERY) {
               startDareRecovery();
             } else {
+              Serial.printf("SPIN#%lu LANDED-DARE wedge=%d angle=%.1f steered=%d targetWedgeWas=%d\n", (unsigned long)activeSpinNumber, wedge, wheelAngleDeg(), activeSpinSteered ? 1 : 0, activeSpinTargetWedge);
               Serial.println(F("# DARE BLOCKED: run attended p probe; no unsafe automatic move was made"));
               driverFreewheel();
               sawSpinThisCycle = false;
@@ -1783,4 +1788,5 @@ void loop() {
 
   serviceDiagnosticCapture();
 }
+
 
