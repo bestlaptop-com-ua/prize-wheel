@@ -1,4 +1,4 @@
-﻿/* ============================================================================
+/* ============================================================================
  * prize_wheel.ino - Prize wheel firmware
  *
  * Priority-1 sensing revision
@@ -81,7 +81,7 @@ const float TAKEOVER_MIN_REV_S = 0.070f;
 // exactly those spins into stop-on-dare -> visible recovery.  Let them steer.
 const float TAKEOVER_MIN_PEAK_REV_S = 0.16f;
 const float TAKEOVER_MATCH_FRACTION = 0.90f; // motor trails the wheel: brake, never lead
-const float TAKEOVER_RUNWAY_MARGIN_DEG = 35.0f;
+const float TAKEOVER_RUNWAY_MARGIN_DEG = 20.0f;  // was 35; friction-honest floor needs less fixed pad (2026-07-30)
 const float TAKEOVER_GUARD_COAST_DEG = 60.0f;
 const float TAKEOVER_MAX_RUNWAY_DEG = 210.0f;
 const float TAKEOVER_TARGET_TOL_DEG = 4.0f;
@@ -657,7 +657,11 @@ int predictStopWedge() {
 
 float requiredTakeoverRunwayDeg(float speedRevS) {
   float wheelAccel = (float)ACCEL_CEILING_SPS2 / WHEEL_USTEPS_PER_REV;
-  return (speedRevS * speedRevS) / (2.0f * wheelAccel) * 360.0f
+  // Friction never switches off during a brake; motor decel and the seeded
+  // friction model act together.  Motor-only floor starved targeting to zero.
+  float frictionRevS2 = cw_c / TWO_PI + cw_b * speedRevS;
+  float brakeAccel = wheelAccel + frictionRevS2;
+  return (speedRevS * speedRevS) / (2.0f * brakeAccel) * 360.0f
        + TAKEOVER_RUNWAY_MARGIN_DEG;
 }
 
@@ -1294,6 +1298,7 @@ bool trySlowDareGuard() {
   if (speed > TAKEOVER_REV_S || speed < TAKEOVER_MIN_REV_S) return false;
   if (millis() - spinConfirmMs < 500U) return false;       // let the hand leave the wheel
   if (speed > 0.92f * activeSpinPeakOmega) return false;   // engage only on a decaying spin
+  if (((omega >= 0.0f) ? 1 : -1) != spinDir) return false; // flipped sign blows the runway ceiling open (SPIN#1 artifact)
 
   float predAngle = predictStopAngle();
   int predWedge = wedgeAtAngle(predAngle);
@@ -1755,6 +1760,13 @@ void loop() {
       if (millis() - recoveryHoldStartedMs < RECOVERY_HOLD_MS) break;
 
       if (isDare(currentWedge())) {
+        if (!ENABLE_DARE_RECOVERY) {
+          Serial.printf("SPIN#%lu LANDED-DARE wedge=%d angle=%.1f steered=%d targetWedgeWas=%d\n", (unsigned long)activeSpinNumber, currentWedge(), wheelAngleDeg(), activeSpinSteered ? 1 : 0, activeSpinTargetWedge);
+          driverFreewheel();
+          sawSpinThisCycle = false;
+          mode = DONE;
+          break;
+        }
         if (recoveryAttempts < 3) {
           startDareRecovery();
         } else {
