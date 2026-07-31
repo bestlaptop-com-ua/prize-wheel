@@ -62,9 +62,9 @@ bool INVERT_DIR = true;
 // The p probe persists the physical FAS-to-wheel sign.  Only a calibrated
 // build may enter the high-speed path; it never guesses from INVERT_DIR.
 const bool ENABLE_MOTOR_TAKEOVER = true;
-const bool ENABLE_DARE_RECOVERY = true;
+const bool ENABLE_DARE_RECOVERY = false;  // owner 2026-07-29: no post-stop recovery - every spin is steered instead
 
-#define TAKEOVER_REV_S     0.26f  // intercept while there is still real runway
+#define TAKEOVER_REV_S     0.55f  // owner 2026-07-29: intercept earlier, while the wheel is visibly alive
 #define SPIN_DETECT_REV_S  0.12f  // deliberate weak hand spins must enter FREE_SPIN
 #define SPIN_CONFIRM_MS    60
 const uint16_t SPIN_CONFIRM_TIMEOUT_MS = 1200;
@@ -1292,7 +1292,7 @@ bool trySlowDareGuard() {
 
   float predAngle = predictStopAngle();
   int predWedge = wedgeAtAngle(predAngle);
-  if (!predictedStopCouldBeDare(predAngle)) return false;
+  // owner 2026-07-29: universal engagement - every confirmed spin is steered to a random safe wedge (prediction kept for logs only)
 
   float minForwardDeg = requiredTakeoverRunwayDeg(speed);
   float targetAngle = 0.0f;
@@ -1783,3 +1783,4 @@ void loop() {
 
   serviceDiagnosticCapture();
 }
+
