@@ -197,8 +197,8 @@ critical flaws in the original reachability-window math and the stop-gate
 geometry — all fixed; round 2 re-verified each fix and swept the changed regions).
 
 ```
-Sketch uses 421754 bytes (32%) of program storage space. Maximum is 1310720 bytes.
-Global variables use 122420 bytes (37%) of dynamic memory, leaving 205260 bytes
+Sketch uses 422462 bytes (32%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 122428 bytes (37%) of dynamic memory, leaving 205252 bytes
 for local variables. Maximum is 327680 bytes.
 ```
 
@@ -222,9 +222,9 @@ reviewed, benign. Return values are checked for `setSpeedInHz`, `setAcceleration
 | `NATURAL_REACH_FRACTION` | 0.90 | reach ceiling (trailing-phase loss charge) |
 | `MIN_BRAKE_HEADROOM_DEG` / `NATURAL_SHAVE_MARGIN_DEG` | 15 / 5 | window margins |
 | `DARE_PROXIMITY_FAULT_DEG` | 2 | settle this close to a dare line ⇒ fault |
-| `CAL_DEFER_MIN_WIDTH_DEG` / `CAL_DEFER_MAX_MS` | 150 / 3500 | friction-bootstrap deferral bounds |
+| `CAL_DEFER_MIN_WIDTH_DEG` / `CAL_DEFER_MAX_MS` | 120 / 3500 | friction-bootstrap deferral bounds |
 | `FAS_TRACK_ACCEL_FACTOR` / `MAX` | 3× / 2000 sps² | pulse-generator tracking rate vs profile |
-| `LANDING_DRAG_ABORT_DEG` | 8 | guest drag detector during settle |
+| `LANDING_DRAG_ABORT_DEG` | 45 | settle travel no residual creep can produce ⇒ guest drag |
 | `RESERVED_VEL_TIMEOUT_MS` / `ENCODER_OUTAGE_FAULT_MS` | 500 / 1000 | powered-wait / motion-state encoder watchdogs |
 | `SAFE_WEDGE_EDGE_MARGIN_DEG` | 8 | target interior margin |
 | `LANDING_INTERIOR_MIN_DEG` | 5 | landing verification margin |
@@ -285,19 +285,27 @@ Fault injection
 
 ## 6. Known limitations
 
-1. **Physics floor for ultra-weak spins.** A spin released so slowly that every
-   brake-reachable stopping point lies inside a dare wedge cannot be saved by a
-   brake-only controller (the motor may not pull the wheel forward). The urgency
-   trigger makes this a vanishing corner (reachable window is forced to reserve
-   while ≥60° wide); if it ever occurs the firmware lands honestly and reports
-   `NO_REACHABLE_SAFE` / `LANDED-DARE` rather than masking it.
+1. **Physics floor for ultra-weak spins.** A spin released at ≲0.13 rev/s whose
+   entire assist-braking band *and* natural stop point lie inside (or within a
+   few degrees of) a dare wedge cannot be saved by a brake-only controller
+   under the no-abrupt-braking rule — the engagement latency alone can exceed
+   the distance to the dare entry. Verified by trace: the firmware closes such
+   a spin honestly (`NO_REACHABLE_SAFE`, `LANDED-DARE ... THIS IS A FAILURE`)
+   rather than masking it. For all spins released at normal strength the
+   urgency trigger reserves while the window is ≥60° wide, so this corner is
+   confined to deliberately dying releases aimed at a dare.
 2. **Coupled endgame.** In the final degrees the wheel is belt-locked to the
    tapering field; the strict "command below wheel speed" inequality is enforced
    while the wheel leads the field, and by the chase-down + speed-up detector once
    coupled. This is inherent to braking *to a point* with a stepper.
 3. **Friction model cold start.** Until ~2 valid coasts per direction the seeds
-   (c=0.30, b=0.15) drive reachability; margins (15°/5°) absorb seed error, and
-   fits update online. `F` resets the model.
+   (c=0.30, b=0.15) drive reachability; margins absorb seed error, the
+   bootstrap deferral (≤3.5 s while the window is ≥120° wide) feeds the fit,
+   and fits update online. Releases below ~0.8 rev/s may not individually
+   yield a valid fit (insufficient coast span); calibration then accrues from
+   the stronger spins. The engage/defer gates evaluate one tick ahead of the
+   final pre-target fit blend — a ≤1 ms model mismatch, self-correcting.
+   `F` resets the model.
 4. **TMC UART health** is verified at boot, at `r`, and between spins (wheel at
    rest) — not during control, because a blocking UART read would corrupt the
    1 kHz encoder cadence mid-takeover. Register writes at stage transitions are
