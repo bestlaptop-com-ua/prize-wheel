@@ -35,14 +35,23 @@ plus the attended DIR_PROBE state
 2. **Early reservation with designed-in availability.** After hand release
    (age ≥400 ms, speed <92% of peak, no new peak for 150 ms) the controller
    continuously evaluates the brake-reachability window
-   `[latency + minBrake(ceiling) + 15°, naturalStop − 5°]` and reserves as soon as
-   the wheel decays into the engage window (≤0.55 rev/s) — for weak spins that is
-   immediately at release. An **urgency trigger** additionally forces reservation if
-   the window ever narrows to 60°, which is wider than the largest safe-interior gap
-   (46°, across a dare), so the last useful braking window can't close unnoticed.
+   `[latency + brakedStop(friction + motor ceiling) + 15°, 0.90×naturalStop − 5°]`
+   and reserves as soon as the wheel decays into the engage window (≤0.55 rev/s) —
+   for weak spins that is immediately at release. The minimum braking distance is
+   the coast integral with the friction constant raised by the motor's braking
+   authority (`c' = c + extra`): friction and motor brake *together* (modelling the
+   ceiling alone leaves the window empty at every speed — found and fixed in
+   adversarial review). The 0.90 reach fraction charges for trailing-phase slip
+   losses. An **urgency trigger** forces reservation if an *open* window narrows to
+   60° (wider than the largest safe-interior gap, 46°). With seed friction the
+   wedge-uniform window is live from ~0.16 rev/s and 165° wide at the engage point.
    Weak-spin fallbacks: nearest safe interior point ahead (bounded assist
-   deceleration), then the safest reachable non-interior point. No fallback ever
-   aims beyond the natural stop — a brake cannot add energy.
+   deceleration), the safest reachable non-interior point, and finally a **shadow
+   capture** of the natural stop point itself when it already lies safely inside a
+   safe wedge. No fallback ever aims beyond the natural stop — a brake cannot add
+   energy. While a direction's friction model has fewer than 2 valid fits, the
+   reservation defers briefly (bounded by window width >150° and 3.5 s) so release
+   coasts can feed the online fit.
 
 3. **No uncontrolled landing paths.** There is no state that releases the motor and
    later reports the wedge as if controlled. The only ways a confirmed spin closes:
@@ -56,9 +65,17 @@ plus the attended DIR_PROBE state
    capture (return code checked), entered at wheel-matched speed via
    `setJumpStart(v²/2a)`. Every live speed change is `setSpeedInHz()` **+
    `applySpeedAcceleration()`** at a bounded 25 ms tick — the documented way to
-   retarget an active continuous run. Position is only ever reset at motor
-   standstill. Speed updates stop once `stopMove()` is issued (the library ignores
-   them while stopping).
+   retarget an active continuous run. The FAS acceleration is a *tracking* rate set
+   to 3× the command-profile deceleration (capped 2000 sps², min 1.5×): with a 1:1
+   rate, `stepsToStop()` equals the whole remaining runway at capture (jump-start
+   seeding) and the stop gate degenerates the entire braking phase into one
+   open-loop ramp — found in adversarial review; at 3× the gate correctly fires
+   only in the last few degrees. Position is only ever reset at motor standstill
+   (asserted; a stale queue at capture is an `FC_STEPPER_API` fault). Speed updates
+   stop once `stopMove()` is issued (the library ignores them while stopping).
+   Every supersede path releases through `driverFreewheel()`, which floats the
+   coils *first* and then clears any still-draining pulse queue — a mechanically
+   inert queue reset, so a later capture can never energize onto a stale ramp.
 
 5. **Truly monotonic deceleration.** `serviceDecelTick()` computes
    `newCmd = min(prevCmd, profile, constraints)` and *faults*
@@ -84,8 +101,12 @@ plus the attended DIR_PROBE state
 
 8. **Landing = position AND speed.** `landingVerdict()` runs only after the pulse
    train has tapered to zero *and* |ω| ≤ 0.02 rev/s for 500 ms; it then requires
-   the settled angle to be ≥5° inside the target wedge for `CONTROLLED_SAFE`, and
-   downgrades honestly to `EDGE_SAFE`/`OFF_TARGET_SAFE` otherwise.
+   the settled angle to be ≥5° inside the target wedge for `CONTROLLED_SAFE`,
+   downgrades honestly to `EDGE_SAFE`/`OFF_TARGET_SAFE`, and **latches
+   `FC_LANDING_UNSAFE`** for a settle on a dare *or within 2° of a dare boundary*
+   (within measurement error of the invariant). A guest dragging the wheel during
+   the settle (>8° displacement while moving) is released and closed honestly as
+   `GUEST_STOPPED` instead of being misread as a control failure.
 
 9. **Wedge-uniform interior targets.** Targets live in `[start+8°, end−8°]` of a
    safe wedge. Each safe wedge is counted **once** even when its interval
@@ -113,8 +134,14 @@ plus the attended DIR_PROBE state
 13. **Latched faults.** All nine brief-listed fault sources latch
     `FAULT_LATCHED` with a specific code, use the safest shutdown, close the spin
     record honestly as `FAULTED`, and lock automatic control until the operator
-    sends `r` (which re-checks the TMC UART) — or re-runs `p` when calibration
-    was invalidated.
+    sends `r` (which re-checks the TMC UART and stays latched while it still
+    fails) — or re-runs `p` when calibration was invalidated (a failed probe
+    itself latches `FC_DIR_CAL_INVALID`). The TMC UART is health-checked at boot
+    and between spins (wheel at rest). Encoder loss in the *unpowered* motion
+    states is caught by a 1 s outage watchdog, so no state can wedge forever with
+    an open spin record; the powered precharge has its own velocity-wait timeout.
+    A spin during a latched fault produces exactly one honest `CONTROL_LOCKED`
+    record, closed only when the wheel actually rests.
 
 ### What was deliberately kept
 The entire P1 sensing pipeline (1 kHz scheduled sampling without burst catch-up,
@@ -153,19 +180,25 @@ The nearest-turn re-prime snap was switched to the round-to-nearest-turn form
 | motor direction == spin direction | single signed `runForward/Backward` from probe sign; never reissued |
 | `newCmd ≤ prevCmd + 1e-4` | checked every tick → `FC_MONOTONIC_VIOLATION` |
 | `cmd ≤ 0.88 × trailing-min wheel speed` while wheel leads | applied every tick; chase-down when wheel trails |
-| no normal `forceStop*` | only in `enterFault` for fight/reversal |
-| landing wedge ∉ {1,5} | `landingVerdict` → `FC_LANDING_UNSAFE` latch |
+| no `forceStop*` with coils energized in normal control | only `enterFault` for fight/reversal; `driverFreewheel` clears a stale queue *after* floating the coils (mechanically inert) |
+| landing wedge ∉ {1,5} and ≥2° from any dare line | `landingVerdict` → `FC_LANDING_UNSAFE` latch |
 | landing ≥5° inside wedge for success | `landingVerdict` downgrade otherwise |
 | control impossible without valid probe + TMC OK | `controlAvailable()` gate |
 | position freshness during power | → `FC_ENCODER_STALE` |
 
 ---
 
-## 3. Compilation output
+## 3. Verification and compilation
+
+The firmware went through two adversarial multi-agent review rounds against this
+brief (30 agents round 1: six specialized reviewers, every non-minor finding
+independently re-derived by a verifier; 21 confirmed findings — including two
+critical flaws in the original reachability-window math and the stop-gate
+geometry — all fixed; round 2 re-verified each fix and swept the changed regions).
 
 ```
-Sketch uses 419494 bytes (32%) of program storage space. Maximum is 1310720 bytes.
-Global variables use 122412 bytes (37%) of dynamic memory, leaving 205268 bytes
+Sketch uses 421754 bytes (32%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 122420 bytes (37%) of dynamic memory, leaving 205260 bytes
 for local variables. Maximum is 327680 bytes.
 ```
 
@@ -184,9 +217,15 @@ reviewed, benign. Return values are checked for `setSpeedInHz`, `setAcceleration
 | `MANUAL_CLASSIFY_MS` | 700 | slow motion this old ⇒ manual |
 | `RELEASE_MIN_AGE_MS` / `RELEASE_PEAK_FRACTION` / `RELEASE_DECAY_MS` | 400 / 0.92 / 150 | hand-release gate |
 | `ENGAGE_MAX_REV_S` | 0.55 | reserve at/below this (owner-set intercept) |
-| `ENGAGE_URGENCY_WINDOW_DEG` | 60 | force-reserve before window < largest safe gap |
-| `ENGAGE_LATENCY_S` | 0.38 | precharge+pickup coast allowance |
+| `ENGAGE_URGENCY_WINDOW_DEG` | 60 | force-reserve before an open window < largest safe gap |
+| `ENGAGE_LATENCY_S` | 0.22 | equivalent free-coast loss before braking bites |
+| `NATURAL_REACH_FRACTION` | 0.90 | reach ceiling (trailing-phase loss charge) |
 | `MIN_BRAKE_HEADROOM_DEG` / `NATURAL_SHAVE_MARGIN_DEG` | 15 / 5 | window margins |
+| `DARE_PROXIMITY_FAULT_DEG` | 2 | settle this close to a dare line ⇒ fault |
+| `CAL_DEFER_MIN_WIDTH_DEG` / `CAL_DEFER_MAX_MS` | 150 / 3500 | friction-bootstrap deferral bounds |
+| `FAS_TRACK_ACCEL_FACTOR` / `MAX` | 3× / 2000 sps² | pulse-generator tracking rate vs profile |
+| `LANDING_DRAG_ABORT_DEG` | 8 | guest drag detector during settle |
+| `RESERVED_VEL_TIMEOUT_MS` / `ENCODER_OUTAGE_FAULT_MS` | 500 / 1000 | powered-wait / motion-state encoder watchdogs |
 | `SAFE_WEDGE_EDGE_MARGIN_DEG` | 8 | target interior margin |
 | `LANDING_INTERIOR_MIN_DEG` | 5 | landing verification margin |
 | `TRAIL_FRACTION` | 0.88 | cmd ≤ 0.88 × trailing-min wheel speed |

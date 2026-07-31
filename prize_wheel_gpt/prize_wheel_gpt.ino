@@ -117,6 +117,8 @@ struct TargetChoice {
   uint8_t quality;         // 0 wedge-uniform, 1 nearest-interior, 2 edge-safe
 };
 
+void enterFault(FaultCode code, const char* detail);  // used across sections
+
 /* --------------------------- DARE / SAFE --------------------------------- */
 uint16_t dare_mask = (1 << 1) | (1 << 5);  // wedges 1 and 5 are never targets
 inline bool isDare(int wedge) {
@@ -150,14 +152,29 @@ const uint16_t CONTACT_CONFIRM_MS     = 100;
 
 // --- engagement / reachability ---
 const float ENGAGE_MAX_REV_S          = 0.55f;  // reserve once at/below this
-const float ENGAGE_URGENCY_WINDOW_DEG = 60.0f;  // never let window shrink past
-const float ENGAGE_LATENCY_S          = 0.38f;  // precharge+pickup coast time
+const float ENGAGE_URGENCY_WINDOW_DEG = 60.0f;  // engage before an OPEN window
+                                                // narrows past the largest
+                                                // safe-interior gap (46 deg)
+// Equivalent free-coast distance lost before braking is effective: 80 ms
+// precharge (no braking) plus ~250 ms pickup at partial braking authority.
+const float ENGAGE_LATENCY_S          = 0.22f;
 const float MIN_BRAKE_HEADROOM_DEG    = 15.0f;
+// A brake-only capture cannot use the full natural coast: the trailing phase
+// bleeds energy through pole-slip drag before coupling.  Targets are capped
+// at this fraction of the predicted natural stop distance, minus the margin.
+const float NATURAL_REACH_FRACTION    = 0.90f;
 const float NATURAL_SHAVE_MARGIN_DEG  = 5.0f;   // brake shaves, never adds
 const float SAFE_WEDGE_EDGE_MARGIN_DEG = 8.0f;  // target interior margin
 const float LANDING_INTERIOR_MIN_DEG  = 5.0f;   // verification margin
+const float DARE_PROXIMITY_FAULT_DEG  = 2.0f;   // settle this close to a dare
+                                                // boundary = unsafe landing
 const uint16_t PRECHARGE_MS           = 80;
 const uint16_t PICKUP_COHERENCE_MS    = 250;
+// Friction-model bootstrap: while a direction has fewer than the persist
+// threshold of valid fits, defer engagement (bounded by window width and
+// time) so the release coast can feed the online fit.
+const float CAL_DEFER_MIN_WIDTH_DEG   = 150.0f;
+const uint32_t CAL_DEFER_MAX_MS       = 3500;
 
 // --- braking profile ---
 const uint16_t CMD_UPDATE_MS          = 25;     // control tick
@@ -180,8 +197,17 @@ const float FIGHT_MIN_CMD_REV_S       = 0.060f; // below this, stall != fight
 const float OPPOSITE_ABORT_REV_S      = 0.050f;
 const uint16_t OPPOSITE_ABORT_MS      = 75;
 const uint16_t VELOCITY_LOSS_FAULT_MS = 300;
+const uint16_t RESERVED_VEL_TIMEOUT_MS = 500;   // velocity wait cap in precharge
+const uint16_t ENCODER_OUTAGE_FAULT_MS = 1000;  // encoder loss in motion states
 const uint32_t TAKEOVER_TIMEOUT_MS    = 30000;
 const uint32_t SETTLE_TIMEOUT_MS      = 10000;
+const float LANDING_DRAG_ABORT_DEG    = 8.0f;   // guest dragging during settle
+// FastAccelStepper's acceleration must out-pace the command profile so the
+// pulse generator can follow each 25 ms step-down and stepsToStop() stays
+// well below the remaining runway (a 1:1 ratio degenerates into one
+// open-loop ramp: stopMove would fire on the first tick).
+const uint8_t FAS_TRACK_ACCEL_FACTOR  = 3;
+const uint32_t FAS_TRACK_ACCEL_MAX_SPS2 = 2000;
 
 // --- landing / hold ---
 const float STILL_REV_S               = 0.020f;
@@ -240,6 +266,7 @@ Preferences preferences;
 State state = ST_IDLE_STOPPED;
 FaultCode faultCode = FC_NONE;
 CurrentStage currentStage = CS_FREEWHEEL;
+uint16_t g_currentMa = 0;   // actual commanded rms current, for telemetry
 bool debugLog = false;
 bool takeoverEnabled = true;
 bool tmcOk = false;
@@ -316,7 +343,7 @@ struct DiagnosticSample {      // 28 bytes; 3072 samples = ~86 KB, ~3 s at 1 kHz
   uint8_t flags;
   uint8_t state;
   uint8_t stage;               // current stage (defect-11 ladder position)
-  uint8_t pad;
+  uint8_t curMa10;             // commanded motor current / 10 mA
 };
 
 // 2944 x 28 bytes = ~80 KB static DRAM (~2.9 s at 1 kHz).  3072 overflowed
@@ -355,7 +382,8 @@ struct SpinRecord {
   float targetErrDeg;
   SpinResult result;
   FaultCode fault;
-  uint8_t targetQuality;       // 0 wedge-uniform, 1 nearest-interior, 2 edge
+  uint8_t targetQuality;       // 0 wedge-uniform, 1 nearest-int, 2 edge, 3 shadow
+  uint8_t hadContact;          // sticky: external contact seen after release
 };
 SpinRecord spin;               // active spin; summary printed once at close
 uint32_t spinCounter = 0;
@@ -409,6 +437,8 @@ uint32_t prevTickMs = 0;
 
 // settle
 uint32_t settleStillSinceMs = 0;
+int32_t settleEntryCounts = 0;
+uint32_t encoderOutageSinceMs = 0;
 
 // direction probe
 int32_t directionProbeStartCounts = 0;
@@ -638,7 +668,7 @@ void recordDiagnostic(uint32_t dtGoodUs, int16_t delta, uint8_t flags) {
   s.flags = flags;
   s.state = (uint8_t)state;
   s.stage = (uint8_t)currentStage;
-  s.pad = 0;
+  s.curMa10 = (uint8_t)(g_currentMa / 10 > 255 ? 255 : g_currentMa / 10);
   diagnosticHead = (diagnosticHead + 1) % DIAG_CAPACITY;
   if (diagnosticCount < DIAG_CAPACITY) ++diagnosticCount;
   else diagnosticWrapped = true;
@@ -742,44 +772,68 @@ void driverConfig() {
   driver.TPOWERDOWN(255);
 }
 
-// The ONLY place TMC current registers are written after boot.  Register
-// traffic happens exclusively on stage transitions (defect-11 requirement),
-// so the 1 kHz encoder sampling cadence is never disturbed by UART writes.
+// The ONLY place TMC current registers are written after boot (the attended
+// direction probe overrides the level once, via g_currentMa bookkeeping).
+// Register traffic happens exclusively on stage transitions (defect-11), so
+// the 1 kHz encoder sampling cadence is never disturbed by UART writes.
 void setCurrentStage(CurrentStage next) {
   if (next == currentStage) return;
+  bool outputsOk = true;
   switch (next) {
     case CS_FREEWHEEL:
-      if (stepper) stepper->disableOutputs();
+      if (stepper) outputsOk = stepper->disableOutputs();
       driver.freewheel(1);
       driver.ihold(0);
+      g_currentMa = 0;
       break;
     case CS_PRECHARGE:
       driver.freewheel(0);
       driver.rms_current(CUR_PRECHARGE_MA, 1.0);
-      if (stepper) stepper->enableOutputs();
+      g_currentMa = CUR_PRECHARGE_MA;
+      if (stepper) outputsOk = stepper->enableOutputs();
       break;
-    case CS_CAPTURE:   driver.rms_current(CUR_CAPTURE_MA, 1.0); break;
-    case CS_BRAKE:     driver.rms_current(CUR_BRAKE_MA, 1.0);   break;
-    case CS_TAPER:     driver.rms_current(CUR_TAPER_MA, 1.0);   break;
-    case CS_HOLD1:     driver.rms_current(CUR_HOLD1_MA, 1.0);   break;
-    case CS_HOLD2:     driver.rms_current(CUR_HOLD2_MA, 1.0);   break;
+    case CS_CAPTURE:   driver.rms_current(CUR_CAPTURE_MA, 1.0); g_currentMa = CUR_CAPTURE_MA; break;
+    case CS_BRAKE:     driver.rms_current(CUR_BRAKE_MA, 1.0);   g_currentMa = CUR_BRAKE_MA;   break;
+    case CS_TAPER:     driver.rms_current(CUR_TAPER_MA, 1.0);   g_currentMa = CUR_TAPER_MA;   break;
+    case CS_HOLD1:     driver.rms_current(CUR_HOLD1_MA, 1.0);   g_currentMa = CUR_HOLD1_MA;   break;
+    case CS_HOLD2:     driver.rms_current(CUR_HOLD2_MA, 1.0);   g_currentMa = CUR_HOLD2_MA;   break;
+  }
+  if (!outputsOk) {
+    Serial.printf("# WARN: enable/disable outputs returned false (stage %u)\n",
+                  (unsigned)next);
   }
   currentStage = next;
 }
 
+// The single release primitive.  Order matters: the coils are floated FIRST
+// (EN deasserted, freewheel mode), so clearing a still-draining pulse queue
+// afterwards has zero mechanical effect - the forceStop here is a queue
+// reset of a dead output stage, not a braking action.  Without it, a stale
+// stopMove() ramp can survive for seconds and a later capture would energize
+// the motor onto an uncorrelated pulse train / reset position while moving.
 void driverFreewheel() {
-  if (stepper) stepper->setJumpStart(0);
   setCurrentStage(CS_FREEWHEEL);
+  if (stepper) {
+    if (stepper->isRunning()) stepper->forceStop();
+    stepper->setJumpStart(0);
+  }
 }
 
-bool checkTmcUart() {
-  // Blocking UART read (~ms).  Called only with the wheel at rest.
+// Blocking UART read (~ms).  Called only with the wheel at rest.  The raw
+// form only updates tmcOk; checkTmcUartOrFault() latches FC_TMC_UART so a
+// driver-comm failure is a visible, recoverable fault ('r' re-checks) rather
+// than a silent permanent soft-lock.
+bool checkTmcUartRaw() {
   uint8_t result = driver.test_connection();
   tmcOk = (result == 0);
   if (!tmcOk) {
     Serial.printf("# TMC UART FAIL code=%u: takeover locked until r re-check passes\n", result);
   }
   return tmcOk;
+}
+
+void checkTmcUartOrFault() {
+  if (!checkTmcUartRaw()) enterFault(FC_TMC_UART, "test_connection failed");
 }
 
 /* ========================================================================== */
@@ -794,9 +848,23 @@ float naturalStopDistanceDeg(float speedRevS, int dir) {
   return travelRad * RAD_TO_DEG;
 }
 
-float brakeDistanceDeg(float speedRevS, float decelRevS2) {
-  if (decelRevS2 < 1e-4f) decelRevS2 = 1e-4f;
-  return (speedRevS * speedRevS) / (2.0f * decelRevS2) * 360.0f;
+// Minimum stopping distance WITH the motor braking: friction and the motor
+// act together, so the model is the same coast integral with the constant
+// term raised by the motor's braking authority (extraRadS2, in rad/s^2).
+// Computing the brake distance from the motor ceiling ALONE is wrong - at
+// speed the natural friction decel exceeds the motor ceiling and that error
+// made every window in the previous revision empty.
+float brakedStopDistanceDeg(float speedRevS, int dir, float extraRadS2) {
+  float c = ((dir > 0) ? cw_c : ccw_c) + extraRadS2;
+  float b = (dir > 0) ? cw_b : ccw_b;
+  if (speedRevS < 1e-3f) return 0.0f;
+  float w = speedRevS * TWO_PI;
+  float travelRad = (1.0f / b) * w - (c / (b * b)) * logf(1.0f + b * w / c);
+  return travelRad * RAD_TO_DEG;
+}
+
+float motorExtraRadS2(uint32_t sps2) {
+  return (float)sps2 / WHEEL_USTEPS_PER_REV * TWO_PI;
 }
 
 void resetFrictionCapture(int dir) {
@@ -905,12 +973,14 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
 
   const float interiorSpan = WEDGE_DEG - 2.0f * SAFE_WEDGE_EDGE_MARGIN_DEG;
   float latencyDeg = speedRevS * ENGAGE_LATENCY_S * 360.0f;
-  float ceilingWheel = (float)DECEL_CEILING_SPS2 / WHEEL_USTEPS_PER_REV;
-  float assistWheel = (float)ASSIST_DECEL_MAX_SPS2 / WHEEL_USTEPS_PER_REV;
-  float winMax = naturalStopDistanceDeg(speedRevS, dir) - NATURAL_SHAVE_MARGIN_DEG;
-  float winMin = latencyDeg + brakeDistanceDeg(speedRevS, ceilingWheel)
+  float naturalDeg = naturalStopDistanceDeg(speedRevS, dir);
+  float winMax = NATURAL_REACH_FRACTION * naturalDeg - NATURAL_SHAVE_MARGIN_DEG;
+  float winMin = latencyDeg
+               + brakedStopDistanceDeg(speedRevS, dir, motorExtraRadS2(DECEL_CEILING_SPS2))
                + MIN_BRAKE_HEADROOM_DEG;
-  float assistMin = latencyDeg + brakeDistanceDeg(speedRevS, assistWheel) + 2.0f;
+  float assistMin = latencyDeg
+                  + brakedStopDistanceDeg(speedRevS, dir, motorExtraRadS2(ASSIST_DECEL_MAX_SPS2))
+                  + 2.0f;
 
   // Pass 1: wedge-uniform among safe wedges reachable at the natural ceiling.
   int candWedge[NUM_WEDGES];
@@ -951,8 +1021,10 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
     out.runwayDeg = candLo[pick] + (candHi[pick] - candLo[pick]) * randomUnit();
     out.decelCapSps2 = DECEL_CEILING_SPS2;
     out.quality = 0;
-  } else if (winMax > assistMin + 1.0f) {
-    // Pass 2: weak spin - nearest safe interior point, assist decel allowed.
+  }
+
+  // Pass 2: weak spin - nearest safe interior point, assist decel allowed.
+  if (!out.found && winMax > assistMin) {
     float bestDist = 1.0e9f;
     int bestW = -1;
     for (int w = 0; w < NUM_WEDGES; ++w) {
@@ -978,27 +1050,49 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
       out.runwayDeg = bestDist;
       out.decelCapSps2 = ASSIST_DECEL_MAX_SPS2;
       out.quality = 1;
-    } else {
-      // Pass 3: no interior reachable at all.  Stop at the point of the
-      // reachable band deepest inside any safe wedge (never a dare).
-      float bestScore = -1.0f, bestD = 0.0f;
-      int bestEdgeW = -1;
-      for (float d = assistMin; d <= winMax; d += 1.0f) {
-        float ang = fmodf(curAngle + (float)dir * d, 360.0f);
-        if (ang < 0.0f) ang += 360.0f;
-        int w = wedgeAtAngle(ang);
-        if (isDare(w)) continue;
-        float within = fmodf(ang, WEDGE_DEG);
-        float edgeDist = fminf(within, WEDGE_DEG - within);
-        if (edgeDist > bestScore) { bestScore = edgeDist; bestD = d; bestEdgeW = w; }
-      }
-      if (bestEdgeW >= 0) {
-        out.found = true;
-        out.wedge = bestEdgeW;
-        out.runwayDeg = bestD;
-        out.decelCapSps2 = ASSIST_DECEL_MAX_SPS2;
-        out.quality = 2;
-      }
+    }
+  }
+
+  // Pass 3: no interior reachable.  Stop at the point of the reachable band
+  // deepest inside any safe wedge (never a dare).  Runs independently of
+  // pass 2 whenever any band exists at all.
+  if (!out.found && winMax > assistMin) {
+    float bestScore = -1.0f, bestD = 0.0f;
+    int bestEdgeW = -1;
+    for (float d = assistMin; d <= winMax; d += 1.0f) {
+      float ang = fmodf(curAngle + (float)dir * d, 360.0f);
+      if (ang < 0.0f) ang += 360.0f;
+      int w = wedgeAtAngle(ang);
+      if (isDare(w)) continue;
+      float within = fmodf(ang, WEDGE_DEG);
+      float edgeDist = fminf(within, WEDGE_DEG - within);
+      if (edgeDist > bestScore) { bestScore = edgeDist; bestD = d; bestEdgeW = w; }
+    }
+    if (bestEdgeW >= 0) {
+      out.found = true;
+      out.wedge = bestEdgeW;
+      out.runwayDeg = bestD;
+      out.decelCapSps2 = ASSIST_DECEL_MAX_SPS2;
+      out.quality = 2;
+    }
+  }
+
+  // Pass 4 (shadow capture): braking cannot place the wheel anywhere useful,
+  // but if the NATURAL stop point itself sits safely inside a safe wedge the
+  // spin is still captured and held there - the motor merely confirms the
+  // landing instead of letting the wheel finish unattended.
+  if (!out.found && naturalDeg > 4.0f) {
+    float natAng = fmodf(curAngle + (float)dir * naturalDeg, 360.0f);
+    if (natAng < 0.0f) natAng += 360.0f;
+    int natW = wedgeAtAngle(natAng);
+    float within = fmodf(natAng, WEDGE_DEG);
+    float edgeDist = fminf(within, WEDGE_DEG - within);
+    if (!isDare(natW) && edgeDist >= DARE_PROXIMITY_FAULT_DEG + 1.0f) {
+      out.found = true;
+      out.wedge = natW;
+      out.runwayDeg = naturalDeg - 2.0f;
+      out.decelCapSps2 = ASSIST_DECEL_MAX_SPS2;
+      out.quality = 3;
     }
   }
 
@@ -1011,12 +1105,16 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
 }
 
 // Width of the currently reachable braking window; the urgency trigger keeps
-// this from ever shrinking below the largest safe-interior gap (46 deg).
+// an OPEN window from ever shrinking below the largest safe-interior gap
+// (46 deg).  A non-positive width means the window has not opened (or the
+// wheel is nearly dead) - that is a "wait" or "fallback" condition, never an
+// "engage now" condition.
 float reachWindowWidthDeg(float speedRevS, int dir) {
   float latencyDeg = speedRevS * ENGAGE_LATENCY_S * 360.0f;
-  float ceilingWheel = (float)DECEL_CEILING_SPS2 / WHEEL_USTEPS_PER_REV;
-  float winMax = naturalStopDistanceDeg(speedRevS, dir) - NATURAL_SHAVE_MARGIN_DEG;
-  float winMin = latencyDeg + brakeDistanceDeg(speedRevS, ceilingWheel)
+  float winMax = NATURAL_REACH_FRACTION * naturalStopDistanceDeg(speedRevS, dir)
+               - NATURAL_SHAVE_MARGIN_DEG;
+  float winMin = latencyDeg
+               + brakedStopDistanceDeg(speedRevS, dir, motorExtraRadS2(DECEL_CEILING_SPS2))
                + MIN_BRAKE_HEADROOM_DEG;
   return winMax - winMin;
 }
@@ -1127,6 +1225,8 @@ void startSpinEvent(int confirmedDir, uint32_t nowMs) {
   spin.cmdMinRevS = 0.0f;
   spin.result = RES_NONE;
   spin.fault = FC_NONE;
+  spin.fricC = (confirmedDir > 0) ? cw_c : ccw_c;
+  spin.fricB = (confirmedDir > 0) ? cw_b : ccw_b;
   spinOpen = true;
   spinDir = confirmedDir;
   lastPeakMs = nowMs;
@@ -1151,8 +1251,6 @@ void closeSpin(SpinResult result) {
     err = fmodf(err + 540.0f, 360.0f) - 180.0f;
     spin.targetErrDeg = (float)spin.dir * err;
   }
-  float c = (spin.dir > 0) ? cw_c : ccw_c;
-  float b = (spin.dir > 0) ? cw_b : ccw_b;
   Serial.printf(
       "SPIN#%lu SUMMARY dir=%+d peak=%.3f releaseMs=%lu relAngle=%.1f relSpeed=%.3f "
       "targetW=%d targetAngle=%.1f runway=%.1f natStop=%.1f fricC=%.4f fricB=%.4f "
@@ -1162,7 +1260,7 @@ void closeSpin(SpinResult result) {
       (unsigned long)(spin.releaseMs ? spin.releaseMs - spin.pushStartMs : 0),
       spin.releaseAngleDeg, spin.releaseRevS,
       spin.targetWedge, spin.targetAngleDeg, spin.runwayDeg,
-      spin.naturalStopDeg, c, b,
+      spin.naturalStopDeg, spin.fricC, spin.fricB,
       spin.takeoverRevS, spin.cmdMaxRevS, spin.cmdMinRevS,
       spin.maxSpeedRiseRevS, spin.maxDecelRevS2,
       spin.finalAngleDeg, spin.finalWedge, spin.targetErrDeg,
@@ -1220,8 +1318,13 @@ void startDirectionProbe() {
     Serial.println(F("# DIR PROBE refused: encoder/stepper unavailable"));
     return;
   }
-  if (state != ST_IDLE_STOPPED && state != ST_FAULT_LATCHED) {
-    Serial.println(F("# DIR PROBE refused: wait for a fully stopped wheel"));
+  if (state != ST_IDLE_STOPPED &&
+      !(state == ST_FAULT_LATCHED && faultCode == FC_DIR_CAL_INVALID)) {
+    Serial.println(F("# DIR PROBE refused: wait for a fully stopped wheel (or clear the fault with r)"));
+    return;
+  }
+  if (stepper->isRunning()) {
+    Serial.println(F("# DIR PROBE refused: pulse generator still draining"));
     return;
   }
   if (encoderVelocityValid && fabsf(omega) > STILL_REV_S) {
@@ -1238,6 +1341,7 @@ void startDirectionProbe() {
   stepper->setJumpStart(0);
   setCurrentStage(CS_PRECHARGE);
   driver.rms_current(DIR_PROBE_CURRENT_MA, 1.0);  // probe-specific level
+  g_currentMa = DIR_PROBE_CURRENT_MA;
   if (!fasSetSpeedHz(DIR_PROBE_SPEED_HZ)) return;
   if (!fasSetAcceleration(DIR_PROBE_ACCEL_SPS2)) return;
   directionProbeStartCounts = encoderCountsMT;
@@ -1263,8 +1367,9 @@ void probeFail(const char* why) {
   preferences.putInt("pos_sign", 0);
   driverFreewheel();
   Serial.printf("# DIR PROBE FAILED: %s. Takeover LOCKED until p passes.\n", why);
-  state = ST_IDLE_STOPPED;
-  stateEnteredMs = millis();
+  // A failed probe is a hardware-facing calibration fault: latch it so the
+  // failure is visible in status, not just one scrolled-away serial line.
+  enterFault(FC_DIR_CAL_INVALID, why);
 }
 
 void serviceDirectionProbe() {
@@ -1355,12 +1460,30 @@ float trailingMinForwardRevS() {
 
 bool tryReserveTarget(uint32_t nowMs) {
   if (!encoderMotionReady()) return false;
+  if (stepper && stepper->isRunning()) return false;  // stale queue must die first
   float speed = fabsf(omega);
   if (speed < 0.02f) return false;
 
+  float width = reachWindowWidthDeg(speed, spinDir);
   bool inWindow = speed <= ENGAGE_MAX_REV_S;
-  bool urgent = reachWindowWidthDeg(speed, spinDir) <= ENGAGE_URGENCY_WINDOW_DEG;
+  // Urgency means an OPEN window is closing; a window that never opened
+  // (width <= 0, weak spin) is handled by the fallback passes instead.
+  bool urgent = width > 0.0f && width <= ENGAGE_URGENCY_WINDOW_DEG;
   if (!inWindow && !urgent) return false;
+
+  // Friction-model bootstrap: with too few fits in this direction, let the
+  // free coast feed the online fit before engaging - bounded by both window
+  // width (safety) and time, and never past the urgency trigger.
+  uint16_t fits = (spinDir > 0) ? cwFitCount : ccwFitCount;
+  if (fits < FIT_PERSIST_MIN_FITS && !urgent &&
+      width > CAL_DEFER_MIN_WIDTH_DEG &&
+      spin.releaseMs != 0 && nowMs - spin.releaseMs < CAL_DEFER_MAX_MS) {
+    return false;
+  }
+
+  // Fold this coast's samples into the model BEFORE targeting, so the
+  // reachability decision uses the freshest friction estimate.
+  finishFrictionCapture("reserve");
 
   TargetChoice choice = chooseSafeTarget(spinDir, wheelAngleDeg(), speed);
   if (!choice.found) return false;
@@ -1386,7 +1509,6 @@ bool tryReserveTarget(uint32_t nowMs) {
   spin.fricB = (spinDir > 0) ? cw_b : ccw_b;
   spin.targetQuality = choice.quality;
 
-  finishFrictionCapture("reserve");
   setCurrentStage(CS_PRECHARGE);
   state = ST_TARGET_RESERVED;
   stateEnteredMs = nowMs;
@@ -1402,6 +1524,11 @@ bool launchCapture(uint32_t nowMs) {
   int fasSign = fasSignForEncoderDirection(takeoverDir);
   if (fasSign == 0) {
     enterFault(FC_DIR_CAL_INVALID, "fasSign=0 at capture");
+    return false;
+  }
+  if (stepper && stepper->isRunning()) {
+    // Guarded upstream; reaching here means a stale pulse train survived.
+    enterFault(FC_STEPPER_API, "queue active at capture");
     return false;
   }
   float forward = omega * (float)takeoverDir;
@@ -1424,15 +1551,23 @@ bool launchCapture(uint32_t nowMs) {
   if (aPlan > capRevS2) aPlan = capRevS2;
   if (aPlan < 0.008f) aPlan = 0.008f;
   planDecelRevS2 = aPlan;
-  uint32_t aSps2 = (uint32_t)lroundf(aPlan * WHEEL_USTEPS_PER_REV);
-  if (aSps2 < 50) aSps2 = 50;
+  // The FAS acceleration is the pulse generator's TRACKING rate, not the
+  // profile: it must exceed the profile decel so the field can follow each
+  // 25 ms command step and stepsToStop() stays a small fraction of the
+  // remaining runway (equal rates would trip the stop gate immediately and
+  // collapse the closed loop into one open-loop ramp).
+  uint32_t aPlanSps2 = (uint32_t)lroundf(aPlan * WHEEL_USTEPS_PER_REV);
+  if (aPlanSps2 < 50) aPlanSps2 = 50;
+  uint32_t aFasSps2 = aPlanSps2 * FAS_TRACK_ACCEL_FACTOR;
+  if (aFasSps2 > FAS_TRACK_ACCEL_MAX_SPS2) aFasSps2 = FAS_TRACK_ACCEL_MAX_SPS2;
+  if (aFasSps2 < aPlanSps2 * 3 / 2) aFasSps2 = aPlanSps2 * 3 / 2;
 
   if (!fasSetSpeedHz(hz)) return false;
-  if (!fasSetAcceleration(aSps2)) return false;
+  if (!fasSetAcceleration(aFasSps2)) return false;
   // Jump start: begin the pulse train at cmd0 instead of ramping from zero.
-  uint32_t jumpStep = (uint32_t)lroundf(((float)hz * (float)hz) / (2.0f * (float)aSps2));
+  uint32_t jumpStep = (uint32_t)lroundf(((float)hz * (float)hz) / (2.0f * (float)aFasSps2));
   stepper->setJumpStart(jumpStep);
-  stepper->setCurrentPosition(0);   // motor is at standstill here
+  stepper->setCurrentPosition(0);   // motor is at standstill (asserted above)
   setCurrentStage(CS_CAPTURE);
   if (!fasRun(fasSign)) return false;
 
@@ -1458,9 +1593,10 @@ bool launchCapture(uint32_t nowMs) {
 
   state = ST_SPEED_MATCH_CAPTURE;
   stateEnteredMs = nowMs;
-  Serial.printf("SPIN#%lu CAPTURE fasDir=%+d wheel=%.3f cmd0=%.3f hz=%lu aPlan=%.4f(%lu sps2) remain=%.1f\n",
+  Serial.printf("SPIN#%lu CAPTURE fasDir=%+d wheel=%.3f cmd0=%.3f hz=%lu aPlan=%.4f(%lu sps2) aFas=%lu remain=%.1f\n",
                 (unsigned long)spin.number, fasSign, forward, cmd0,
-                (unsigned long)hz, aPlan, (unsigned long)aSps2, remainingDeg);
+                (unsigned long)hz, aPlan, (unsigned long)aPlanSps2,
+                (unsigned long)aFasSps2, remainingDeg);
   return true;
 }
 
@@ -1492,8 +1628,7 @@ bool controlSafetyChecks(uint32_t nowMs) {
     if (nowMs - guestOverrideAboveMs >= GUEST_OVERRIDE_MS) {
       Serial.printf("SPIN#%lu GUEST-RESPIN detected mid-control\n",
                     (unsigned long)spin.number);
-      driverFreewheel();
-      if (stepper && stepper->isRunning()) stepper->stopMove();
+      driverFreewheel();   // floats coils, then clears the live pulse queue
       closeSpin(RES_GUEST_RESPUN);
       startSpinEvent((omega >= 0.0f) ? 1 : -1, nowMs);
       state = ST_SPIN_PUSH;
@@ -1603,7 +1738,9 @@ void serviceDecelTick(uint32_t nowMs) {
   float remaining = remainingTargetDeg();
   int32_t toleranceCounts = countsForDegrees(OVERSHOOT_TOL_DEG);
 
-  // Overshoot: never queue extra forward motion past the target.
+  // Overshoot: begin the taper at once.  (stopMove still queues its own
+  // ramp-down distance - small at these speeds with the raised FAS tracking
+  // accel - so this bounds the excursion, it cannot cancel it.)
   if (takeoverDir * (encoderCountsMT - targetCountsMT) > toleranceCounts) {
     stopRequested = true;
     setCurrentStage(CS_TAPER);
@@ -1681,6 +1818,25 @@ void serviceDecelTick(uint32_t nowMs) {
 /* ========================================================================== */
 /*                        LANDING VERDICT                                     */
 /* ========================================================================== */
+// Angular distance from an angle to the nearest dare-wedge span.
+float dareDistanceDeg(float angle) {
+  float best = 360.0f;
+  for (int w = 0; w < NUM_WEDGES; ++w) {
+    if (!isDare(w)) continue;
+    float lo = w * WEDGE_DEG, hi = (w + 1) * WEDGE_DEG;
+    float d;
+    if (angle >= lo && angle <= hi) d = 0.0f;
+    else {
+      float dLo = fabsf(angle - lo), dHi = fabsf(angle - hi);
+      dLo = fminf(dLo, 360.0f - dLo);
+      dHi = fminf(dHi, 360.0f - dHi);
+      d = fminf(dLo, dHi);
+    }
+    if (d < best) best = d;
+  }
+  return best;
+}
+
 void landingVerdict() {
   float angle = wheelAngleDeg();
   int wedge = currentWedge();
@@ -1693,11 +1849,17 @@ void landingVerdict() {
     enterFault(FC_LANDING_UNSAFE, "settled on dare after control");
     return;
   }
+  if (dareDistanceDeg(angle) < DARE_PROXIMITY_FAULT_DEG) {
+    // Within measurement error of a dare boundary: the interior-margin
+    // invariant is violated where it matters.  Honest latched failure.
+    enterFault(FC_LANDING_UNSAFE, "settled at a dare boundary");
+    return;
+  }
   SpinResult result;
-  if (wedge == spin.targetWedge && edgeDist >= LANDING_INTERIOR_MIN_DEG) {
-    result = RES_CONTROLLED_SAFE;
+  if (edgeDist < LANDING_INTERIOR_MIN_DEG) {
+    result = RES_EDGE_SAFE;               // safe, but honestly sub-interior
   } else if (wedge == spin.targetWedge) {
-    result = RES_EDGE_SAFE;
+    result = RES_CONTROLLED_SAFE;
   } else {
     result = RES_OFF_TARGET_SAFE;
   }
@@ -1717,15 +1879,15 @@ void dumpDiagnostics() {
   }
   Serial.println(F("# DIAG columns: done_us,dt_good_us,raw,delta,counts,i2c_us,"
                    "omega_mrev,window_mrev,cmd_mrev,fas_mrev,remain_ddeg,"
-                   "flags_hex,state,stage"));
+                   "flags_hex,state,stage,current_ma"));
   uint16_t first = (diagnosticHead + DIAG_CAPACITY - diagnosticCount) % DIAG_CAPACITY;
   for (uint16_t i = 0; i < diagnosticCount; ++i) {
     const DiagnosticSample& s = diagnosticBuffer[(first + i) % DIAG_CAPACITY];
-    Serial.printf("D,%lu,%u,%u,%d,%ld,%u,%d,%d,%d,%d,%d,%02X,%u,%u\n",
+    Serial.printf("D,%lu,%u,%u,%d,%ld,%u,%d,%d,%d,%d,%d,%02X,%u,%u,%u\n",
                   (unsigned long)s.doneUs, s.dtGoodUs, s.raw, s.delta,
                   (long)s.counts, s.i2cUs, s.omegaMilliRevS, s.windowMilliRevS,
                   s.cmdMilliRevS, s.fasMilliRevS, s.remainDeciDeg,
-                  s.flags, s.state, s.stage);
+                  s.flags, s.state, s.stage, (unsigned)s.curMa10 * 10);
   }
   Serial.printf("# DIAG n=%u wrapped=%d\n", diagnosticCount, diagnosticWrapped);
 }
@@ -1864,12 +2026,17 @@ void handleSerial() {
           break;
         }
         driverFreewheel();
-        checkTmcUart();
+        if (!checkTmcUartRaw()) {
+          faultCode = FC_TMC_UART;
+          Serial.println(F("# r: TMC UART still failing; fault remains latched"));
+          break;
+        }
         faultCode = FC_NONE;
         state = ST_IDLE_STOPPED;
         stateEnteredMs = millis();
-        Serial.printf("# fault cleared; tmc=%d dirCal=%d\n",
-                      tmcOk ? 1 : 0, motorDirectionCalibrated ? 1 : 0);
+        Serial.printf("# fault cleared; tmc=%d dirCal=%d%s\n",
+                      tmcOk ? 1 : 0, motorDirectionCalibrated ? 1 : 0,
+                      motorDirectionCalibrated ? "" : " (run p before guest use)");
       } else Serial.println(F("# r: no latched fault"));
       break;
     case 'm':
@@ -1899,6 +2066,18 @@ void setup() {
   ccw_b = preferences.getFloat("ccwB", 0.15f);
   cwFitCount = preferences.getUShort("cwN", 0);
   ccwFitCount = preferences.getUShort("ccwN", 0);
+  // Persisted values pass the same bounds as fresh fits: one corrupted NVS
+  // float (or b<=0 -> NaN travel) must never poison target selection.
+  if (!(cw_c >= FIT_C_MIN && cw_c <= FIT_C_MAX) ||
+      !(cw_b >= FIT_B_MIN && cw_b <= FIT_B_MAX)) {
+    cw_c = 0.30f; cw_b = 0.15f; cwFitCount = 0;
+    Serial.println(F("# NVS cw friction out of bounds; reset to seeds"));
+  }
+  if (!(ccw_c >= FIT_C_MIN && ccw_c <= FIT_C_MAX) ||
+      !(ccw_b >= FIT_B_MIN && ccw_b <= FIT_B_MAX)) {
+    ccw_c = 0.30f; ccw_b = 0.15f; ccwFitCount = 0;
+    Serial.println(F("# NVS ccw friction out of bounds; reset to seeds"));
+  }
 
   Wire.begin(PIN_SDA, PIN_SCL);
   Wire.setClock(400000);
@@ -1931,7 +2110,7 @@ void setup() {
     Serial.println(F("# FATAL: stepperConnectToPin failed; control locked"));
   }
 
-  checkTmcUart();
+  checkTmcUartOrFault();
   Serial.printf("# frame: label-true static rawZero=%u | dirCal=%s sign=%+d | tmc=%d\n",
                 rawZero, motorDirectionCalibrated ? "VALID" : "REQUIRED (p)",
                 motorPositiveEncoderSign, tmcOk ? 1 : 0);
@@ -1995,6 +2174,24 @@ void loop() {
   updateEncoder();
   handleSerial();
   uint32_t nowMs = millis();
+
+  // Encoder-outage watchdog for the unpowered motion states: every exit from
+  // MOTION_CANDIDATE / MANUAL_ADJUSTMENT / SPIN_PUSH / SPIN_RELEASED needs a
+  // working encoder, so a sustained I2C loss there would otherwise wedge the
+  // machine forever with an open spin record.  (Powered states and the
+  // settle latch their own faults; IDLE, DIR_PROBE and FAULT need no watch.)
+  bool watchEncoder = (state == ST_MOTION_CANDIDATE ||
+                       state == ST_MANUAL_ADJUSTMENT ||
+                       state == ST_SPIN_PUSH || state == ST_SPIN_RELEASED);
+  if (watchEncoder && !encoderPositionFresh()) {
+    if (encoderOutageSinceMs == 0) encoderOutageSinceMs = nowMs;
+    else if (nowMs - encoderOutageSinceMs >= ENCODER_OUTAGE_FAULT_MS) {
+      encoderOutageSinceMs = 0;
+      enterFault(FC_ENCODER_STALE, "encoder outage in motion state");
+    }
+  } else {
+    encoderOutageSinceMs = 0;
+  }
 
   switch (state) {
     case ST_IDLE_STOPPED: {
@@ -2124,7 +2321,7 @@ void loop() {
         break;
       }
       captureFrictionSample(nowMs);
-      bool contact = contactDetected(nowMs);
+      if (contactDetected(nowMs)) spin.hadContact = 1;  // sticky for the close
 
       if (controlAvailable()) {
         if (tryReserveTarget(nowMs)) break;
@@ -2137,7 +2334,8 @@ void loop() {
         else if (nowMs - settleStillSinceMs >= SETTLE_MS) {
           finishFrictionCapture("coast-end");
           SpinResult res = !controlAvailable() ? RES_CONTROL_LOCKED
-                          : (contact ? RES_GUEST_STOPPED : RES_NO_REACHABLE_SAFE);
+                          : (spin.hadContact ? RES_GUEST_STOPPED
+                                             : RES_NO_REACHABLE_SAFE);
           closeSpin(res);
           state = ST_IDLE_STOPPED;
           stateEnteredMs = nowMs;
@@ -2154,16 +2352,38 @@ void loop() {
         enterFault(FC_ENCODER_STALE, "stale during precharge");
         break;
       }
+      // A guest grabbing the wheel during the precharge supersedes the spin.
+      if (encoderMotionReady() && fabsf(omega) > GUEST_OVERRIDE_REV_S) {
+        if (guestOverrideAboveMs == 0) guestOverrideAboveMs = nowMs;
+        if (nowMs - guestOverrideAboveMs >= GUEST_OVERRIDE_MS) {
+          guestOverrideAboveMs = 0;
+          driverFreewheel();
+          closeSpin(RES_GUEST_RESPUN);
+          startSpinEvent((omega >= 0.0f) ? 1 : -1, nowMs);
+          state = ST_SPIN_PUSH;
+          stateEnteredMs = nowMs;
+          break;
+        }
+      } else {
+        guestOverrideAboveMs = 0;
+      }
       if (nowMs - stateEnteredMs < PRECHARGE_MS) break;
-      if (!encoderMotionReady()) break;  // wait out a velocity re-prime
+      if (!encoderMotionReady()) {
+        // Velocity re-primes within tens of ms; a powered wait must not be
+        // unbounded (this state has no other time budget yet).
+        if (nowMs - stateEnteredMs >= PRECHARGE_MS + RESERVED_VEL_TIMEOUT_MS) {
+          enterFault(FC_ENCODER_VELOCITY, "velocity lost during precharge");
+        }
+        break;
+      }
 
       // The wheel advanced during precharge; re-validate the runway.
       float remaining = remainingTargetDeg();
       float speed = fabsf(omega);
-      float latencyNow = speed * 0.05f * 360.0f;
-      float assistWheel = (float)ASSIST_DECEL_MAX_SPS2 / WHEEL_USTEPS_PER_REV;
-      float minNow = latencyNow + brakeDistanceDeg(speed, assistWheel);
+      float minNow = speed * 0.05f * 360.0f +
+          brakedStopDistanceDeg(speed, spinDir, motorExtraRadS2(ASSIST_DECEL_MAX_SPS2));
       if (remaining < minNow || speed < 0.02f) {
+        bool replaced = false;
         if (!reserveRetried) {
           reserveRetried = true;
           TargetChoice choice = chooseSafeTarget(spinDir, wheelAngleDeg(), speed);
@@ -2175,9 +2395,18 @@ void loop() {
             spin.targetAngleDeg = choice.targetAngleDeg;
             spin.runwayDeg = choice.runwayDeg;
             spin.targetQuality = choice.quality;
+            replaced = true;
             Serial.printf("SPIN#%lu RESERVE-ADJUST targetW=%d runway=%.1f\n",
                           (unsigned long)spin.number, choice.wedge, choice.runwayDeg);
           }
+        }
+        if (!replaced) {
+          // Never launch toward a target already inside the minimum braking
+          // distance: release and let SPIN_RELEASED re-evaluate honestly.
+          driverFreewheel();
+          state = ST_SPIN_RELEASED;
+          stateEnteredMs = nowMs;
+          break;
         }
       }
       if (!launchCapture(nowMs)) {
@@ -2196,7 +2425,8 @@ void loop() {
       serviceDecelTick(nowMs);   // trailing window keeps filling; cmd is const
       if (state != ST_SPEED_MATCH_CAPTURE) break;  // tick may have faulted
       if (nowMs - captureStartMs >= PICKUP_COHERENCE_MS) {
-        setCurrentStage(CS_BRAKE);
+        // Never step the ladder back up if the stop taper already began.
+        if (!stopRequested) setCurrentStage(CS_BRAKE);
         state = ST_CONTROLLED_DECEL;
         stateEnteredMs = nowMs;
       }
@@ -2209,6 +2439,7 @@ void loop() {
       if (state != ST_CONTROLLED_DECEL) break;  // tick may have faulted
       if (stopRequested && stepper && !stepper->isRunning()) {
         settleStillSinceMs = 0;
+        settleEntryCounts = encoderCountsMT;
         state = ST_LANDING_SETTLE;
         stateEnteredMs = nowMs;
       }
@@ -2222,6 +2453,7 @@ void loop() {
         enterFault(FC_ENCODER_STALE, "stale during settle");
         break;
       }
+      setCurrentStage(CS_TAPER);  // idempotent; undoes any late CS_BRAKE write
       if (encoderMotionReady() &&
           fabsf(omega) > fmaxf(GUEST_OVERRIDE_REV_S, 0.3f)) {
         // Grabbed and re-spun before the summary: hand it back to detection.
@@ -2229,6 +2461,22 @@ void loop() {
         closeSpin(RES_GUEST_RESPUN);
         startSpinEvent((omega >= 0.0f) ? 1 : -1, nowMs);
         state = ST_SPIN_PUSH;
+        stateEnteredMs = nowMs;
+        break;
+      }
+      // A hand dragging the wheel through the settle (overpowering the taper
+      // detent) is guest interference, not a control failure: release, close
+      // honestly, and go back to motion classification.
+      if (fabsf(degreesForCounts(encoderCountsMT - settleEntryCounts)) >
+              LANDING_DRAG_ABORT_DEG &&
+          encoderMotionReady() && fabsf(omega) > STILL_REV_S) {
+        Serial.printf("SPIN#%lu SETTLE-DRAG: guest moved the wheel during settle\n",
+                      (unsigned long)spin.number);
+        driverFreewheel();
+        closeSpin(RES_GUEST_STOPPED);
+        candidateStartCounts = encoderCountsMT;
+        spinArmMs = 0;
+        state = ST_MOTION_CANDIDATE;
         stateEnteredMs = nowMs;
         break;
       }
@@ -2252,6 +2500,9 @@ void loop() {
       if (currentStage == CS_HOLD1 && age >= HOLD1_MS) setCurrentStage(CS_HOLD2);
       else if (currentStage == CS_HOLD2 && age >= HOLD1_MS + HOLD2_MS) {
         driverFreewheel();
+        // Between-spins driver health check (wheel at rest, timing harmless).
+        checkTmcUartOrFault();
+        if (state == ST_FAULT_LATCHED) break;
         state = ST_IDLE_STOPPED;
         stateEnteredMs = nowMs;
         break;
@@ -2274,12 +2525,22 @@ void loop() {
     case ST_FAULT_LATCHED:
       serviceFault();
       // Spins during a latched fault are observed honestly, never controlled.
-      if (spinConfirmLogic(nowMs)) {
-        startSpinEvent(spinArmDir, nowMs);
-        Serial.printf("SPIN#%lu FAULT ACTIVE (%s): spin will NOT be controlled\n",
-                      (unsigned long)spin.number, faultName(faultCode));
-        closeSpin(RES_CONTROL_LOCKED);
-        // stay latched; state unchanged
+      // One record per motion episode: detect once, then close only when the
+      // wheel has actually come to rest, so the recorded final wedge is real.
+      if (!spinOpen) {
+        if (spinConfirmLogic(nowMs)) {
+          startSpinEvent(spinArmDir, nowMs);
+          Serial.printf("SPIN#%lu FAULT ACTIVE (%s): spin will NOT be controlled\n",
+                        (unsigned long)spin.number, faultName(faultCode));
+          settleStillSinceMs = 0;
+        }
+      } else if (encoderMotionReady() && fabsf(omega) <= STILL_REV_S) {
+        if (settleStillSinceMs == 0) settleStillSinceMs = nowMs;
+        else if (nowMs - settleStillSinceMs >= SETTLE_MS) {
+          closeSpin(RES_CONTROL_LOCKED);
+        }
+      } else {
+        settleStillSinceMs = 0;
       }
       break;
   }
