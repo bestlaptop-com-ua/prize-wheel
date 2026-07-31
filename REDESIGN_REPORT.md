@@ -104,9 +104,11 @@ plus the attended DIR_PROBE state
    the settled angle to be ≥5° inside the target wedge for `CONTROLLED_SAFE`,
    downgrades honestly to `EDGE_SAFE`/`OFF_TARGET_SAFE`, and **latches
    `FC_LANDING_UNSAFE`** for a settle on a dare *or within 2° of a dare boundary*
-   (within measurement error of the invariant). A guest dragging the wheel during
-   the settle (>8° displacement while moving) is released and closed honestly as
-   `GUEST_STOPPED` instead of being misread as a control failure.
+   (within measurement error of the invariant). Small pre-stillness creep is the
+   wheel's own residual momentum and belongs to the verdict; travel no residual
+   creep can produce (>45° while moving) means a hand is dragging the wheel and
+   is released and closed honestly as `GUEST_STOPPED`; sub-threshold drift
+   restarts the stillness window so the verdict samples a truly settled position.
 
 9. **Wedge-uniform interior targets.** Targets live in `[start+8°, end−8°]` of a
    safe wedge. Each safe wedge is counted **once** even when its interval
