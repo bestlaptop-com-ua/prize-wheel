@@ -69,10 +69,10 @@ constexpr uint32_t SPIN_CONFIRM_TIMEOUT_MS = 1200;
 constexpr float SPIN_CONFIRM_TRAVEL_DEG = 6.0f;
 constexpr float SPIN_CANCEL_BACKTRACK_DEG = 2.0f;
 constexpr bool ENABLE_MOTOR_TAKEOVER = true;
-constexpr float TAKEOVER_TRIGGER_REV_S = 0.45f;  // VARIANT2: 0.28 waited until the wheel was dying
+constexpr float TAKEOVER_TRIGGER_REV_S = 0.60f;  // VARIANT4: earlier engagement, current-backed
 constexpr float TAKEOVER_MIN_REV_S = 0.075f;
 constexpr float TAKEOVER_MIN_PEAK_REV_S = 0.12f;  // VARIANT3: protect lazy spins and post-abort continuations
-constexpr float TAKEOVER_MAX_START_REV_S = 0.45f;  // VARIANT2: sync at the raised engage speed
+constexpr float TAKEOVER_MAX_START_REV_S = 0.60f;  // VARIANT4: sync at the raised engage speed
 constexpr float PREDICTION_DARE_MARGIN_DEG = 10.0f;
 constexpr float TAKEOVER_DECEL_REV_S2 = 650.0f / WHEEL_USTEPS_PER_REV;
 constexpr float TAKEOVER_RUNWAY_MARGIN_DEG = 18.0f;
@@ -98,9 +98,9 @@ constexpr float TAKEOVER_EARLY_STOP_REMAIN_DEG = 8.0f;
 constexpr uint32_t SYNC_FIELD_LEAD_MS = 25;
 constexpr uint32_t SYNC_LOW_CURRENT_MS = 65;
 constexpr uint16_t SYNC_CURRENT_MA = 80;
-constexpr uint16_t TAKEOVER_INITIAL_CURRENT_MA = 180;
-constexpr uint16_t TAKEOVER_BRAKE_CURRENT_MA = 450;  // VARIANT3: 280 lacked braking authority -> phase-slip aborts
-constexpr uint32_t TAKEOVER_CURRENT_RAMP_MS = 220;
+constexpr uint16_t TAKEOVER_INITIAL_CURRENT_MA = 600;  // VARIANT4: proven capture torque (v4.x: 600 capture / 450 cruise; 650 hummed at rest)
+constexpr uint16_t TAKEOVER_BRAKE_CURRENT_MA = 450;  // VARIANT4: two-stage 600->450 after lock (proven; reduces hum)
+constexpr uint32_t TAKEOVER_CURRENT_RAMP_MS = 500;  // VARIANT4: let capture fully lock at 600 before stepping down
 constexpr float OPPOSITE_ABORT_REV_S = 0.040f;
 constexpr uint32_t OPPOSITE_ABORT_MS = 35;
 constexpr float SLIP_ABORT_REV_S = 0.080f;
@@ -543,7 +543,7 @@ void releaseTakeover(const char* reason, bool fault) {
   float remaining = takeoverRemainingDeg(); float travelled = (float)takeoverTravelledCounts() * 360.0f / 4096.0f;
   bool heldStop = (!fault) && (fabsf(omega) <= 0.05f);
   if (heldStop) {  // VARIANT2: field-held near-zero stop - fade torque instead of dropping it
-    stopStepClock(); driver.rms_current(TAKEOVER_INITIAL_CURRENT_MA, 1.0f);
+    stopStepClock(); driver.rms_current(300, 1.0f);
     releaseTaperActive = true; releaseTaperStage = 0; releaseTaperMs = millis();
   } else { driverFreewheel(); }
   settleStartMs = 0; mode = fault ? FAULT : SETTLE;
@@ -606,6 +606,7 @@ void serviceTakeover() {
   float usableRemainingDeg = fmaxf(remainingDeg - TAKEOVER_RELEASE_REMAIN_DEG, 0.0f);
   // VARIANT2: natural-shape deceleration (fitted friction curve, scaled to land on target)
   float natDecel = takeoverDecelScale * (liveDecelValid ? liveDecelRevS2 : naturalDecelRevS2(takeoverCommandRevS, takeoverDir));  // VARIANT3: live friction first
+  if (natDecel > 0.28f) natDecel = 0.28f;  // VARIANT4: harder braking than this rattles the belt drive
   takeoverCommandRevS -= natDecel * dt;
   float ceilRevS = sqrtf(2.0f * fmaxf(natDecel, 0.05f) * (usableRemainingDeg / 360.0f));
   if (takeoverCommandRevS > ceilRevS) takeoverCommandRevS = ceilRevS;
@@ -632,8 +633,8 @@ void serviceReleaseTaper() {
   uint8_t stage = (uint8_t)((millis() - releaseTaperMs) / RELEASE_TAPER_STEP_MS);
   if (stage == releaseTaperStage) return;
   releaseTaperStage = stage;
-  if (stage == 1) driver.rms_current(120, 1.0f);
-  else if (stage == 2) driver.rms_current(70, 1.0f);
+  if (stage == 1) driver.rms_current(150, 1.0f);
+  else if (stage == 2) driver.rms_current(80, 1.0f);
   else if (stage >= 3) { releaseTaperActive = false; driverFreewheel(); }
 }
 void serviceLiveFriction() {
@@ -669,7 +670,7 @@ void serviceRecovery() {
   if (recoveryState == 1) { if (millis() - recoveryMs >= 700U) beginRecovery(); return; }
   float rem = forwardDistanceDeg(recoveryDir, wheelAngleDeg(), recoveryTargetAngle);
   if (rem <= 3.0f || rem > 355.0f) {
-    stopStepClock(); driver.rms_current(TAKEOVER_INITIAL_CURRENT_MA, 1.0f);
+    stopStepClock(); driver.rms_current(300, 1.0f);
     releaseTaperActive = true; releaseTaperStage = 0; releaseTaperMs = millis();
     recoveryState = 0; Serial.printf("# RECOVERY done angle=%.1f wedge=%d\n", wheelAngleDeg(), wedgeAtAngle(wheelAngleDeg()));
     return;
@@ -705,7 +706,7 @@ bool tryBeginTakeover() {
     if (d > natural * 2.5f) return false;          // VARIANT3: no natural path - land free, recovery net covers a dare
   }
   takeoverDecelScale = natural / d;
-  if (takeoverDecelScale < 0.5f) takeoverDecelScale = 0.5f; if (takeoverDecelScale > 2.0f) takeoverDecelScale = 2.0f;
+  if (takeoverDecelScale < 0.5f) takeoverDecelScale = 0.5f; if (takeoverDecelScale > 1.5f) takeoverDecelScale = 1.5f;  // VARIANT4: gentler ceiling
   finishFrictionCapture("pre-steer");
   recordDecision(predictedAngle, predictedWedge, true, pendingTargetWedge);
   if (!beginTakeover(pendingTargetAngle, d)) { activeSpinHasDecision = false; activeSpinSteered = false; activeSpinTargetWedge = -1; return false; }
@@ -839,6 +840,7 @@ void loop() {
     case DIR_PROBE: serviceDirectionProbe(); break;
   }
 }
+
 
 
 
