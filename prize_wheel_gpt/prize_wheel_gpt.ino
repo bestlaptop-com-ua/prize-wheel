@@ -204,8 +204,8 @@ float activeSpinTargetErrorDeg = 0.0f;
 bool activeSpinTargetErrorValid = false;
 
 // Seeded friction model.  Priority 2 will calibrate/replace this from data.
-float cw_c = 0.30f, cw_b = 0.15f;
-float ccw_c = 0.30f, ccw_b = 0.15f;
+float cw_c = 0.031f, cw_b = 0.21f;   // fitted from CCW stop-times SPIN#2/#4 bench 2026-07-30; CW assumed equal, unverified
+float ccw_c = 0.031f, ccw_b = 0.21f; // fitted: 0.342pk->13.1s, 0.232pk->11.4s (seeded 0.30/0.15 gave 3.6s - 3x off)
 
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
