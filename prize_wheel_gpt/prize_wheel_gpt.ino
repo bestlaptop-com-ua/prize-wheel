@@ -64,6 +64,7 @@ bool INVERT_DIR = true;
 const bool ENABLE_MOTOR_TAKEOVER = true;
 const bool ENABLE_DARE_RECOVERY = false;  // owner 2026-07-29: no post-stop recovery - every spin is steered instead
 uint32_t spinConfirmMs = 0;               // hand-release gate reference
+float g_takeoverMaxRunwayDeg = 1.0e9f;    // per-decision ceiling: never aim beyond the natural stop (brake-only build)
 
 #define TAKEOVER_REV_S     0.55f  // owner 2026-07-29: intercept earlier, while the wheel is visibly alive
 #define SPIN_DETECT_REV_S  0.12f  // deliberate weak hand spins must enter FREE_SPIN
@@ -740,7 +741,7 @@ bool chooseRandomSafeTargetAngle(int dir, float currentAngle, float minRunwayDeg
   uint8_t candidateCount = 0;
 
   for (int wedge = 0; wedge < NUM_WEDGES; ++wedge) {
-    if (isDare(wedge) || isDare((wedge + 1) % NUM_WEDGES) || isDare((wedge + NUM_WEDGES - 1) % NUM_WEDGES)) continue;  // never aim next to a dare: landing scatter is ~1 wedge
+    if (isDare(wedge)) continue;
 
     long jitterCentiDeg = lroundf(SAFE_TARGET_JITTER_DEG * 100.0f);
     float jitter = (float)random(-jitterCentiDeg, jitterCentiDeg + 1) / 100.0f;
@@ -749,7 +750,7 @@ bool chooseRandomSafeTargetAngle(int dir, float currentAngle, float minRunwayDeg
     if (jitter < -maxJitter) jitter = -maxJitter;
     float target = (wedge + 0.50f) * WEDGE_DEG + jitter;
     float forward = forwardDistanceDeg(dir, currentAngle, target);
-    if (forward < minRunwayDeg || forward > TAKEOVER_MAX_RUNWAY_DEG) continue;
+    if (forward < minRunwayDeg || forward > TAKEOVER_MAX_RUNWAY_DEG || forward > g_takeoverMaxRunwayDeg) continue;
 
     candidates[candidateCount] = target;
     candidateRunways[candidateCount] = forward;
@@ -1301,7 +1302,8 @@ bool trySlowDareGuard() {
   float minForwardDeg = requiredTakeoverRunwayDeg(speed);
   float targetAngle = 0.0f;
   float runwayDeg = 0.0f;
-  if (!chooseRandomSafeTargetAngle(spinDir, wheelAngleDeg(), minForwardDeg,
+  g_takeoverMaxRunwayDeg = forwardDistanceDeg(spinDir, wheelAngleDeg(), predAngle) - 5.0f;  // brake can only shave distance, never add
+  if (!chooseRandomSafeTargetAngle(spinDir, wheelAngleDeg(), minForwardDeg + 15.0f,
                                    targetAngle, runwayDeg)) {
     if (debugLog && !diagnosticCapture) {
       Serial.printf("# TK-SKIP no random safe runway cur=%.1f min=%.1f dir=%d\n",
@@ -1788,5 +1790,6 @@ void loop() {
 
   serviceDiagnosticCapture();
 }
+
 
 
