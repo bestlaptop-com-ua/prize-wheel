@@ -182,6 +182,8 @@ const float MIN_RESERVE_RUNWAY_DEG    = 8.0f;
 
 // --- braking profile ---
 const uint16_t CMD_UPDATE_MS          = 25;     // control tick
+const uint16_t CMD_RESYNC_MS          = 200;    // field-vs-command resync
+const float CMD_RESYNC_TOLERANCE      = 0.08f;  // relative field deviation
 const float TRAIL_FRACTION            = 0.88f;  // cmd <= 0.88 * trailing-min
 const uint16_t TRAIL_WINDOW_TICKS     = 8;      // ~200 ms trailing window
 const float CAPTURE_MAX_CMD_REV_S     = 0.48f;
@@ -204,7 +206,9 @@ const uint16_t VELOCITY_LOSS_FAULT_MS = 300;
 const uint16_t RESERVED_VEL_TIMEOUT_MS = 500;   // velocity wait cap in precharge
 const uint16_t ENCODER_OUTAGE_FAULT_MS = 1000;  // encoder loss in motion states
 const uint32_t TAKEOVER_TIMEOUT_MS    = 30000;
-const uint32_t SETTLE_TIMEOUT_MS      = 10000;
+// A slow final crawl legitimately restarts the stillness window several
+// times; the timeout exists for a genuinely never-still wheel (hardware).
+const uint32_t SETTLE_TIMEOUT_MS      = 20000;
 // Pre-stillness settle travel beyond this cannot be residual creep under the
 // taper detent (friction-only coast from a 0.1 rev/s handoff is ~31 deg
 // unheld; the 300 mA detent cuts that well below a wedge): a hand is dragging.
@@ -431,6 +435,8 @@ uint32_t captureStartMs = 0;
 uint32_t controlStartMs = 0;
 float cmdRevS = 0.0f;
 uint32_t lastCmdTickMs = 0;
+uint32_t lastAppliedHz = 0;
+uint32_t lastResyncMs = 0;
 float trailRing[TRAIL_WINDOW_TICKS];
 uint8_t trailRingCount = 0;
 uint8_t trailRingHead = 0;
@@ -1617,6 +1623,8 @@ bool launchCapture(uint32_t nowMs) {
   if (!fasRun(fasSign)) return false;
 
   cmdRevS = cmd0;
+  lastAppliedHz = hz;
+  lastResyncMs = nowMs;
   trailRingReset(forward);
   lowestForwardRevS = forward;
   speedupSinceMs = 0;
@@ -1715,6 +1723,7 @@ bool controlSafetyChecks(uint32_t nowMs) {
           if (hz >= 40 && stepper && !stepper->isStopping()) {
             if (!fasSetSpeedHz(hz)) return false;
             stepper->applySpeedAcceleration();
+            lastAppliedHz = hz;
           }
           if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
         }
@@ -1843,11 +1852,30 @@ void serviceDecelTick(uint32_t nowMs) {
     return;
   }
 
-  if (newCmd < prevCmd) {
-    cmdRevS = newCmd;
+  cmdRevS = newCmd;
+  if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
+
+  // Apply to the pulse generator only on meaningful change, and RESYNC the
+  // field to the command periodically.  FastAccelStepper re-derives its ramp
+  // position with log2 fixed-point rounding on every applySpeedAcceleration;
+  // a dense stream of applies compounds that rounding and the actual field
+  // speed can sag far below the command (observed ~45% low on hardware,
+  // over-braking the wheel into a long crawl).  Re-asserting the target
+  // recovers the sag; the field approaching the command from BELOW remains
+  // under 0.88x the trailing wheel speed, so it can never lead the wheel.
+  uint32_t deltaHz = (hz > lastAppliedHz) ? hz - lastAppliedHz : lastAppliedHz - hz;
+  bool applyNow = (float)deltaHz >= fmaxf(4.0f, 0.01f * (float)lastAppliedHz);
+  if (nowMs - lastResyncMs >= CMD_RESYNC_MS) {
+    lastResyncMs = nowMs;
+    float fasNow = fasWheelRevS();
+    if (fabsf(fasNow - cmdRevS) > CMD_RESYNC_TOLERANCE * fmaxf(cmdRevS, 0.02f)) {
+      applyNow = true;
+    }
+  }
+  if (applyNow && stepper && !stepper->isStopping()) {
     if (!fasSetSpeedHz(hz)) return;
     stepper->applySpeedAcceleration();   // required for a live speed change
-    if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
+    lastAppliedHz = hz;
   }
   (void)dtMs;
 
@@ -2572,11 +2600,16 @@ void loop() {
           settleWindowCounts = encoderCountsMT;
         } else if (nowMs - settleStillSinceMs >= SETTLE_MS) {
           landingVerdict();
+          // The verdict moved us to SOFT_HOLD (or FAULT).  Leave immediately:
+          // the timeout below must never clobber a completed landing (this
+          // exact clobber latched a spurious TAKEOVER_TIMEOUT on hardware).
+          break;
         }
       } else {
         settleStillSinceMs = 0;
       }
-      if (nowMs - stateEnteredMs >= SETTLE_TIMEOUT_MS) {
+      if (state == ST_LANDING_SETTLE &&
+          nowMs - stateEnteredMs >= SETTLE_TIMEOUT_MS) {
         enterFault(FC_TAKEOVER_TIMEOUT, "settle never became still");
       }
       break;
