@@ -247,7 +247,7 @@ reviewed, benign. Return values are checked for `setSpeedInHz`, `setAcceleration
 | `FIGHT_SPEED_FRACTION` / grace / confirm | 0.45 / 150 / 150 ms | fight watchdog |
 | `OPPOSITE_ABORT_REV_S` / `_MS` | 0.05 / 75 | reversal fault |
 | `STILL_REV_S` / `SETTLE_MS` | 0.02 / 500 | stillness definition |
-| current ladder | 100/350/300/250/150/80 mA | precharge/capture/brake/taper/hold1/hold2 (slip drag scales with current; 600/450 over-braked 7×) |
+| current ladder | 100/600/450/300/150/80 mA | coupling stiffness for synchronized load-angle braking (owner ladder: 180 rattles, 650 hums) |
 | `PRECHARGE_MS` / `PICKUP_COHERENCE_MS` | 80 / 250 | phase settle / capture verify |
 | `TAKEOVER_TIMEOUT_MS` / `SETTLE_TIMEOUT_MS` | 30 s / 10 s | hard budgets |
 | friction seeds | c=0.30, b=0.15 (rad/s) | replaced by online CW/CCW fits |

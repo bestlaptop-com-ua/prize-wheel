@@ -229,16 +229,17 @@ const uint16_t HOLD1_MS               = 500;
 const uint16_t HOLD2_MS               = 400;
 
 // --- current ladder (written ONLY on stage transitions) ---
-// A field trailing at 0.88x wheel speed brakes through pole slip, and that
-// drag scales with current: 600/450 mA measured ~0.75 rev/s2 of authority
-// (7x plan) with audible ratcheting, landing 100-170 deg short.  300 mA is
-// the bench-proven trailing-brake level from the previous build.  (The 600
-// mA "v4 capture" figure belongs to the speed-MATCHED LEDC variant, where
-// the field runs at wheel speed and does not slip.)
+// With the profile-PACED command law the motor brakes through the load angle
+// of a synchronized rotor, and holding that synchronization is what needs
+// current: at 300 mA the rotor hops poles under the required drag (rattle),
+// at 600 mA it stays locked and silent (owner bench ladder; 650 hums, 180
+// rattles).  Current sets coupling stiffness; the braking force itself is
+// set by the commanded profile.  (600/450 only over-braked under the old
+// continuously-trailing law, which forced multi-pole slip at any current.)
 const uint16_t CUR_PRECHARGE_MA = 100;  // phase settle, no snap
-const uint16_t CUR_CAPTURE_MA   = 350;
-const uint16_t CUR_BRAKE_MA     = 300;
-const uint16_t CUR_TAPER_MA     = 250;  // final taper / settle watch
+const uint16_t CUR_CAPTURE_MA   = 600;
+const uint16_t CUR_BRAKE_MA     = 450;
+const uint16_t CUR_TAPER_MA     = 300;  // final taper / settle watch
 const uint16_t CUR_HOLD1_MA     = 150;  // fade...
 const uint16_t CUR_HOLD2_MA     = 80;   // ...to freewheel
 
