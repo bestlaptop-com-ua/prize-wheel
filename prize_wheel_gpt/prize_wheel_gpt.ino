@@ -227,10 +227,16 @@ const uint16_t HOLD1_MS               = 500;
 const uint16_t HOLD2_MS               = 400;
 
 // --- current ladder (written ONLY on stage transitions) ---
+// A field trailing at 0.88x wheel speed brakes through pole slip, and that
+// drag scales with current: 600/450 mA measured ~0.75 rev/s2 of authority
+// (7x plan) with audible ratcheting, landing 100-170 deg short.  300 mA is
+// the bench-proven trailing-brake level from the previous build.  (The 600
+// mA "v4 capture" figure belongs to the speed-MATCHED LEDC variant, where
+// the field runs at wheel speed and does not slip.)
 const uint16_t CUR_PRECHARGE_MA = 100;  // phase settle, no snap
-const uint16_t CUR_CAPTURE_MA   = 600;  // proven v4 capture (180 rattled)
-const uint16_t CUR_BRAKE_MA     = 450;  // cruise/brake
-const uint16_t CUR_TAPER_MA     = 300;  // final taper / settle watch
+const uint16_t CUR_CAPTURE_MA   = 350;
+const uint16_t CUR_BRAKE_MA     = 300;
+const uint16_t CUR_TAPER_MA     = 250;  // final taper / settle watch
 const uint16_t CUR_HOLD1_MA     = 150;  // fade...
 const uint16_t CUR_HOLD2_MA     = 80;   // ...to freewheel
 
@@ -264,7 +270,10 @@ const float FIT_MIN_SPEED_REV_S = 0.045f;
 const float FIT_MAX_SPEED_REV_S = 3.0f;
 const float FIT_C_MIN = 0.02f, FIT_C_MAX = 3.0f;
 const float FIT_B_MIN = 0.005f, FIT_B_MAX = 1.5f;
-const float FIT_ALPHA_CONTACT_RAD_S2 = 1.2f;  // pair decel above this = touch
+// Hand contact produces >5 rad/s2; a fast free coast legitimately reaches
+// c+b*w ~ 1.5 rad/s2 at 1.3 rev/s (1.2 here rejected every hard spin's coast
+// and starved the fit).
+const float FIT_ALPHA_CONTACT_RAD_S2 = 2.5f;
 const float FIT_BLEND = 0.35f;
 const uint16_t FIT_PERSIST_MIN_FITS = 2;      // persist only once corroborated
 
@@ -1040,7 +1049,32 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
     out.quality = 0;
   }
 
-  // Pass 2: weak spin - nearest safe interior point, assist decel allowed.
+  // Pass 2 (shadow capture): when the wedge-uniform window is unavailable
+  // but the NATURAL stop point already sits safely inside a safe wedge,
+  // capture and confirm THAT landing with (near) zero braking.  This beats
+  // braking to a nearer interior: it is invisible, and it cannot convert a
+  // naturally-safe weak spin into a dare landing through brake scatter
+  // (observed on hardware: a spin dying safely was braked short into the
+  // dare it was passing through).  Clearance is required over the expected
+  // settle segment [natural-4, natural].
+  if (!out.found && naturalDeg > 10.0f) {
+    float natAng = fmodf(curAngle + (float)dir * naturalDeg, 360.0f);
+    if (natAng < 0.0f) natAng += 360.0f;
+    float settleAng = fmodf(curAngle + (float)dir * (naturalDeg - 4.0f), 360.0f);
+    if (settleAng < 0.0f) settleAng += 360.0f;
+    if (!isDare(wedgeAtAngle(natAng)) && !isDare(wedgeAtAngle(settleAng)) &&
+        dareDistanceDeg(natAng) >= DARE_PROXIMITY_FAULT_DEG + 3.0f &&
+        dareDistanceDeg(settleAng) >= DARE_PROXIMITY_FAULT_DEG + 3.0f) {
+      out.found = true;
+      out.wedge = wedgeAtAngle(settleAng);
+      out.runwayDeg = naturalDeg - 2.0f;
+      out.decelCapSps2 = ASSIST_DECEL_MAX_SPS2;
+      out.quality = 3;
+    }
+  }
+
+  // Pass 3: the natural stop is dare territory - brake to the nearest safe
+  // interior, cushioned past the entry so stop scatter stays inside.
   if (!out.found && winMax > assistMin) {
     float bestDist = 1.0e9f;
     int bestW = -1;
@@ -1057,7 +1091,8 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
         float lo = fmaxf(a, assistMin);
         float hi = fminf(b, winMax);
         if (hi < lo) continue;
-        if (lo < bestDist) { bestDist = lo; bestW = w; }
+        float d = fminf(lo + 6.0f, hi);   // cushion past the interior entry
+        if (d < bestDist) { bestDist = d; bestW = w; }
         break;
       }
     }
@@ -1070,11 +1105,11 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
     }
   }
 
-  // Pass 3: no interior reachable.  Stop at the point of the reachable band
+  // Pass 4: no interior reachable.  Stop at the point of the reachable band
   // deepest inside any safe wedge, requiring dare clearance at BOTH the
   // nominal target and the expected settle point (~2 deg short, stop-gate
   // undershoot) - a target landingVerdict would fault on must never be
-  // reserved.  Runs independently of pass 2 whenever any band exists.
+  // reserved.
   if (!out.found && winMax > assistMin) {
     float bestScore = -1.0f, bestD = 0.0f;
     int bestEdgeW = -1;
@@ -1097,28 +1132,6 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
       out.runwayDeg = bestD;
       out.decelCapSps2 = ASSIST_DECEL_MAX_SPS2;
       out.quality = 2;
-    }
-  }
-
-  // Pass 4 (shadow capture): braking cannot place the wheel anywhere useful,
-  // but if the NATURAL stop point sits safely inside a safe wedge the spin is
-  // still captured and held there.  The expected settle is runway-2 with a
-  // further ~2 deg stop-gate undershoot, so dare clearance is required over
-  // the whole [natural-4, natural] segment (5-deg margin at the endpoints of
-  // a 4-deg segment guarantees >= 3 deg everywhere on it).
-  if (!out.found && naturalDeg > 10.0f) {
-    float natAng = fmodf(curAngle + (float)dir * naturalDeg, 360.0f);
-    if (natAng < 0.0f) natAng += 360.0f;
-    float settleAng = fmodf(curAngle + (float)dir * (naturalDeg - 4.0f), 360.0f);
-    if (settleAng < 0.0f) settleAng += 360.0f;
-    if (!isDare(wedgeAtAngle(natAng)) && !isDare(wedgeAtAngle(settleAng)) &&
-        dareDistanceDeg(natAng) >= DARE_PROXIMITY_FAULT_DEG + 3.0f &&
-        dareDistanceDeg(settleAng) >= DARE_PROXIMITY_FAULT_DEG + 3.0f) {
-      out.found = true;
-      out.wedge = wedgeAtAngle(settleAng);
-      out.runwayDeg = naturalDeg - 2.0f;
-      out.decelCapSps2 = ASSIST_DECEL_MAX_SPS2;
-      out.quality = 3;
     }
   }
 
