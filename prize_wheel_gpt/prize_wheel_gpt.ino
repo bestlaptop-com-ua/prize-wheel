@@ -152,7 +152,11 @@ const float CONTACT_DECEL_REV_S2      = 1.0f;   // decel beyond any free coast
 const uint16_t CONTACT_CONFIRM_MS     = 100;
 
 // --- engagement / reachability ---
-const float ENGAGE_MAX_REV_S          = 0.55f;  // reserve once at/below this
+// Owner spec: capture right after release, while the wheel is fast - the
+// takeover shadows the wheel and the whole slowdown reads as one natural
+// coast.  Ceiling set by FastAccelStepper's ESP32 MCPWM pulse limit
+// (~5 kHz = 0.78 rev/s at the wheel): 0.95 x 0.72 = 4.4 kHz.
+const float ENGAGE_MAX_REV_S          = 0.72f;  // reserve once at/below this
 const float ENGAGE_URGENCY_WINDOW_DEG = 60.0f;  // engage before an OPEN window
                                                 // narrows past the largest
                                                 // safe-interior gap (46 deg)
@@ -165,14 +169,13 @@ const float MIN_BRAKE_HEADROOM_DEG    = 15.0f;
 // at this fraction of the predicted natural stop distance, minus the margin.
 const float NATURAL_REACH_FRACTION    = 0.90f;
 const float NATURAL_SHAVE_MARGIN_DEG  = 5.0f;   // brake shaves, never adds
-// A SILENT capture must let the wheel decay onto the field and stay coupled:
-// the planned profile deceleration may use at most this fraction of the
-// wheel's natural decel at capture.  Steeper plans (shorter runways) can only
-// be realized through pole slip - hardware-verified as the rattle (spin at
-// aPlan/aNat=1.05 ratcheted and fell 162 deg short; 0.84 coupled silently
-// and landed within 1.4 deg).  Applies to the wedge-uniform pass; the weak-
-// spin assist passes may still slip briefly by design.
-const float COUPLE_MARGIN             = 0.90f;
+// A SILENT capture must let the wheel couple to the field and stay coupled:
+// the planned profile deceleration may exceed the wheel's natural decel at
+// capture only by the small load a synchronized rotor absorbs without pole
+// hopping.  The slowdown therefore rides essentially the natural coast into
+// the target (owner spec).  Applies to the wedge-uniform pass; the weak-spin
+// assist passes may still slip briefly by design.
+const float COUPLE_MARGIN             = 1.05f;
 const float SAFE_WEDGE_EDGE_MARGIN_DEG = 8.0f;  // target interior margin
 const float LANDING_INTERIOR_MIN_DEG  = 5.0f;   // verification margin
 const float DARE_PROXIMITY_FAULT_DEG  = 2.0f;   // settle this close to a dare
@@ -192,9 +195,13 @@ const float MIN_RESERVE_RUNWAY_DEG    = 8.0f;
 const uint16_t CMD_UPDATE_MS          = 25;     // control tick
 const uint16_t CMD_RESYNC_MS          = 200;    // field-vs-command resync
 const float CMD_RESYNC_TOLERANCE      = 0.08f;  // relative field deviation
-const float TRAIL_FRACTION            = 0.88f;  // cmd <= 0.88 * trailing-min
+// Capture entry fraction (owner spec 0.95): the field starts just under the
+// wheel so coupling is near-immediate and gentle.  Applied to the trailing
+// MINIMUM over ~200 ms, which already discounts filter lag, so the command
+// still starts strictly behind the physical wheel.
+const float TRAIL_FRACTION            = 0.95f;
 const uint16_t TRAIL_WINDOW_TICKS     = 8;      // ~200 ms trailing window
-const float CAPTURE_MAX_CMD_REV_S     = 0.48f;
+const float CAPTURE_MAX_CMD_REV_S     = 0.68f;  // 0.95 x engage ceiling
 const uint32_t DECEL_CEILING_SPS2     = 650;    // natural-motion decel ceiling
 const uint32_t ASSIST_DECEL_MAX_SPS2  = 1100;   // weak-spin nearest-target cap
 const float COUPLING_SLACK_REV_S      = 0.020f;
