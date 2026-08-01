@@ -165,6 +165,14 @@ const float MIN_BRAKE_HEADROOM_DEG    = 15.0f;
 // at this fraction of the predicted natural stop distance, minus the margin.
 const float NATURAL_REACH_FRACTION    = 0.90f;
 const float NATURAL_SHAVE_MARGIN_DEG  = 5.0f;   // brake shaves, never adds
+// A SILENT capture must let the wheel decay onto the field and stay coupled:
+// the planned profile deceleration may use at most this fraction of the
+// wheel's natural decel at capture.  Steeper plans (shorter runways) can only
+// be realized through pole slip - hardware-verified as the rattle (spin at
+// aPlan/aNat=1.05 ratcheted and fell 162 deg short; 0.84 coupled silently
+// and landed within 1.4 deg).  Applies to the wedge-uniform pass; the weak-
+// spin assist passes may still slip briefly by design.
+const float COUPLE_MARGIN             = 0.90f;
 const float SAFE_WEDGE_EDGE_MARGIN_DEG = 8.0f;  // target interior margin
 const float LANDING_INTERIOR_MIN_DEG  = 5.0f;   // verification margin
 const float DARE_PROXIMITY_FAULT_DEG  = 2.0f;   // settle this close to a dare
@@ -896,6 +904,13 @@ float motorExtraRadS2(uint32_t sps2) {
   return (float)sps2 / WHEEL_USTEPS_PER_REV * TWO_PI;
 }
 
+// Instantaneous natural friction deceleration at a given speed, rev/s^2.
+float naturalDecelRevS2(float speedRevS, int dir) {
+  float c = (dir > 0) ? cw_c : ccw_c;
+  float b = (dir > 0) ? cw_b : ccw_b;
+  return (c + b * speedRevS * TWO_PI) / TWO_PI;
+}
+
 void resetFrictionCapture(int dir) {
   fitSampleCount = 0;
   fitDir = dir;
@@ -1007,6 +1022,13 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   float winMin = latencyDeg
                + brakedStopDistanceDeg(speedRevS, dir, motorExtraRadS2(DECEL_CEILING_SPS2))
                + MIN_BRAKE_HEADROOM_DEG;
+  // Coupled-braking floor: runway short enough to need a profile steeper
+  // than COUPLE_MARGIN x natural decel can only be reached by slip (rattle).
+  float cmd0est = TRAIL_FRACTION * speedRevS;
+  float coupledMinDeg = latencyDeg +
+      (cmd0est * cmd0est) /
+          (2.0f * COUPLE_MARGIN * naturalDecelRevS2(speedRevS, dir)) * 360.0f;
+  if (coupledMinDeg > winMin) winMin = coupledMinDeg;
   float assistMin = latencyDeg
                   + brakedStopDistanceDeg(speedRevS, dir, motorExtraRadS2(ASSIST_DECEL_MAX_SPS2))
                   + 2.0f;
@@ -1158,6 +1180,11 @@ float reachWindowWidthDeg(float speedRevS, int dir) {
   float winMin = latencyDeg
                + brakedStopDistanceDeg(speedRevS, dir, motorExtraRadS2(DECEL_CEILING_SPS2))
                + MIN_BRAKE_HEADROOM_DEG;
+  float cmd0est = TRAIL_FRACTION * speedRevS;
+  float coupledMinDeg = latencyDeg +
+      (cmd0est * cmd0est) /
+          (2.0f * COUPLE_MARGIN * naturalDecelRevS2(speedRevS, dir)) * 360.0f;
+  if (coupledMinDeg > winMin) winMin = coupledMinDeg;
   return winMax - winMin;
 }
 
@@ -1602,6 +1629,13 @@ bool launchCapture(uint32_t nowMs) {
   float capRevS2 = (float)planDecelCapSps2 / WHEEL_USTEPS_PER_REV;
   if (aPlan > capRevS2) aPlan = capRevS2;
   if (aPlan < 0.008f) aPlan = 0.008f;
+  // Wedge-uniform targets must remain coupled-reachable after the precharge
+  // advance; a plan now steeper than natural decel would slip.  Abandon so
+  // the caller re-reserves from the fresh state.
+  if (spin.targetQuality == 0 &&
+      aPlan > naturalDecelRevS2(forward, takeoverDir)) {
+    return false;
+  }
   planDecelRevS2 = aPlan;
   // The FAS acceleration is the pulse generator's TRACKING rate, not the
   // profile: it must exceed the profile decel so the field can follow each
