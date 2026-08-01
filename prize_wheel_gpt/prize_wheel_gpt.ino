@@ -193,7 +193,9 @@ const float COUPLING_SLACK_REV_S      = 0.020f;
 const float FAS_MIN_CMD_REV_S         = 0.00625f; // 40 Hz taper floor
 const float STOP_GATE_EXTRA_DEG       = 2.0f;
 const float OVERSHOOT_TOL_DEG         = 4.0f;
-const float SPEEDUP_NOISE_REV_S       = 0.020f;
+// Above the phase-capture snap transient (~0.03-0.075 rev/s observed), below
+// any deliberate pull; the fault still needs a sustained rise.
+const float SPEEDUP_NOISE_REV_S       = 0.050f;
 const uint16_t SPEEDUP_TRIM_MS        = 30;     // trim command after this
 const uint16_t SPEEDUP_FAULT_MS       = 400;    // latch fault after this
 const float FIGHT_SPEED_FRACTION      = 0.45f;
@@ -1826,19 +1828,23 @@ void serviceDecelTick(uint32_t nowMs) {
     return;
   }
 
-  // Monotonic command computation.  Three ceilings, all downward:
-  //   profile: sqrt-profile that consumes the remaining runway at planDecel
-  //   trail:   0.88 x trailing-min wheel speed (only while wheel leads field)
-  //   chase:   if the wheel is slower than the field, come down to the wheel
+  // Monotonic command computation.  The command follows the sqrt PROFILE that
+  // consumes the remaining runway at planDecel; the wheel decays naturally
+  // onto the field once (the entry sits at 0.88x the trailing wheel speed),
+  // couples, and is then paced down in synchronization - silent load-angle
+  // braking.  The command must NOT continuously track a fraction of the
+  // wheel speed: doing so re-opens the slip gap every tick and turns the
+  // whole takeover into an audible pole-slip ratchet with ~5x the planned
+  // braking force (observed on hardware at both 450 and 300 mA).  The wheel
+  // can never be pulled: targets are capped below the natural stop, so a
+  // coupled wheel always pushes INTO the field, and the chase-down plus the
+  // speed-up detector guard the remaining pull paths.
   float prevCmd = cmdRevS;
   float remRev = fmaxf(remaining, 0.0f) / 360.0f;
   float profile = sqrtf(2.0f * planDecelRevS2 * remRev);
   float newCmd = fminf(prevCmd, profile);
 
-  float trailMin = trailingMinForwardRevS();
-  if (forward > newCmd + COUPLING_SLACK_REV_S) {
-    newCmd = fminf(newCmd, TRAIL_FRACTION * trailMin);
-  }
+  float trailMin = trailingMinForwardRevS();  // telemetry / debug reference
   if (encoderVelocityValid && forward < newCmd - COUPLING_SLACK_REV_S) {
     // Wheel slower than the field: reduce toward the wheel so the motor can
     // never lead it.  (Also naturally sheds braking authority when the wheel

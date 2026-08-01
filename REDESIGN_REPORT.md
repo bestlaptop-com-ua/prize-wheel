@@ -78,14 +78,20 @@ plus the attended DIR_PROBE state
    inert queue reset, so a later capture can never energize onto a stale ramp.
 
 5. **Truly monotonic deceleration.** `serviceDecelTick()` computes
-   `newCmd = min(prevCmd, profile, constraints)` and *faults*
-   (`FC_MONOTONIC_VIOLATION`) if a computed command ever tries to increase. The
-   command tracks below a **trailing minimum** of the measured wheel speed over
-   ~200 ms × 0.88 (not 97–99% of the filtered value) while the wheel leads the
-   field, and *chases down* to the wheel if the wheel is ever slower than the field
-   (so the motor can never lead). A wheel-speed-up detector trims the command 5%
-   per 30 ms immediately and latches `FC_SUSTAINED_SPEEDUP` after 400 ms; the
-   maximum rise is recorded in the spin summary.
+   `newCmd = min(prevCmd, profile)` and *faults* (`FC_MONOTONIC_VIOLATION`) if a
+   computed command ever tries to increase. The 0.88 × trailing-minimum bound is
+   applied at **capture entry** (the field starts strictly behind the wheel);
+   hardware testing showed it must *not* be applied continuously — tracking a
+   fraction of a decaying wheel re-opens the slip gap every tick and turns the
+   whole takeover into an audible pole-slip ratchet with ~5× the planned braking
+   force. Instead the wheel decays onto the constant entry field once, couples,
+   and is paced down the profile in synchronization (silent load-angle braking).
+   Never-pull is guaranteed structurally: targets are capped below the natural
+   stop so a coupled wheel always pushes into the field, a *chase-down* drops the
+   command to the wheel whenever the wheel is slower than the field, and a
+   wheel-speed-up detector trims the command immediately and latches
+   `FC_SUSTAINED_SPEEDUP` after 400 ms; the maximum rise is recorded in the spin
+   summary.
 
 6. **No accelerating minimum-speed clamp.** There is no `max(desired, fixedMin)`
    anywhere. When the command falls below the 40 Hz practical floor the controller
