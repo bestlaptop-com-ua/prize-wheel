@@ -1416,7 +1416,9 @@ void startDirectionProbe() {
     return;
   }
   // Attended, at-rest calibration.  The stepper is idle, so the position can
-  // be re-zeroed without an abrupt-stop call.
+  // be re-zeroed without an abrupt-stop call.  Restore the base DIR polarity
+  // first: captures repolarize the pin per direction (always-runForward).
+  stepper->setDirectionPin(PIN_DIR, INVERT_DIR);
   stepper->setCurrentPosition(0);
   stepper->setJumpStart(0);
   setCurrentStage(CS_PRECHARGE);
@@ -1676,8 +1678,15 @@ bool launchCapture(uint32_t nowMs) {
   if (!fasSetAcceleration(aFasSps2)) return false;
   stepper->setJumpStart(jumpStep);
   stepper->setCurrentPosition(0);   // motor is at standstill (asserted above)
+  // FastAccelStepper 1.2.7's backward (count-down) continuous path executes
+  // the live speed-change stream badly on this platform: captured traces
+  // show the pulse rate wandering at 50-60% of command with slow
+  // oscillations under runBackward, while runForward tracks within
+  // 1-3 milli-rev/s.  Both physical directions therefore run FORWARD, with
+  // rotation selected by DIR-pin polarity (safe: motor is at standstill).
+  stepper->setDirectionPin(PIN_DIR, fasSign > 0 ? INVERT_DIR : !INVERT_DIR);
   setCurrentStage(CS_CAPTURE);
-  if (!fasRun(fasSign)) return false;
+  if (!fasRun(1)) return false;
 
   cmdRevS = cmd0;
   lastAppliedHz = hz;
