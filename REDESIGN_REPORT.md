@@ -1,5 +1,11 @@
 # Prize Wheel Firmware — Correctness Redesign Report
 
+> **Bench-verified working baseline:** commit `3938f41`, marked by branch
+> `bench-working-v1` (owner-attended 2026-08-02): seven consecutive controlled
+> spins, both directions, releases 0.43–1.82 rev/s, all `CONTROLLED_SAFE`
+> with landing error < 2°. Flashable images for that build are in `build/`
+> of that ref.
+
 **File:** `prize_wheel_gpt/prize_wheel_gpt.ino` (complete rewrite of the control layer
 on top of the proven P1 sensing pipeline and the verified label-true encoder frame)
 **Toolchain:** Arduino ESP32 core 3.3.10 · FastAccelStepper 1.2.7 · TMCStepper 0.7.3

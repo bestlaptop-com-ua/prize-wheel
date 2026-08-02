@@ -181,6 +181,12 @@ const float LANDING_INTERIOR_MIN_DEG  = 5.0f;   // verification margin
 const float DARE_PROXIMITY_FAULT_DEG  = 2.0f;   // settle this close to a dare
                                                 // boundary = unsafe landing
 const uint16_t PRECHARGE_MS           = 80;
+// The pulse train STARTS at the 100 mA precharge level with the field
+// already sweeping at ~95% of wheel speed; full capture torque steps in
+// only after this delay, onto an already-synchronized pair.  Stepping
+// 600 mA onto a static field just before the pulses was the audible
+// capture tick.
+const uint16_t CAPTURE_CURRENT_DELAY_MS = 120;
 const uint16_t PICKUP_COHERENCE_MS    = 250;
 // Friction-model bootstrap: while a direction has fewer than the persist
 // threshold of valid fits, defer engagement (bounded by window width and
@@ -1685,7 +1691,9 @@ bool launchCapture(uint32_t nowMs) {
   // 1-3 milli-rev/s.  Both physical directions therefore run FORWARD, with
   // rotation selected by DIR-pin polarity (safe: motor is at standstill).
   stepper->setDirectionPin(PIN_DIR, fasSign > 0 ? INVERT_DIR : !INVERT_DIR);
-  setCurrentStage(CS_CAPTURE);
+  // Current stays at the precharge level for the first pulses (soft start);
+  // ST_SPEED_MATCH_CAPTURE raises it to capture torque after
+  // CAPTURE_CURRENT_DELAY_MS, once the field and rotor are synchronized.
   if (!fasRun(1)) return false;
 
   cmdRevS = cmd0;
@@ -2600,6 +2608,11 @@ void loop() {
       if (!controlSafetyChecks(nowMs)) break;
       serviceDecelTick(nowMs);   // trailing window keeps filling; cmd is const
       if (state != ST_SPEED_MATCH_CAPTURE) break;  // tick may have faulted
+      // Torque steps in only after the field has swept in sync for a while.
+      if (currentStage == CS_PRECHARGE &&
+          nowMs - captureStartMs >= CAPTURE_CURRENT_DELAY_MS) {
+        setCurrentStage(CS_CAPTURE);
+      }
       if (nowMs - captureStartMs >= PICKUP_COHERENCE_MS) {
         // Never step the ladder back up if the stop taper already began.
         if (!stopRequested) setCurrentStage(CS_BRAKE);
