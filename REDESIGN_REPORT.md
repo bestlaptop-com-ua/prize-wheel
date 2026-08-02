@@ -1,10 +1,13 @@
 # Prize Wheel Firmware — Correctness Redesign Report
 
-> **Bench-verified working baseline:** commit `3938f41`, marked by branch
-> `bench-working-v1` (owner-attended 2026-08-02): seven consecutive controlled
-> spins, both directions, releases 0.43–1.82 rev/s, all `CONTROLLED_SAFE`
-> with landing error < 2°. Flashable images for that build are in `build/`
-> of that ref.
+> **Production baseline:** commit `798a2a8`, marked by branch
+> `bench-working-v2` (owner-accepted 2026-08-02) — the `bench-working-v1`
+> control behavior plus the soft synchronized capture. Owner verdict:
+> "works much better." Prior verified baseline: `bench-working-v1`
+> (`3938f41`): seven consecutive controlled spins, both directions, releases
+> 0.43–1.82 rev/s, all `CONTROLLED_SAFE` with landing error < 2°. Flashable
+> images for each build are in `build/` of the respective ref; the board is
+> flashed with `bench-working-v2`.
 
 **File:** `prize_wheel_gpt/prize_wheel_gpt.ino` (complete rewrite of the control layer
 on top of the proven P1 sensing pipeline and the verified label-true encoder frame)
