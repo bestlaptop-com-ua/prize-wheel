@@ -1,4 +1,4 @@
-/* ============================================================================
+﻿/* ============================================================================
  * prize_wheel_gpt.ino - Prize wheel firmware, correctness redesign
  *
  * Every genuine hand spin is captured mid-coast and guided to a random safe
@@ -1019,6 +1019,10 @@ float randomUnit() { return (float)random(10000) / 10000.0f; }
 // drawn inside that wedge's qualifying interval.  Fallbacks for weak spins
 // use a bounded assist deceleration and, last, the safest non-interior point;
 // no fallback ever aims beyond the natural stop (a brake cannot add energy).
+
+// Deficit-weighted selection state: how many times each wedge has been chosen
+// by Pass 1 this power cycle.  RAM only - a reboot restarts the balancing.
+static uint16_t wedgeChosenCount[NUM_WEDGES] = {0};
 TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   TargetChoice out;
   out.found = false;
@@ -1079,7 +1083,31 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
     }
   }
   if (candCount > 0) {
-    uint8_t pick = (uint8_t)random((long)candCount);
+    // Deficit-weighted draw.  Every candidate in this array has ALREADY passed
+    // the full reachability + safety test above, so re-weighting among them
+    // changes nothing safety-critical - only which safe wedge wins.  Wheel
+    // geometry starves wedges adjacent to the dare wedges (bench 2026-08-04:
+    // W0 won 1 of 63 while W4/W9 won 11 each), and a wedge that never comes up
+    // is as much a tell as a visible motor grab.  Favour the starved ones on
+    // the occasions they are reachable.
+    uint16_t maxChosen = 0;
+    for (uint8_t i = 0; i < candCount; ++i) {
+      uint16_t ct = wedgeChosenCount[candWedge[i]];
+      if (ct > maxChosen) maxChosen = ct;
+    }
+    uint32_t weights[NUM_WEDGES];
+    uint32_t totalWeight = 0;
+    for (uint8_t i = 0; i < candCount; ++i) {
+      weights[i] = 1u + (uint32_t)(maxChosen - wedgeChosenCount[candWedge[i]]);
+      totalWeight += weights[i];
+    }
+    uint32_t r = (uint32_t)random((long)totalWeight);
+    uint8_t pick = candCount - 1;
+    for (uint8_t i = 0; i < candCount; ++i) {
+      if (r < weights[i]) { pick = i; break; }
+      r -= weights[i];
+    }
+    if (wedgeChosenCount[candWedge[pick]] < 60000u) ++wedgeChosenCount[candWedge[pick]];
     out.found = true;
     out.wedge = candWedge[pick];
     out.runwayDeg = candLo[pick] + (candHi[pick] - candLo[pick]) * randomUnit();
