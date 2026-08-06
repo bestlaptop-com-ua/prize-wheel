@@ -246,8 +246,8 @@ const uint32_t FAS_TRACK_ACCEL_MAX_SPS2 = 2000;
 // --- landing / hold ---
 const float STILL_REV_S               = 0.020f;
 const uint16_t SETTLE_MS              = 500;
-const uint16_t HOLD1_MS               = 500;
-const uint16_t HOLD2_MS               = 400;
+const uint16_t HOLD1_MS               = 1500;
+const uint16_t HOLD2_MS               = 1200;
 
 // --- current ladder (written ONLY on stage transitions) ---
 // With the profile-PACED command law the motor brakes through the load angle
