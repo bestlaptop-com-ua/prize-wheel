@@ -4,6 +4,11 @@ ESP32 firmware for a hand-spun 24" prize wheel that quietly steers away from two
 designated "dare" wedges while otherwise behaving like an ordinary free-spinning
 wheel.
 
+> **Party-v1 note:** the historical concept/architecture sections below describe
+> earlier firmware. The current accepted `prize_wheel_gpt` controller captures
+> every confirmed spin and guides it to a safe target; use `DELIVERY.md`,
+> `RISK_AUDIT.md`, and the source constants for current party operation.
+
 ## Concept
 
 A guest spins the wheel by hand, in either direction. A hidden ESP32 watches the
@@ -48,6 +53,64 @@ Two rules govern every intervention:
 
 Driver TX pin is unconnected. The driver is enabled at boot to avoid a startup
 detent snap.
+
+## Party v1: audio, rim lighting, and phone console
+
+The party build is `prize_wheel_gpt/prize_wheel_gpt.ino`. WiFi and FX are
+fail-silent consumers of the accepted control state; they do not decide when
+to reserve, capture, brake, or fault. Send `t` over USB serial or telnet to
+print the measured maximum combined WiFi/FX service time. Send `T` to reset
+that tracker before a bench run.
+
+### DFPlayer Mini wiring
+
+`FX_TASK.md` requests DFPlayer UART2 on GPIO16/17, but those pins and UART2 are
+already the production TMC2209 link. Connecting the DFPlayer there would put
+two protocols and, if DFPlayer TX were attached, two transmitters on the motor
+driver bus. **Do not connect a DFPlayer to GPIO16 or GPIO17.** Party v1 keeps
+the accepted TMC link untouched and uses isolated UART1 pins instead:
+
+| DFPlayer signal | Party v1 connection |
+|---|---|
+| RX | ESP32 GPIO32 (UART1 TX) through a **1 kOhm series resistor** |
+| TX | ESP32 GPIO33 (UART1 RX), optional; firmware never waits for replies |
+| VCC | regulated 5 V |
+| GND | common ESP32/driver/LED ground |
+| SPK_1 / SPK_2 | speaker directly, per DFPlayer rating |
+
+The raw protocol driver is fire-and-forget and rate-limited to one command per
+120 ms. Format a microSD card as FAT32 and copy `media/mp3` to `/mp3`, keeping
+the filenames `0001.mp3` through `0006.mp3`. `VOL n` sets volume from 0 to 30.
+
+### WS2812B stationary rim
+
+| Signal | Connection |
+|---|---|
+| DIN | ESP32 GPIO13 (`PARTY_LED_DATA_PIN`) |
+| 5 V | external regulated LED supply sized for the installed strip |
+| GND | common with ESP32 and motor electronics |
+
+Mount the strip on the stationary rim; no slip ring is required. The default
+is 36 pixels (`PARTY_NUM_LEDS`). A 330-470 ohm data resistor, a bulk capacitor
+at the strip input, and a 74AHCT-series 3.3-to-5 V level shifter are recommended.
+Use `[` and `]` to nudge the persisted wedge-0 LED index and `\` to reverse the
+persisted LED direction. FastAccelStepper is explicitly pinned to MCPWM/PCNT;
+Adafruit NeoPixel therefore uses the ESP32 RMT output without sharing the
+step-pulse peripheral.
+
+### SoftAP and telnet
+
+The ESP32 creates `PW-####` (the final two SoftAP MAC bytes), fixed channel 6,
+with at most two clients. Change `PARTY_WIFI_PASSWORD` in
+`prize_wheel_gpt/party_addons.h` before guest use; the committed value is only
+a buildable placeholder. Connect a phone telnet client to `192.168.4.1:23`.
+USB serial remains active and both transports feed the same command parser.
+There is no OTA, web server, venue-WiFi mode, mDNS, or cloud dependency.
+
+Useful build-time switches and pins are grouped at the top of
+`party_addons.h`. `PARTY_WIFI_ENABLED`, `PARTY_FX_ENABLED`,
+`PARTY_AUDIO_ENABLED`, and `PARTY_LED_ENABLED` default to 1 and can be set to 0
+for isolation tests.
 
 ### Geometry
 
