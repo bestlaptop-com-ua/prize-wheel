@@ -279,9 +279,17 @@ changes nothing about the wheel.
   are possible but read as natural (wheel was grabbed).
 - **AP channel congestion**: a room full of phones can lag telemetry on the
   fixed channel; fail-silent by design, telemetry-only impact.
-- **Static RAM headroom**: the diag buffer deliberately sits ~2 KB under the
-  DRAM segment limit; the party additions were kept small and the delivered
-  build's RAM figure is recorded in DELIVERY.md as the proof.
+- **Static RAM headroom**: the frozen diag buffer deliberately sat ~2 KB under
+  the DRAM segment limit, so the WiFi stack could not link beside it (measured
+  overflow 31,192 B). Resolved by trading diag capacity (2944→1664 samples,
+  WiFi builds only); the delivered build measures 114,808 B of globals (35%),
+  212 KB free — recorded in DELIVERY.md. A `PW_WIFI_ENABLE 0` bench build
+  restores the full buffer.
+- **Flash size**: WiFi+FastLED push the image to 1.39 MB, past the default
+  1.25 MB app slot; delivered build uses the standard `huge_app` partition
+  scheme (no OTA slot — OTA is banned by WIFI_TASK anyway). NVS sits at the
+  same offset in both schemes (verified in the core's partition CSVs), so
+  calibration and the S1 latch survive the reflash.
 
 ---
 

@@ -57,9 +57,21 @@ Exact command (the owner's toolchain, sketchbook config):
 ```
 C:\Scripts\prize_wheel\tools\arduino-cli.exe compile
   --config-file C:\Scripts\prize_wheel\arduino-cli.yaml
-  --fqbn esp32:esp32:esp32 --warnings all
+  --fqbn esp32:esp32:esp32:PartitionScheme=huge_app --warnings all
   C:\Users\4urka\Desktop\pw_claude_party\prize_wheel_gpt
 ```
+
+**Partition scheme — read before flashing.** The WiFi stack + FastLED push the
+image to ~1.39 MB, past the default scheme's 1.25 MB app slot (first attempt
+recorded honestly: `text section exceeds available space`, 108%). WIFI_TASK
+forbids OTA, so the default scheme's second OTA app slot is pure dead weight;
+the standard `huge_app` option (same board, 3 MB app + 1 MB SPIFFS, no OTA
+slot) is the correct fit. Use the same `PartitionScheme=huge_app` option on
+the upload command. The first flash of this build rewrites the partition table
+(sector 0x8000) — **NVS at 0x9000 is a different sector and is not touched**:
+rawZero, direction calibration, friction fits and the S1 latch all survive,
+and this was verified against the core's partition CSVs (default and huge_app
+both place nvs at 0x9000, size 0x5000).
 
 - Platform: `esp32:esp32 3.3.10`
 - Libraries resolved by the build: TMCStepper **0.7.3**, FastAccelStepper
@@ -67,13 +79,24 @@ C:\Scripts\prize_wheel\tools\arduino-cli.exe compile
   **3.10.5** (copied verbatim from the OneDrive Arduino libraries — the exact
   version the owner bench-verified on this strip), Wire / Preferences / SPI /
   WiFi / Networking from core 3.3.10.
-- Result:
+- Result (exit code 0):
 
 ```
-«COMPILE_RESULT»
+Sketch uses 1415615 bytes (45%) of program storage space. Maximum is 3145728 bytes.
+Global variables use 114808 bytes (35%) of dynamic memory, leaving 212872 bytes
+for local variables. Maximum is 327680 bytes.
 ```
 
-- Warnings: «WARNINGS_SUMMARY»
+- Warnings under `--warnings all`: **0 from the sketch or the party modules.**
+  36 warning lines remain, all inside libraries: FastAccelStepper 1.2.7's
+  MCPWM/PCNT platform files (the same set REDESIGN_REPORT §3 already reviewed
+  as benign) and FastLED 3.10.5's unused platform-helper functions
+  (`channel_manager_esp32.cpp.hpp` etc.) — driver code for peripherals this
+  build does not use.
+- Note the global-variables figure vs the pre-party build's 122,428 B: the
+  diag-buffer trade (−35,840 B) more than covers the WiFi/Network statics and
+  the 4 KB mirror ring, leaving 212 KB for stack/heap — WiFi runtime
+  allocations included, `w` prints live heap as the leak check.
 
 ## RAM note (the one real trade-off)
 
