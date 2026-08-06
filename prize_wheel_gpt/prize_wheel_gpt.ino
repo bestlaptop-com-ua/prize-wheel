@@ -1932,7 +1932,14 @@ void serviceDecelTick(uint32_t nowMs) {
   float newCmd = fminf(prevCmd, profile);
 
   float trailMin = trailingMinForwardRevS();  // telemetry / debug reference
-  if (encoderVelocityValid && forward < newCmd - COUPLING_SLACK_REV_S) {
+  // Capture-ramp surge fix (bench 2026-08-06, spins #16/#19/#27): cmd0 is
+  // computed at reservation and goes stale by naturalDecel x rampTime on
+  // urgent high-speed takeovers; the ramp tail then shoves the decayed wheel
+  // back up (rise 0.07-0.11 rev/s, user-visible). Zero coupling slack while
+  // in SPEED_MATCH_CAPTURE so the field can never lead the wheel; braking
+  // keeps the original 0.020 slack. Lowering-only - cannot ratchet.
+  float couplingSlack = (state == ST_SPEED_MATCH_CAPTURE) ? 0.0f : COUPLING_SLACK_REV_S;
+  if (encoderVelocityValid && forward < newCmd - couplingSlack) {
     // Wheel slower than the field: reduce toward the wheel so the motor can
     // never lead it.  (Also naturally sheds braking authority when the wheel
     // is dying early: the field settles to the wheel's own speed.)
@@ -1971,6 +1978,7 @@ void serviceDecelTick(uint32_t nowMs) {
   // under 0.88x the trailing wheel speed, so it can never lead the wheel.
   uint32_t deltaHz = (hz > lastAppliedHz) ? hz - lastAppliedHz : lastAppliedHz - hz;
   bool applyNow = (float)deltaHz >= fmaxf(4.0f, 0.01f * (float)lastAppliedHz);
+  if (state == ST_SPEED_MATCH_CAPTURE && hz < lastAppliedHz) applyNow = true;  // capture: track the wheel down immediately
   if (nowMs - lastResyncMs >= CMD_RESYNC_MS) {
     lastResyncMs = nowMs;
     float fasNow = fasWheelRevS();
