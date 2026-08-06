@@ -404,7 +404,7 @@ struct DiagnosticSample {      // 28 bytes; 3072 samples = ~86 KB, ~3 s at 1 kHz
 #if PW_WIFI_ENABLE
 const uint16_t DIAG_CAPACITY = 1664;   // ~1.66 s at 1 kHz
 #else
-const uint16_t DIAG_CAPACITY = 2944;   // original bench capacity
+const uint16_t DIAG_CAPACITY = 2304;   // original bench capacity
 #endif
 DiagnosticSample diagnosticBuffer[DIAG_CAPACITY];
 uint16_t diagnosticHead = 0;

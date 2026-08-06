@@ -1,4 +1,4 @@
-/* ============================================================================
+﻿/* ============================================================================
  * pw_party_impl.h - implementations for pw_party.h
  *
  * Included ONCE at the very BOTTOM of prize_wheel_gpt.ino: everything here can
@@ -95,6 +95,7 @@ static CRGB pwLeds[PW_NUM_LEDS];
 static volatile uint8_t pwFxMode = PWL_STANDBY;
 static volatile float pwFxOmega = 0.0f;          /* signed rev/s, live encoder */
 static volatile uint32_t pwFxCelebrateAtMs = 0;  /* celebrate window start     */
+static volatile uint8_t  pwFxLandedWedge  = 255; /* landed wedge (owner idea 2026-08-06): celebration slams in its colour */
 static volatile bool pwLedEnabled = (PW_FX_LED_ENABLE != 0);
 static bool pwLedTaskRunning = false;
 
@@ -131,8 +132,15 @@ static void pwLedRenderCelebrate(uint32_t elapsedMs) {
     fill_solid(pwLeds, PW_NUM_LEDS, CRGB::Black);
     for (int n = 0; n < PW_NUM_LEDS / 8; ++n)
       pwLeds[random16(PW_NUM_LEDS)] = CHSV(0, 0, bright);
-  } else {                                         /* full-strip colour slam   */
-    fill_solid(pwLeds, PW_NUM_LEDS, CHSV((uint8_t)(phase * 37), 255, bright));
+  } else {                          /* full-strip slam: the landed wedge's colour */
+    static const CRGB kWedgeColor[6] = {  /* wedge%6: green orange blue red yellow purple */
+      CRGB(0,220,0), CRGB(255,60,0), CRGB(0,70,255),
+      CRGB(255,0,0), CRGB(255,190,0), CRGB(140,0,255) };
+    uint8_t w = pwFxLandedWedge;
+    CRGB c = (w < 12) ? kWedgeColor[w % 6]
+                      : CRGB(CHSV((uint8_t)(phase * 37), 255, 255)); /* fallback: rotating hue */
+    c.nscale8_video(bright);
+    fill_solid(pwLeds, PW_NUM_LEDS, c);
   }
 }
 
@@ -218,6 +226,7 @@ static void pwFxService(uint32_t nowMs) {
       pwRatchetOn = false;
       pwFanfareAtMs = nowMs + PW_FX_LANDED_PAUSE_MS; /* ...fanfare             */
       pwFxCelebrateAtMs = pwFanfareAtMs;             /* LEDs sync to fanfare   */
+      pwFxLandedWedge = (uint8_t)spin.finalWedge;   /* slam in this wedge's colour */
     }
   }
   pwPrevSpinOpen = open;

@@ -1,4 +1,4 @@
-/* ============================================================================
+﻿/* ============================================================================
  * pw_party.h - party-night additions: WiFi + FX + sanctioned fixes S1/S2/S3
  *
  * Included ONCE near the top of prize_wheel_gpt.ino, BEFORE the sketch body.
@@ -24,6 +24,7 @@
 #include <WiFi.h>
 #include <esp_system.h>
 #include <esp_mac.h>
+#define FASTLED_ESP32_I2S 1  // RMT5 channels engine dead on this board+core (bench 2026-08-06); use I2S driver
 #include <FastLED.h>
 
 /* ------------------- owner-facing feature switches ----------------------- */
@@ -32,7 +33,7 @@
 #define PW_S2_ENABLE 1   /* periodic TMC config verify while IDLE (5 s)        */
 #define PW_S3_ENABLE 1   /* fitRej= + fit counts appended to SPIN SUMMARY      */
 
-#define PW_WIFI_ENABLE 1 /* SoftAP + telnet mirror/commands (WIFI_TASK.md)     */
+#define PW_WIFI_ENABLE    0 /* SoftAP + telnet mirror/commands (WIFI_TASK.md)     */
 #define PW_FX_AUDIO_ENABLE 1 /* DFPlayer Mini on UART1 (see README wiring)     */
 #define PW_FX_LED_ENABLE   1 /* WS2812B helix on GPIO4 (LED_HANDOFF.md)        */
 
