@@ -103,8 +103,8 @@ static bool pwLedTaskRunning = false;
 /* All rendering below runs ONLY in the core-0 task; it must never print and
  * never touch control globals (it reads the volatile scalars above).          */
 static void pwLedRenderStandby(uint32_t nowMs) {
-  uint8_t t1 = (uint8_t)(nowMs / 40);
-  uint8_t t2 = (uint8_t)(nowMs / 57);
+  uint8_t t1 = (uint8_t)(nowMs / 7);   /* ~6x faster: helix wrap hides half the travel (owner req 2026-08-06) */
+  uint8_t t2 = (uint8_t)(nowMs / 9);
   for (int i = 0; i < PW_NUM_LEDS; ++i) {
     uint8_t a = sin8((uint8_t)(i * 3 + t1));       /* two counter-drifting     */
     uint8_t b = sin8((uint8_t)(i * 2 - t2));       /* sine hue waves           */
@@ -546,6 +546,14 @@ bool pwPartyCommandChar(char c) {
       pwLedEnabled = !pwLedEnabled;
       Serial.printf("# leds %s\n", pwLedEnabled ? "ON" : "OFF");
       return true;
+    case 'L': {                       /* LED slam test: cycles wedge colours */
+      static uint8_t testW = 0;
+      pwFxLandedWedge = testW;
+      pwFxCelebrateAtMs = nowMs;
+      Serial.printf("# LED slam test wedge=%u\n", testW);
+      testW = (uint8_t)((testW + 1) % 12);
+      return true;
+    }
     case 'w':
       pwPrintNet();
       return true;
