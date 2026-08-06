@@ -260,3 +260,54 @@ prize_wheel_CURRENT.ino            superseded unstable revision, kept for refere
 REFERENCE_uart_current_WORKS.ino   proven-good driver config and motor control
 REFERENCE_as5600_test_WORKS.ino    proven-good AS5600 read at rest and low speed
 ```
+
+## Party additions (branch claude/party-v1)
+
+Firmware modules `prize_wheel_gpt/pw_party.h` / `pw_party_impl.h` add WiFi
+telemetry, DFPlayer audio, WS2812B lighting and the sanctioned fixes S1/S2/S3.
+Full owner documentation (compile proof, toggles, bench script) is in
+DELIVERY.md; the risk study is in RISK_AUDIT.md.
+
+### DFPlayer Mini wiring — READ THIS, the task doc pinout is stale
+
+FX_TASK.md says "UART2 (16/17)", but on this board **UART2 16/17 is the
+TMC2209 UART** (see Pinout above). Wiring the DFPlayer there corrupts the
+stepper driver's config channel (rattle, spurious TMC faults). The firmware
+drives the DFPlayer from **UART1 on the pins reserved for it in
+LED_HANDOFF.md**:
+
+| DFPlayer pin | Connection |
+|---|---|
+| RX  | ESP32 **GPIO32** through a **1 kOhm** series resistor |
+| TX  | ESP32 **GPIO33** (optional — firmware never reads it; may be left off) |
+| VCC | 5 V from the buck output |
+| GND | buck output negative (common with ESP32 star ground) |
+| SPK_1 / SPK_2 | speaker |
+
+microSD: FAT32, with the repo's `media/mp3/` folder copied to the card root as
+`/mp3/0001.mp3 … 0006.mp3` (regenerate any time with
+`python media/generate_mp3.py`; needs ffmpeg on PATH or `pip install lameenc`).
+Playback uses the by-filename command, so FAT copy order does not matter.
+Volume: `PW_DFP_VOLUME` define (default 20), live via `V<n>` + Enter (e.g.
+`V18`), audio kill switch: `a`.
+
+### WS2812B strip (unchanged from LED_HANDOFF.md, integrated)
+
+Data = **GPIO4** direct (verified 3.3 V drive), 300 LEDs GRB, helix mount,
+far-end power-injection pigtail to the buck output **required**, star ground
+exactly per LED_HANDOFF.md. Software power cap `PW_FX_MAX_MA` = 3000 mA.
+Rendering runs on core 0 at 50 fps; `l` toggles the strip. FastAccelStepper
+uses MCPWM for step pulses and FastLED uses RMT5 — disjoint peripherals (the
+analysis is in RISK_AUDIT.md §10).
+
+### WiFi (SoftAP + telnet)
+
+- SSID `PW-XXXX` (from MAC), WPA2 password `PW_WIFI_PASSWORD` in pw_party.h —
+  **change it before flashing**, channel `PW_WIFI_CHANNEL` (6), optional
+  hidden SSID (`PW_WIFI_HIDDEN`), max 2 clients.
+- Telnet on 192.168.4.1:23 mirrors every serial line (4 KB catch-up ring) and
+  accepts the same single-char commands, with the same state guards. To make
+  telnet read-only (e.g. password may have leaked): `PW_TELNET_COMMANDS 0`.
+- New commands: `t` FX/WiFi loop-budget max-tracker, `w` network status,
+  `a` audio on/off, `l` LEDs on/off, `V<n>` volume. `?` lists everything.
+- No OTA. Flashing stays USB-only, deliberately.

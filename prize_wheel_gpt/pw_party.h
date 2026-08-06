@@ -148,7 +148,13 @@ class PwMirrorSerial : public Print {
 };
 extern PwMirrorSerial PwSerial;
 
-/* All `Serial` tokens below this line (entire sketch + impl) use the mirror. */
+/* All `Serial` tokens below this line (entire sketch + impl) use the mirror.
+ * (The core may itself define Serial as a macro alias for Serial0; the class
+ * methods above were expanded with that alias already, so re-pointing the
+ * token here is safe for everything that follows.)                           */
+#ifdef Serial
+#undef Serial
+#endif
 #define Serial PwSerial
 
 #endif /* PW_PARTY_H */
