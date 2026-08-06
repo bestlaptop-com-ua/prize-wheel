@@ -396,7 +396,16 @@ struct DiagnosticSample {      // 28 bytes; 3072 samples = ~86 KB, ~3 s at 1 kHz
 
 // 2944 x 28 bytes = ~80 KB static DRAM (~2.9 s at 1 kHz).  3072 overflowed
 // dram0_0_seg by ~2 KB on core 3.3.10 with FastAccelStepper's MCPWM machinery.
-const uint16_t DIAG_CAPACITY = 2944;
+// Party build: the WiFi/Network stack adds ~31 KB of static DRAM, which no
+// longer coexists with the full buffer (measured link overflow: 31192 B).
+// The diagnostic buffer is a bench instrument, not control logic; it yields
+// the space while WiFi is compiled in and returns to full size with
+// PW_WIFI_ENABLE 0.  See DELIVERY.md.
+#if PW_WIFI_ENABLE
+const uint16_t DIAG_CAPACITY = 1664;   // ~1.66 s at 1 kHz
+#else
+const uint16_t DIAG_CAPACITY = 2944;   // original bench capacity
+#endif
 DiagnosticSample diagnosticBuffer[DIAG_CAPACITY];
 uint16_t diagnosticHead = 0;
 uint16_t diagnosticCount = 0;

@@ -375,7 +375,9 @@ static void pwWifiService(uint32_t nowMs) {
     for (int n = 0; n < 16 && pwClients[i].available(); ++n) {
       int ch = pwClients[i].read();
       if (ch <= 0 || ch >= 0x80) continue;   /* strip telnet IAC noise */
+#if PW_TELNET_COMMANDS
       if (!pwPartyCommandChar((char)ch)) handleCommandChar((char)ch);
+#endif
     }
 
     /* outbound: ring catch-up, drop-oldest, never block */

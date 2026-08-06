@@ -42,6 +42,10 @@
 #define PW_WIFI_HIDDEN    0               /* 1 = hidden SSID                   */
 #define PW_WIFI_MAX_CLIENTS 2
 #define PW_TELNET_PORT    23
+/* 0 = telnet becomes telemetry-only (inbound bytes ignored).  Commands from a
+ * phone include z/e/F, which can re-anchor the frame or disable takeover: if
+ * the WPA2 password may have leaked to guests, set 0 and reflash.            */
+#define PW_TELNET_COMMANDS 1
 #define PW_RING_BYTES     4096            /* serial mirror ring (RAM)          */
 #define PW_CATCHUP_BYTES  2048            /* replayed to a fresh client        */
 #define PW_NET_CHUNK      512             /* max TX bytes per client per pass  */
