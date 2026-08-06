@@ -240,8 +240,8 @@ const float LANDING_DRAG_ABORT_DEG    = 45.0f;
 // pulse generator can follow each 25 ms step-down and stepsToStop() stays
 // well below the remaining runway (a 1:1 ratio degenerates into one
 // open-loop ramp: stopMove would fire on the first tick).
-const uint8_t FAS_TRACK_ACCEL_FACTOR  = 3;
-const uint32_t FAS_TRACK_ACCEL_MAX_SPS2 = 2000;
+const uint8_t FAS_TRACK_ACCEL_FACTOR  = 8;   // was 3: field descent lagged natural decel and carried the wheel (diag 2026-08-06)
+const uint32_t FAS_TRACK_ACCEL_MAX_SPS2 = 6400; // was 2000 (=0.31 rev/s2 ceiling); wheel decays ~0.5 - field must descend faster than the wheel
 
 // --- landing / hold ---
 const float STILL_REV_S               = 0.020f;
