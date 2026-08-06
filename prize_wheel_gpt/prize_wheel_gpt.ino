@@ -39,6 +39,10 @@
 #include <Preferences.h>
 #include <TMCStepper.h>
 #include <FastAccelStepper.h>
+// Party additions (WiFi + FX + sanctioned fixes S1/S2/S3): declarations,
+// config switches and the serial mirror.  Implementations are included at the
+// very bottom of this file.  See PARTY_TASK.md / DELIVERY.md.
+#include "pw_party.h"
 
 /* ----------------------------- PINS -------------------------------------- */
 #define TMC_SERIAL   Serial2
@@ -965,6 +969,7 @@ void finishFrictionCapture(const char* reason) {
     if (alpha > FIT_ALPHA_CONTACT_RAD_S2) {  // hand contact: reject whole coast
       Serial.printf("SPIN#%lu FRICTION_REJECT contact alpha=%.3f reason=%s\n",
                     (unsigned long)spin.number, alpha, reason);
+      PW_S3_COUNT_REJECT();
       return;
     }
     float x = 0.5f * (fitSamples[i].omegaRadS + fitSamples[j].omegaRadS);
@@ -979,6 +984,7 @@ void finishFrictionCapture(const char* reason) {
   if (fitC < FIT_C_MIN || fitC > FIT_C_MAX || fitB < FIT_B_MIN || fitB > FIT_B_MAX) {
     Serial.printf("SPIN#%lu FRICTION_REJECT bounds fitC=%.4f fitB=%.4f pairs=%d reason=%s\n",
                   (unsigned long)spin.number, fitC, fitB, pairs, reason);
+    PW_S3_COUNT_REJECT();
     return;
   }
   float keep = 1.0f - FIT_BLEND;
@@ -1361,11 +1367,16 @@ void closeSpin(SpinResult result) {
     err = fmodf(err + 540.0f, 360.0f) - 180.0f;
     spin.targetErrDeg = (float)spin.dir * err;
   }
+  char fitSuffix[64] = "";   // S3: fit-rejection + fit-count telemetry
+#if PW_S3_ENABLE
+  snprintf(fitSuffix, sizeof(fitSuffix), " fitRej=%lu fitsCW=%u fitsCCW=%u",
+           (unsigned long)fitRejectCount, cwFitCount, ccwFitCount);
+#endif
   Serial.printf(
       "SPIN#%lu SUMMARY dir=%+d peak=%.3f releaseMs=%lu relAngle=%.1f relSpeed=%.3f "
       "targetW=%d targetAngle=%.1f runway=%.1f natStop=%.1f fricC=%.4f fricB=%.4f "
       "tkSpeed=%.3f cmdMax=%.3f cmdMin=%.3f rise=%.3f maxDecel=%.3f "
-      "final=%.1f finalW=%d err=%.1f quality=%u result=%s fault=%s\n",
+      "final=%.1f finalW=%d err=%.1f quality=%u result=%s fault=%s%s\n",
       (unsigned long)spin.number, spin.dir, spin.peakRevS,
       (unsigned long)(spin.releaseMs ? spin.releaseMs - spin.pushStartMs : 0),
       spin.releaseAngleDeg, spin.releaseRevS,
@@ -1374,7 +1385,7 @@ void closeSpin(SpinResult result) {
       spin.takeoverRevS, spin.cmdMaxRevS, spin.cmdMinRevS,
       spin.maxSpeedRiseRevS, spin.maxDecelRevS2,
       spin.finalAngleDeg, spin.finalWedge, spin.targetErrDeg,
-      spin.targetQuality, resultName(result), faultName(spin.fault));
+      spin.targetQuality, resultName(result), faultName(spin.fault), fitSuffix);
   if (isDare(spin.finalWedge)) {
     Serial.printf("SPIN#%lu LANDED-DARE wedge=%d THIS IS A FAILURE result=%s fault=%s\n",
                   (unsigned long)spin.number, spin.finalWedge,
@@ -1388,6 +1399,7 @@ void closeSpin(SpinResult result) {
 void enterFault(FaultCode code, const char* detail) {
   if (state == ST_FAULT_LATCHED) return;
   faultCode = code;
+  PW_S1_PERSIST(code);  // S1: latch survives a power cycle; only r clears
   Serial.printf("FAULT code=%s detail=%s state=%s angle=%.1f wedge=%d omega=%.3f cmd=%.3f\n",
                 faultName(code), detail, stateName(state), wheelAngleDeg(),
                 currentWedge(), omega, cmdRevS);
@@ -1470,6 +1482,7 @@ void startDirectionProbe() {
   }
   if (spinOpen) closeSpin(RES_CONTROL_LOCKED);  // never orphan an open record
   faultCode = FC_NONE;   // probe may be used to recover from DIR_CAL fault
+  PW_S1_CLEAR();         // S1: mirror the RAM latch lifecycle exactly
   state = ST_DIR_PROBE;
   stateEnteredMs = millis();
   Serial.printf("# DIR PROBE leg 1/2: moving FAS+ %ld usteps; keep hands clear\n",
@@ -2127,6 +2140,7 @@ void help() {
     " r  fault reset (re-checks TMC UART)\n"
     " m  print dare mask\n"
     " ?  help"));
+  pwPartyHelpLines();
 }
 
 void printStatus() {
@@ -2146,9 +2160,16 @@ void printStatus() {
                 rawZero, (unsigned)currentStage, cmdRevS);
 }
 
+// WIFI_TASK: one shared single-char parser for the serial console AND the
+// telnet clients.  Existing guards (z only while IDLE, etc.) apply to both.
 void handleSerial() {
   if (!Serial.available()) return;
   char command = (char)Serial.read();
+  if (pwPartyCommandChar(command)) return;   // party commands: t/a/l/w/V<n>
+  handleCommandChar(command);
+}
+
+void handleCommandChar(char command) {
   switch (command) {
     case 'z':
       if (!encoderPrimed) Serial.println(F("# encoder not primed; z ignored"));
@@ -2226,7 +2247,14 @@ void handleSerial() {
           Serial.println(F("# r: TMC UART still failing; fault remains latched"));
           break;
         }
+        // S2: a driver that power-cycled answers the UART but runs default
+        // registers; re-apply the boot config and prove it stuck by readback.
+        if (!pwS2ReconfigVerify()) {
+          Serial.println(F("# r: TMC config re-apply failed; fault remains latched"));
+          break;
+        }
         faultCode = FC_NONE;
+        PW_S1_CLEAR();  // S1: the r command is the only routine latch clear
         state = ST_IDLE_STOPPED;
         stateEnteredMs = millis();
         Serial.printf("# fault cleared; tmc=%d dirCal=%d%s\n",
@@ -2319,6 +2347,9 @@ void setup() {
     state = ST_IDLE_STOPPED;
     stateEnteredMs = millis();
   }
+
+  // Party additions: S1 fault-latch restore, DFPlayer, LED task, SoftAP.
+  pwPartyBegin();
 }
 
 // Deliberate-spin arming shared by MOTION_CANDIDATE and MANUAL_ADJUSTMENT
@@ -2369,6 +2400,7 @@ bool contactDetected(uint32_t nowMs) {
 }
 
 void loop() {
+  uint32_t pwLoopStartUs = micros();   // loop-budget tracker (PARTY_TASK rule 4)
   updateEncoder();
   handleSerial();
   uint32_t nowMs = millis();
@@ -2796,4 +2828,12 @@ void loop() {
   }
 
   serviceDiagnosticCapture();
+
+  // Party additions run LAST, after all control work, and measure themselves
+  // against the <=2 ms FX+WiFi budget ('t' prints the max-tracker).
+  pwPartyService(pwLoopStartUs);
 }
+
+// Implementations of the party additions; included last so they can observe
+// every control global without any forward-declaration surgery above.
+#include "pw_party_impl.h"
