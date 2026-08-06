@@ -329,3 +329,77 @@ Fault injection
 6. **Bench acceptance tests** in §5 require the physical wheel; they have not been
    executed in this change — compile-level verification only. Run the checklist
    before guest use.
+
+---
+
+## Appendix A — party-v1 WiFi/FX integration (2026-08-06)
+
+This appendix records `codex/party-v1`; it does not revise the historical
+control analysis or tuning table above.
+
+### Control-integrity boundary
+
+The twelve-state machine, spin classification, target selection, capture law,
+braking profile, guest detection, landing verdict, fault types, and their
+constants remain the `f5419be` baseline. Changes inside the sketch are limited
+to the three sanctioned fixes, log/command routing, an optional on-demand
+diagnostic allocation, explicit selection of the baseline's MCPWM/PCNT step
+backend, and construction of a read-only snapshot after control service. FX and
+WiFi consume that snapshot through a fixed event ring and never call
+`enterFault()`.
+
+### Sanctioned fixes
+
+- S1 persists the existing fault code in the already read-write `prizewheel`
+  namespace after physical shutdown is issued. Boot restores the original code
+  and only `r` can clear it. Direction probing no longer bypasses an active
+  `DIR_CAL_INVALID` latch; the operator clears with `r`, then runs `p`.
+- S2 reads back written `CHOPCONF` and `GCONF` fields at boot and every five
+  seconds only in `IDLE_STOPPED`. Mismatch uses `FC_TMC_UART`. Fault reset
+  reapplies the proven config and verifies both UART access and register bits.
+- S3 appends cumulative `fitRej` and current per-direction fit counts to every
+  `SPIN SUMMARY`; contact, insufficient-pair, degenerate, and bounds failures
+  are counted once.
+
+### WiFi
+
+The ESP32 runs a WPA2 SoftAP named from the final two SoftAP MAC bytes, fixed
+channel 6, maximum two stations. Port 23 mirrors the existing log through a
+4 KB sequence ring. Each pass reads at most 32 command bytes and writes at most
+`availableForWrite()` capped at 256 bytes per client; no socket call waits for
+space. A new client receives a banner and up to the most recent 2 KB. Existing
+single-character commands and `VOL n` use the same parser as USB. A ten-second
+heartbeat reports client count, RSSI API value, and free heap. There is no OTA,
+HTTP, mDNS, station mode, or cloud path.
+
+### FX and peripheral resolution
+
+The baseline already uses UART2 GPIO16/17 for the TMC2209, so the DFPlayer
+cannot safely use the conflicting pin assignment in the earlier FX task.
+Party-v1 preserves the motor bus and uses hardware UART1 on GPIO32 TX (through
+1 kOhm) and optional GPIO33 RX. Raw ten-byte frames are fire-and-forget, with a
+global 120 ms limiter; audio failure is silent to control.
+
+FastAccelStepper 1.2.7's default classic-ESP32 allocator selects MCPWM/PCNT
+before RMT. Party-v1 makes that selection explicit with
+`DRIVER_MCPWM_PCNT`. Adafruit NeoPixel 1.15.5 therefore owns the RMT output on
+GPIO13 without sharing the step peripheral. The default 36-pixel frame is
+approximately 1.1 ms on the wire. The combined FX/WiFi service is measured by
+a `micros()` maximum and overrun counter exposed by `t`; this still requires
+physical acceptance with the actual strip and phone.
+
+### Compile and unperformed hardware acceptance
+
+The exact core-3.3.10 command succeeded:
+
+```text
+arduino-cli compile --fqbn esp32:esp32:esp32 --warnings all prize_wheel_gpt
+Sketch uses 1080978 bytes (82%) of program storage space. Maximum is 1310720 bytes.
+Global variables use 57416 bytes (17%) of dynamic memory, leaving 270264 bytes.
+```
+
+No sketch/add-on warning was emitted; nine warnings are in the unchanged
+FastAccelStepper 1.2.7 ESP-IDF platform implementation. No flash, COM access,
+controlled-spin regression, AS5600 accumulation test, phone-link test, audio
+audition, LED timing measurement, or power-rail test was performed. Those are
+explicit owner gates in `DELIVERY.md`.

@@ -39,6 +39,26 @@
 #include <Preferences.h>
 #include <TMCStepper.h>
 #include <FastAccelStepper.h>
+#include <esp_heap_caps.h>
+#include "party_addons.h"
+
+PartyLog partyConsole(::Serial);
+PartyAddons partyAddons;
+#undef Serial
+#define Serial partyConsole
+
+// The only sanctioned changes to the accepted control firmware. Each can be
+// disabled independently for regression comparison; party delivery defaults
+// all three ON as required by PARTY_TASK.md.
+#ifndef PARTY_FIX_PERSIST_FAULT
+#define PARTY_FIX_PERSIST_FAULT 1
+#endif
+#ifndef PARTY_FIX_TMC_VERIFY
+#define PARTY_FIX_TMC_VERIFY 1
+#endif
+#ifndef PARTY_FIX_FIT_SUMMARY
+#define PARTY_FIX_FIT_SUMMARY 1
+#endif
 
 /* ----------------------------- PINS -------------------------------------- */
 #define TMC_SERIAL   Serial2
@@ -119,6 +139,7 @@ struct TargetChoice {
 
 void enterFault(FaultCode code, const char* detail);  // used across sections
 float dareDistanceDeg(float angle);                   // used across sections
+void handleCommandByte(char value);                   // Serial + telnet input
 
 /* --------------------------- DARE / SAFE --------------------------------- */
 uint16_t dare_mask = (1 << 1) | (1 << 5);  // wedges 1 and 5 are never targets
@@ -306,6 +327,8 @@ TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper* stepper = nullptr;
 Preferences preferences;
+bool preferencesReady = false;
+uint8_t restoredFaultCode = 0;
 
 State state = ST_IDLE_STOPPED;
 FaultCode faultCode = FC_NONE;
@@ -326,6 +349,8 @@ int motorPositiveEncoderSign = 0;
 float cw_c = 0.30f, cw_b = 0.15f;
 float ccw_c = 0.30f, ccw_b = 0.15f;
 uint16_t cwFitCount = 0, ccwFitCount = 0;
+uint32_t fitRejectCount = 0;
+uint32_t lastTmcVerifyMs = 0;
 
 /* ---------------------- ENCODER / VELOCITY CORE -------------------------- */
 struct EncoderRead {
@@ -390,10 +415,12 @@ struct DiagnosticSample {      // 28 bytes; 3072 samples = ~86 KB, ~3 s at 1 kHz
   uint8_t curMa10;             // commanded motor current / 10 mA
 };
 
-// 2944 x 28 bytes = ~80 KB static DRAM (~2.9 s at 1 kHz).  3072 overflowed
-// dram0_0_seg by ~2 KB on core 3.3.10 with FastAccelStepper's MCPWM machinery.
+// 2944 x 28 bytes = ~80 KB (~2.9 s at 1 kHz). Party WiFi/FX makes that too
+// large for the fixed .bss region, so this optional buffer is allocated only
+// when 'd' is armed and freed immediately after its dump. Control never waits
+// for or depends on allocation success.
 const uint16_t DIAG_CAPACITY = 2944;
-DiagnosticSample diagnosticBuffer[DIAG_CAPACITY];
+DiagnosticSample* diagnosticBuffer = nullptr;
 uint16_t diagnosticHead = 0;
 uint16_t diagnosticCount = 0;
 bool diagnosticWrapped = false;
@@ -696,7 +723,7 @@ float remainingTargetDeg() {
 }
 
 void recordDiagnostic(uint32_t dtGoodUs, int16_t delta, uint8_t flags) {
-  if (!diagnosticCapture) return;
+  if (!diagnosticCapture || !diagnosticBuffer) return;
   const EncoderRead& read = encoderRead;
   DiagnosticSample& s = diagnosticBuffer[diagnosticHead];
   s.doneUs = read.doneUs;
@@ -886,6 +913,49 @@ void checkTmcUartOrFault() {
   if (!checkTmcUartRaw()) enterFault(FC_TMC_UART, "test_connection failed");
 }
 
+// Sanctioned fix S2. Verify fields from registers that driverConfig() writes,
+// rather than trusting test_connection() alone: the bench observed that the
+// latter can pass after the driver has lost its configuration.
+bool verifyTmcConfigRaw(const char* reason) {
+#if PARTY_FIX_TMC_VERIFY
+  const uint32_t chopMask = 0x0F00000FUL;  // MRES[27:24] + TOFF[3:0]
+  const uint32_t chopExpected = 0x04000004UL;  // 16 microsteps + toff(4)
+  const uint32_t gconfMask = (1UL << 0) | (1UL << 2);
+  const uint32_t gconfExpected = (1UL << 2);  // internal Iref + SpreadCycle
+  uint32_t chop = driver.CHOPCONF();
+  uint32_t gconf = driver.GCONF();
+  bool matched = ((chop & chopMask) == chopExpected) &&
+                 ((gconf & gconfMask) == gconfExpected);
+  tmcOk = matched;
+  if (!matched) {
+    Serial.printf("# TMC CONFIG MISMATCH reason=%s chop=0x%08lX gconf=0x%08lX "
+                  "expectedChop=0x%08lX expectedGconf=0x%08lX\n",
+                  reason, (unsigned long)chop, (unsigned long)gconf,
+                  (unsigned long)chopExpected, (unsigned long)gconfExpected);
+  }
+  return matched;
+#else
+  (void)reason;
+  return tmcOk;
+#endif
+}
+
+bool verifyTmcConfigOrFault(const char* reason) {
+  if (verifyTmcConfigRaw(reason)) return true;
+  enterFault(FC_TMC_UART, "TMC config readback mismatch");
+  return false;
+}
+
+void servicePeriodicTmcVerify(uint32_t nowMs) {
+#if PARTY_FIX_TMC_VERIFY
+  if (state != ST_IDLE_STOPPED || nowMs - lastTmcVerifyMs < 5000U) return;
+  lastTmcVerifyMs = nowMs;
+  verifyTmcConfigOrFault("periodic-idle");
+#else
+  (void)nowMs;
+#endif
+}
+
 /* ========================================================================== */
 /*                    FRICTION MODEL + ONLINE FIT                             */
 /* ========================================================================== */
@@ -963,6 +1033,9 @@ void finishFrictionCapture(const char* reason) {
     if (dropRadS <= 0.0f) continue;          // reversal / speed-up: reject
     float alpha = dropRadS / dtS;
     if (alpha > FIT_ALPHA_CONTACT_RAD_S2) {  // hand contact: reject whole coast
+#if PARTY_FIX_FIT_SUMMARY
+      ++fitRejectCount;
+#endif
       Serial.printf("SPIN#%lu FRICTION_REJECT contact alpha=%.3f reason=%s\n",
                     (unsigned long)spin.number, alpha, reason);
       return;
@@ -971,12 +1044,29 @@ void finishFrictionCapture(const char* reason) {
     sx += x; sy += alpha; sxx += x * x; sxy += x * alpha;
     ++pairs;
   }
-  if (pairs < (int)(FIT_MIN_SAMPLES - FIT_PAIR_STRIDE)) return;
+  if (pairs < (int)(FIT_MIN_SAMPLES - FIT_PAIR_STRIDE)) {
+#if PARTY_FIX_FIT_SUMMARY
+    ++fitRejectCount;
+#endif
+    Serial.printf("SPIN#%lu FRICTION_REJECT pairs=%d reason=%s\n",
+                  (unsigned long)spin.number, pairs, reason);
+    return;
+  }
   float denom = (float)pairs * sxx - sx * sx;
-  if (fabsf(denom) < 1e-3f) return;
+  if (fabsf(denom) < 1e-3f) {
+#if PARTY_FIX_FIT_SUMMARY
+    ++fitRejectCount;
+#endif
+    Serial.printf("SPIN#%lu FRICTION_REJECT degenerate pairs=%d reason=%s\n",
+                  (unsigned long)spin.number, pairs, reason);
+    return;
+  }
   float fitB = ((float)pairs * sxy - sx * sy) / denom;
   float fitC = (sy - fitB * sx) / (float)pairs;
   if (fitC < FIT_C_MIN || fitC > FIT_C_MAX || fitB < FIT_B_MIN || fitB > FIT_B_MAX) {
+#if PARTY_FIX_FIT_SUMMARY
+    ++fitRejectCount;
+#endif
     Serial.printf("SPIN#%lu FRICTION_REJECT bounds fitC=%.4f fitB=%.4f pairs=%d reason=%s\n",
                   (unsigned long)spin.number, fitC, fitB, pairs, reason);
     return;
@@ -1365,7 +1455,7 @@ void closeSpin(SpinResult result) {
       "SPIN#%lu SUMMARY dir=%+d peak=%.3f releaseMs=%lu relAngle=%.1f relSpeed=%.3f "
       "targetW=%d targetAngle=%.1f runway=%.1f natStop=%.1f fricC=%.4f fricB=%.4f "
       "tkSpeed=%.3f cmdMax=%.3f cmdMin=%.3f rise=%.3f maxDecel=%.3f "
-      "final=%.1f finalW=%d err=%.1f quality=%u result=%s fault=%s\n",
+      "final=%.1f finalW=%d err=%.1f quality=%u",
       (unsigned long)spin.number, spin.dir, spin.peakRevS,
       (unsigned long)(spin.releaseMs ? spin.releaseMs - spin.pushStartMs : 0),
       spin.releaseAngleDeg, spin.releaseRevS,
@@ -1374,7 +1464,12 @@ void closeSpin(SpinResult result) {
       spin.takeoverRevS, spin.cmdMaxRevS, spin.cmdMinRevS,
       spin.maxSpeedRiseRevS, spin.maxDecelRevS2,
       spin.finalAngleDeg, spin.finalWedge, spin.targetErrDeg,
-      spin.targetQuality, resultName(result), faultName(spin.fault));
+      spin.targetQuality);
+#if PARTY_FIX_FIT_SUMMARY
+  Serial.printf(" fitRej=%lu fitCW=%u fitCCW=%u",
+                (unsigned long)fitRejectCount, cwFitCount, ccwFitCount);
+#endif
+  Serial.printf(" result=%s fault=%s\n", resultName(result), faultName(spin.fault));
   if (isDare(spin.finalWedge)) {
     Serial.printf("SPIN#%lu LANDED-DARE wedge=%d THIS IS A FAILURE result=%s fault=%s\n",
                   (unsigned long)spin.number, spin.finalWedge,
@@ -1385,6 +1480,38 @@ void closeSpin(SpinResult result) {
 /* ========================================================================== */
 /*                              FAULT PATH                                    */
 /* ========================================================================== */
+bool persistFaultLatch(FaultCode code) {
+#if PARTY_FIX_PERSIST_FAULT
+  if (!preferencesReady) {
+    Serial.println(F("# WARN: NVS unavailable; fault latch is RAM-only"));
+    return false;
+  }
+  size_t written = preferences.putUChar("fault", (uint8_t)code);
+  if (written != sizeof(uint8_t)) {
+    Serial.println(F("# WARN: NVS fault-latch write failed"));
+    return false;
+  }
+#else
+  (void)code;
+#endif
+  return true;
+}
+
+bool clearPersistedFaultLatch() {
+#if PARTY_FIX_PERSIST_FAULT
+  if (!preferencesReady) {
+    Serial.println(F("# WARN: NVS unavailable; clearing RAM latch only"));
+    return true;
+  }
+  size_t written = preferences.putUChar("fault", 0);
+  if (written != sizeof(uint8_t)) {
+    Serial.println(F("# r: NVS fault-latch clear failed; fault remains latched"));
+    return false;
+  }
+#endif
+  return true;
+}
+
 void enterFault(FaultCode code, const char* detail) {
   if (state == ST_FAULT_LATCHED) return;
   faultCode = code;
@@ -1401,6 +1528,9 @@ void enterFault(FaultCode code, const char* detail) {
       stepper->stopMove();
     }
   }
+  // Issue the physical shutdown before the bounded NVS write. The hardware
+  // ramp continues independently if flash persistence takes a few ms.
+  persistFaultLatch(code);
   // An open spin is NOT closed here: its summary must record the real resting
   // wedge, so ST_FAULT_LATCHED closes it once the wheel is actually still
   // (also prevents the residual coast from being re-counted as a new spin).
@@ -1432,9 +1562,8 @@ void startDirectionProbe() {
     Serial.println(F("# DIR PROBE refused: encoder/stepper unavailable"));
     return;
   }
-  if (state != ST_IDLE_STOPPED &&
-      !(state == ST_FAULT_LATCHED && faultCode == FC_DIR_CAL_INVALID)) {
-    Serial.println(F("# DIR PROBE refused: wait for a fully stopped wheel (or clear the fault with r)"));
+  if (state != ST_IDLE_STOPPED) {
+    Serial.println(F("# DIR PROBE refused: clear any fault with r, then retry from IDLE"));
     return;
   }
   if (stepper->isRunning()) {
@@ -1469,7 +1598,6 @@ void startDirectionProbe() {
     return;
   }
   if (spinOpen) closeSpin(RES_CONTROL_LOCKED);  // never orphan an open record
-  faultCode = FC_NONE;   // probe may be used to recover from DIR_CAL fault
   state = ST_DIR_PROBE;
   stateEnteredMs = millis();
   Serial.printf("# DIR PROBE leg 1/2: moving FAS+ %ld usteps; keep hands clear\n",
@@ -2060,8 +2188,12 @@ void landingVerdict() {
 /*                          DIAGNOSTIC DUMP                                   */
 /* ========================================================================== */
 void dumpDiagnostics() {
-  if (diagnosticCount == 0) {
+  if (!diagnosticBuffer || diagnosticCount == 0) {
     Serial.println(F("# DIAG: no samples captured."));
+    if (diagnosticBuffer) {
+      heap_caps_free(diagnosticBuffer);
+      diagnosticBuffer = nullptr;
+    }
     return;
   }
   Serial.println(F("# DIAG columns: done_us,dt_good_us,raw,delta,counts,i2c_us,"
@@ -2077,9 +2209,22 @@ void dumpDiagnostics() {
                   s.flags, s.state, s.stage, (unsigned)s.curMa10 * 10);
   }
   Serial.printf("# DIAG n=%u wrapped=%d\n", diagnosticCount, diagnosticWrapped);
+  heap_caps_free(diagnosticBuffer);
+  diagnosticBuffer = nullptr;
+  diagnosticCount = 0;
 }
 
 void startDiagnosticCapture() {
+  if (!diagnosticBuffer) {
+    size_t bytes = sizeof(DiagnosticSample) * DIAG_CAPACITY;
+    diagnosticBuffer = (DiagnosticSample*)heap_caps_malloc(
+        bytes, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if (!diagnosticBuffer) {
+      Serial.printf("# DIAG unavailable: allocation of %u bytes failed (heap=%u)\n",
+                    (unsigned)bytes, (unsigned)ESP.getFreeHeap());
+      return;
+    }
+  }
   diagnosticHead = 0;
   diagnosticCount = 0;
   diagnosticWrapped = false;
@@ -2109,6 +2254,46 @@ void serviceDiagnosticCapture() {
   }
 }
 
+// A read-only snapshot for the isolated WiFi/FX consumer. It carries no
+// callbacks into control and cannot change a state transition or fault path.
+PartySnapshot partySnapshot() {
+  PartySnapshot snapshot = {};
+  switch (state) {
+    case ST_SPIN_PUSH: snapshot.phase = PARTY_PHASE_PUSH; break;
+    case ST_SPIN_RELEASED:
+    case ST_TARGET_RESERVED: snapshot.phase = PARTY_PHASE_COAST; break;
+    case ST_SPEED_MATCH_CAPTURE: snapshot.phase = PARTY_PHASE_CAPTURE; break;
+    case ST_CONTROLLED_DECEL:
+    case ST_LANDING_SETTLE: snapshot.phase = PARTY_PHASE_DECEL; break;
+    case ST_SOFT_HOLD: snapshot.phase = PARTY_PHASE_LANDED; break;
+    case ST_FAULT_LATCHED: snapshot.phase = PARTY_PHASE_FAULT; break;
+    default: snapshot.phase = PARTY_PHASE_IDLE; break;
+  }
+  snapshot.wedge = (int8_t)currentWedge();
+  snapshot.direction = (int8_t)spinDir;
+  snapshot.target_wedge = (int8_t)spin.targetWedge;
+  snapshot.angle_deg = wheelAngleDeg();
+  snapshot.speed_rev_s = fabsf(omega);
+  snapshot.remaining_deg =
+      (snapshot.phase == PARTY_PHASE_CAPTURE ||
+       snapshot.phase == PARTY_PHASE_DECEL)
+          ? fmaxf(0.0f, remainingTargetDeg()) : 0.0f;
+  snapshot.spin_number = spin.number;
+  snapshot.spin_open = spinOpen;
+  snapshot.close_kind = PARTY_CLOSE_NONE;
+  if (!spinOpen) {
+    if (spin.result == RES_CONTROLLED_SAFE || spin.result == RES_EDGE_SAFE ||
+        spin.result == RES_OFF_TARGET_SAFE) {
+      snapshot.close_kind = PARTY_CLOSE_SAFE;
+    } else if (spin.result == RES_GUEST_STOPPED) {
+      snapshot.close_kind = PARTY_CLOSE_GUEST_STOPPED;
+    } else if (spin.result != RES_NONE) {
+      snapshot.close_kind = PARTY_CLOSE_OTHER;
+    }
+  }
+  return snapshot;
+}
+
 /* ========================================================================== */
 /*                             SERIAL UI                                      */
 /* ========================================================================== */
@@ -2126,6 +2311,11 @@ void help() {
     " x  clear stored direction calibration\n"
     " r  fault reset (re-checks TMC UART)\n"
     " m  print dare mask\n"
+    " t  print WiFi/FX max-loop tracker and configuration\n"
+    " T  reset WiFi/FX max-loop tracker\n"
+    " VOL n  set DFPlayer volume 0..30\n"
+    " [ / ]  nudge persisted LED wedge-0 index\n"
+    " \\  reverse persisted LED index direction\n"
     " ?  help"));
 }
 
@@ -2146,9 +2336,7 @@ void printStatus() {
                 rawZero, (unsigned)currentStage, cmdRevS);
 }
 
-void handleSerial() {
-  if (!Serial.available()) return;
-  char command = (char)Serial.read();
+void handleCommandChar(char command) {
   switch (command) {
     case 'z':
       if (!encoderPrimed) Serial.println(F("# encoder not primed; z ignored"));
@@ -2185,13 +2373,16 @@ void handleSerial() {
       Serial.printf("# takeoverEnabled=%d\n", takeoverEnabled ? 1 : 0);
       break;
     case 'f':
-      Serial.printf("# friction cw: c=%.4f b=%.4f fits=%u | ccw: c=%.4f b=%.4f fits=%u\n",
-                    cw_c, cw_b, cwFitCount, ccw_c, ccw_b, ccwFitCount);
+      Serial.printf("# friction cw: c=%.4f b=%.4f fits=%u | ccw: c=%.4f b=%.4f "
+                    "fits=%u | rejected=%lu\n",
+                    cw_c, cw_b, cwFitCount, ccw_c, ccw_b, ccwFitCount,
+                    (unsigned long)fitRejectCount);
       break;
     case 'F':
       if (state == ST_IDLE_STOPPED || state == ST_FAULT_LATCHED) {
         cw_c = 0.30f; cw_b = 0.15f; ccw_c = 0.30f; ccw_b = 0.15f;
         cwFitCount = 0; ccwFitCount = 0;
+        fitRejectCount = 0;
         preferences.remove("cwC"); preferences.remove("cwB"); preferences.remove("cwN");
         preferences.remove("ccwC"); preferences.remove("ccwB"); preferences.remove("ccwN");
         Serial.println(F("# friction model reset to seeds"));
@@ -2220,12 +2411,24 @@ void handleSerial() {
           closeSpin(spinOpenedDuringFault ? RES_CONTROL_LOCKED : RES_FAULTED);
         }
         driverFreewheel();
+#if PARTY_FIX_TMC_VERIFY
+        // A config-mismatch latch means the driver probably reset. Reapply the
+        // accepted register set while outputs are disabled, then prove it.
+        driverConfig();
+#endif
         if (!checkTmcUartRaw()) {
           // Keep the ORIGINAL fault code in the latch; the UART result is
           // already printed by the check itself.
           Serial.println(F("# r: TMC UART still failing; fault remains latched"));
           break;
         }
+#if PARTY_FIX_TMC_VERIFY
+        if (!verifyTmcConfigRaw("fault-reset")) {
+          Serial.println(F("# r: TMC config still mismatched; fault remains latched"));
+          break;
+        }
+#endif
+        if (!clearPersistedFaultLatch()) break;
         faultCode = FC_NONE;
         state = ST_IDLE_STOPPED;
         stateEnteredMs = millis();
@@ -2237,9 +2440,53 @@ void handleSerial() {
     case 'm':
       Serial.printf("# dare_mask=0x%03X; dare wedges: 1 5\n", dare_mask);
       break;
+    case 't': partyAddons.printStatus(Serial); break;
+    case 'T': partyAddons.resetTiming(); break;
+    case '[': partyAddons.nudgeLedZero(-1); break;
+    case ']': partyAddons.nudgeLedZero(1); break;
+    case '\\': partyAddons.toggleLedDirection(); break;
     case '?': help(); break;
     default: break;
   }
+}
+
+char extendedCommand[24] = {0};
+uint8_t extendedCommandLength = 0;
+
+void finishExtendedCommand() {
+  extendedCommand[extendedCommandLength] = '\0';
+  int volume = -1;
+  if (sscanf(extendedCommand, "VOL %d", &volume) == 1) {
+    partyAddons.setVolume(volume);
+  } else {
+    Serial.printf("# unknown extended command: %s\n", extendedCommand);
+  }
+  extendedCommandLength = 0;
+}
+
+void handleCommandByte(char value) {
+  if (extendedCommandLength != 0) {
+    if (value == '\r' || value == '\n') {
+      finishExtendedCommand();
+    } else if (extendedCommandLength < sizeof(extendedCommand) - 1) {
+      extendedCommand[extendedCommandLength++] = value;
+    } else {
+      extendedCommandLength = 0;
+      Serial.println(F("# extended command too long; discarded"));
+    }
+    return;
+  }
+  if (value == 'V') {
+    extendedCommand[0] = value;
+    extendedCommandLength = 1;
+    return;
+  }
+  handleCommandChar(value);
+}
+
+void handleSerial() {
+  if (!Serial.available()) return;
+  handleCommandByte((char)Serial.read());
 }
 
 /* ========================================================================== */
@@ -2250,7 +2497,20 @@ void setup() {
   delay(300);
   randomSeed(esp_random());
 
-  preferences.begin("prizewheel", false);
+  preferencesReady = preferences.begin("prizewheel", false);
+  if (!preferencesReady) {
+    Serial.println(F("# NVS prizewheel read-write open FAILED; defaults active"));
+  }
+#if PARTY_FIX_PERSIST_FAULT
+  if (preferencesReady) {
+    restoredFaultCode = preferences.getUChar("fault", 0);
+    if (restoredFaultCode > (uint8_t)FC_LANDING_UNSAFE) {
+      Serial.printf("# NVS fault code %u invalid; ignoring corrupt value\n",
+                    restoredFaultCode);
+      restoredFaultCode = 0;
+    }
+  }
+#endif
   rawZero = preferences.getUShort("rawZero", rawZero);  // label-true anchor
   motorPositiveEncoderSign = preferences.getInt("pos_sign", 0);
   motorDirectionCalibrated = preferences.getBool("dir_ok", false) &&
@@ -2296,16 +2556,33 @@ void setup() {
   driverConfig();
 
   engine.init();
-  stepper = engine.stepperConnectToPin(PIN_STEP);
+  // FastAccelStepper's default allocator already picks MCPWM/PCNT first on
+  // the classic ESP32. Pin it explicitly so NeoPixel owns RMT without a
+  // peripheral collision or an allocation-order dependency.
+  stepper = engine.stepperConnectToPin(PIN_STEP, DRIVER_MCPWM_PCNT);
   if (stepper) {
     stepper->setDirectionPin(PIN_DIR, INVERT_DIR);
     stepper->setEnablePin(PIN_EN, true);
     stepper->setAutoEnable(false);
+    Serial.printf("# step pulse backend=%s (WS2812B uses RMT)\n",
+                  stepper->driverTypeString());
   } else {
     Serial.println(F("# FATAL: stepperConnectToPin failed; control locked"));
   }
 
-  checkTmcUartOrFault();
+  if (restoredFaultCode != 0) {
+    // Preserve the original persisted fault. UART/config health is still
+    // sampled for status, but a secondary boot failure must not overwrite it.
+    if (checkTmcUartRaw()) verifyTmcConfigRaw("boot-with-persisted-fault");
+    faultCode = (FaultCode)restoredFaultCode;
+    state = ST_FAULT_LATCHED;
+    stateEnteredMs = millis();
+    Serial.printf("# RESTORED PERSISTED FAULT code=%s; only r may clear it\n",
+                  faultName(faultCode));
+  } else {
+    checkTmcUartOrFault();
+    if (state != ST_FAULT_LATCHED) verifyTmcConfigOrFault("boot");
+  }
   Serial.printf("# frame: label-true static rawZero=%u | dirCal=%s sign=%+d | tmc=%d\n",
                 rawZero, motorDirectionCalibrated ? "VALID" : "REQUIRED (p)",
                 motorPositiveEncoderSign, tmcOk ? 1 : 0);
@@ -2319,6 +2596,8 @@ void setup() {
     state = ST_IDLE_STOPPED;
     stateEnteredMs = millis();
   }
+  lastTmcVerifyMs = millis();
+  partyAddons.begin(preferences, handleCommandByte, Serial);
 }
 
 // Deliberate-spin arming shared by MOTION_CANDIDATE and MANUAL_ADJUSTMENT
@@ -2372,6 +2651,7 @@ void loop() {
   updateEncoder();
   handleSerial();
   uint32_t nowMs = millis();
+  servicePeriodicTmcVerify(nowMs);
 
   // Encoder-outage watchdog for the unpowered motion states: every exit from
   // MOTION_CANDIDATE / MANUAL_ADJUSTMENT / SPIN_PUSH / SPIN_RELEASED needs a
@@ -2796,4 +3076,5 @@ void loop() {
   }
 
   serviceDiagnosticCapture();
+  partyAddons.service(partySnapshot());
 }
