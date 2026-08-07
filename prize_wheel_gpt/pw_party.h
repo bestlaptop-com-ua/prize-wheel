@@ -82,10 +82,10 @@
 #define PW_LED_PIN    4        /* verified 3.3 V direct drive (LED_HANDOFF)   */
 #define PW_NUM_LEDS   300      /* measured; helix around the pole             */
 #define PW_LED_ORDER  GRB
-#define PW_FX_MAX_MA  900     /* buck headroom for TMC logic + DFPlayer      */
+#define PW_FX_MAX_MA  10000     /* buck headroom for TMC logic + DFPlayer      */
 #define PW_LED_FPS    50
 #define PW_LED_STANDBY_BRIGHT   55
-#define PW_LED_CELEBRATE_BRIGHT 150
+#define PW_LED_CELEBRATE_BRIGHT 90
 #define PW_LED_CELEBRATE_MS     3000
 #define PW_LED_BAND_SPEED       1.6f  /* untuned-at-speed constant (doc)      */
 
