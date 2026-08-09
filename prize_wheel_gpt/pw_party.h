@@ -65,7 +65,7 @@
 #define PW_DFP_VOLUME 27       /* 0..30; live-adjust with V<n> + Enter        */
 #define PW_DFP_CMD_GAP_MS 120  /* global command rate limit (FX_TASK.md)      */
 #define PW_DFP_BOOT_DELAY_MS 2500
-#define PW_FX_IDLE_AMBIENCE 1  /* 1 = loop track 5 while idle (optional)      */
+#define PW_FX_IDLE_AMBIENCE 0  /* 1 = loop track 5 while idle (optional)      */
 /* /mp3 track numbers (media/ in this repo; copy /mp3 to the microSD root)    */
 #define PW_TRK_TICK     1
 #define PW_TRK_RATCHET  2
