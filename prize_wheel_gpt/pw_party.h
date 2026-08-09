@@ -74,7 +74,7 @@
 #define PW_TRK_AMBIENCE 5
 #define PW_TRK_GUEST    6
 /* ratchet <-> tick crossover with hysteresis (FX_TASK.md: 0.5 +/- 0.05)      */
-#define PW_FX_RATCHET_ON_REV_S  0.30f
+#define PW_FX_RATCHET_ON_REV_S  99.0f
 #define PW_FX_RATCHET_OFF_REV_S 0.05f
 #define PW_FX_LANDED_PAUSE_MS   250
 
