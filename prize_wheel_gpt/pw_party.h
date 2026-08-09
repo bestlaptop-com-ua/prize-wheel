@@ -68,7 +68,7 @@
 #define PW_FX_IDLE_AMBIENCE 0  /* 1 = loop track 5 while idle (optional)      */
 /* /mp3 track numbers (media/ in this repo; copy /mp3 to the microSD root)    */
 #define PW_TRK_TICK     1
-#define PW_TRK_RATCHET  2
+#define PW_TRK_RATCHET  3      /* 0002 corrupt-for-module (finishes in 33ms, wiretap 2026-08-06); drumroll instead */
 #define PW_TRK_DRUMROLL 3      /* asset provided; unused by default logic     */
 #define PW_TRK_FANFARE  4
 #define PW_TRK_AMBIENCE 5
