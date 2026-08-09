@@ -1,4 +1,4 @@
-﻿/* ============================================================================
+/* ============================================================================
  * pw_party.h - party-night additions: WiFi + FX + sanctioned fixes S1/S2/S3
  *
  * Included ONCE near the top of prize_wheel_gpt.ino, BEFORE the sketch body.
@@ -24,7 +24,6 @@
 #include <WiFi.h>
 #include <esp_system.h>
 #include <esp_mac.h>
-#define FASTLED_ESP32_I2S 1
 #include <FastLED.h>
 
 /* ------------------- owner-facing feature switches ----------------------- */
@@ -59,8 +58,8 @@
 /* TMC2209 UART (TMC_SERIAL/TMC_RX_PIN/TMC_TX_PIN).  The DFPlayer therefore   */
 /* goes on UART1 mapped to the pins LED_HANDOFF.md reserved for it.  See the  */
 /* README wiring section and RISK_AUDIT.md.                                   */
-#define PW_DFP_TX_PIN 32       /* ESP32 TX -> 1 kOhm series -> DFPlayer RX    */
-#define PW_DFP_RX_PIN 33       /* DFPlayer TX -> ESP32 RX (optional, unread)  */
+#define PW_DFP_TX_PIN 15       /* ESP32 TX -> 1 kOhm series -> DFPlayer RX    */
+#define PW_DFP_RX_PIN 16       /* DFPlayer TX -> ESP32 RX (optional, unread)  */
 #define PW_DFP_BAUD   9600
 #define PW_DFP_VOLUME 20       /* 0..30; live-adjust with V<n> + Enter        */
 #define PW_DFP_CMD_GAP_MS 120  /* global command rate limit (FX_TASK.md)      */
@@ -79,7 +78,7 @@
 #define PW_FX_LANDED_PAUSE_MS   400
 
 /* ------------------------------ WS2812B ---------------------------------- */
-#define PW_LED_PIN    4        /* verified 3.3 V direct drive (LED_HANDOFF)   */
+#define PW_LED_PIN    21        /* verified 3.3 V direct drive (LED_HANDOFF)   */
 #define PW_NUM_LEDS   300      /* measured; helix around the pole             */
 #define PW_LED_ORDER  GRB
 #define PW_FX_MAX_MA  3000     /* buck headroom for TMC logic + DFPlayer      */

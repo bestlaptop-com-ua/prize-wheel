@@ -1,4 +1,4 @@
-﻿/* ============================================================================
+/* ============================================================================
  * prize_wheel_gpt.ino - Prize wheel firmware, correctness redesign
  *
  * Every genuine hand spin is captured mid-coast and guided to a random safe
@@ -46,17 +46,17 @@
 
 /* ----------------------------- PINS -------------------------------------- */
 #define TMC_SERIAL   Serial2
-#define TMC_RX_PIN   16
-#define TMC_TX_PIN   17
+#define TMC_RX_PIN   17
+#define TMC_TX_PIN   18
 #define TMC_ADDR     0b00
 #define R_SENSE      0.11f
 
-#define PIN_EN   25
-#define PIN_STEP 26
-#define PIN_DIR  27
+#define PIN_EN   4
+#define PIN_STEP 5
+#define PIN_DIR  6
 
-#define PIN_SDA  21
-#define PIN_SCL  22
+#define PIN_SDA  8
+#define PIN_SCL  9
 #define AS5600_ADDR 0x36
 #define AS5600_RAW  0x0C
 
