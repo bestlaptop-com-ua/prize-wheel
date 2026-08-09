@@ -180,7 +180,8 @@ const float NATURAL_SHAVE_MARGIN_DEG  = 5.0f;   // brake shaves, never adds
 // the target (owner spec).  Applies to the wedge-uniform pass; the weak-spin
 // assist passes may still slip briefly by design.
 const float COUPLE_MARGIN             = 1.05f;
-const float SAFE_WEDGE_EDGE_MARGIN_DEG = 8.0f;  // target interior margin
+const float SAFE_EDGE_MARGIN_DEG = 4.5f;  // margin at safe|safe boundaries (scatter widened, owner req 2026-08-06; was 8.0 uniform)
+const float DARE_EDGE_MARGIN_DEG = 8.0f;  // margin at dare-facing boundaries - the certified value, unchanged
 const float LANDING_INTERIOR_MIN_DEG  = 5.0f;   // verification margin
 const float DARE_PROXIMITY_FAULT_DEG  = 2.0f;   // settle this close to a dare
                                                 // boundary = unsafe landing
@@ -1038,6 +1039,13 @@ float randomUnit() { return (float)random(10000) / 10000.0f; }
 // Deficit-weighted selection state: how many times each wedge has been chosen
 // by Pass 1 this power cycle.  RAM only - a reboot restarts the balancing.
 static uint16_t wedgeChosenCount[NUM_WEDGES] = {0};
+static inline void wedgeEdgeMargins(int w, float* loM, float* hiM) {
+  int prev = (w + NUM_WEDGES - 1) % NUM_WEDGES;
+  int next = (w + 1) % NUM_WEDGES;
+  *loM = isDare(prev) ? DARE_EDGE_MARGIN_DEG : SAFE_EDGE_MARGIN_DEG;
+  *hiM = isDare(next) ? DARE_EDGE_MARGIN_DEG : SAFE_EDGE_MARGIN_DEG;
+}
+
 TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   TargetChoice out;
   out.found = false;
@@ -1047,7 +1055,8 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   out.decelCapSps2 = DECEL_CEILING_SPS2;
   out.quality = 0;
 
-  const float interiorSpan = WEDGE_DEG - 2.0f * SAFE_WEDGE_EDGE_MARGIN_DEG;
+  // Per-edge margins: dare-facing edges keep the certified 8.0; safe|safe edges
+  // relax to 4.5 so landings scatter visibly instead of clustering mid-wedge.
   float latencyDeg = speedRevS * ENGAGE_LATENCY_S * 360.0f;
   float naturalDeg = naturalStopDistanceDeg(speedRevS, dir);
   float winMax = NATURAL_REACH_FRACTION * naturalDeg - NATURAL_SHAVE_MARGIN_DEG;
@@ -1072,15 +1081,17 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   if (winMax > winMin + 2.0f) {
     for (int w = 0; w < NUM_WEDGES; ++w) {
       if (isDare(w)) continue;
+      float loM, hiM; wedgeEdgeMargins(w, &loM, &hiM);
+      float wSpan = WEDGE_DEG - loM - hiM;
       float interiorEntryAngle = (dir > 0)
-          ? w * WEDGE_DEG + SAFE_WEDGE_EDGE_MARGIN_DEG
-          : (w + 1) * WEDGE_DEG - SAFE_WEDGE_EDGE_MARGIN_DEG;
+          ? w * WEDGE_DEG + loM
+          : (w + 1) * WEDGE_DEG - hiM;
       float dNear = forwardDistanceDeg(dir, curAngle, interiorEntryAngle);
       float bestLo = 0.0f, bestHi = -1.0f, bestScore = 1.0e9f;
       for (int lap = 0; lap < 4; ++lap) {
         float a = dNear + 360.0f * lap;
         if (a > winMax) break;
-        float b = a + interiorSpan;
+        float b = a + wSpan;
         float lo = fmaxf(a, winMin);
         float hi = fminf(b, winMax);
         if (hi - lo < 2.0f) continue;
@@ -1161,13 +1172,15 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
     int bestW = -1;
     for (int w = 0; w < NUM_WEDGES; ++w) {
       if (isDare(w)) continue;
+      float loM, hiM; wedgeEdgeMargins(w, &loM, &hiM);
+      float wSpan = WEDGE_DEG - loM - hiM;
       float interiorEntryAngle = (dir > 0)
-          ? w * WEDGE_DEG + SAFE_WEDGE_EDGE_MARGIN_DEG
-          : (w + 1) * WEDGE_DEG - SAFE_WEDGE_EDGE_MARGIN_DEG;
+          ? w * WEDGE_DEG + loM
+          : (w + 1) * WEDGE_DEG - hiM;
       float dNear = forwardDistanceDeg(dir, curAngle, interiorEntryAngle);
       for (int lap = 0; lap < 4; ++lap) {
         float a = dNear + 360.0f * lap;
-        float b = a + interiorSpan;
+        float b = a + wSpan;
         if (a > winMax) break;
         float lo = fmaxf(a, assistMin);
         float hi = fminf(b, winMax);
