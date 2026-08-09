@@ -2346,7 +2346,7 @@ void setup() {
   driverConfig();
 
   engine.init();
-  stepper = engine.stepperConnectToPin(PIN_STEP);
+  stepper = engine.stepperConnectToPin(PIN_STEP, DRIVER_MCPWM_PCNT);  /* S3: keep FAS off RMT so FastLED owns it (see S3_PORT.md) */
   if (stepper) {
     stepper->setDirectionPin(PIN_DIR, INVERT_DIR);
     stepper->setEnablePin(PIN_EN, true);
