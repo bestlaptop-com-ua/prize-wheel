@@ -50,11 +50,12 @@ static void pwDfpSendNow(uint8_t cmd, uint16_t arg) {
    * 10 bytes land in the UART1 hardware FIFO and drain at 9600 baud in ~10 ms,
    * far inside the 120 ms command gap, so this write can never block. */
   uint8_t f[10];
-  f[0] = 0x7E; f[1] = 0xFF; f[2] = 0x06; f[3] = cmd; f[4] = 0x00;
+  f[0] = 0x7E; f[1] = 0xFF; f[2] = 0x06; f[3] = cmd; f[4] = 0x01;  /* feedback ON: module ACKs each frame (diag 2026-08-06) */
   f[5] = (uint8_t)(arg >> 8); f[6] = (uint8_t)(arg & 0xFF);
-  uint16_t ck = (uint16_t)(0 - (0xFF + 0x06 + cmd + 0x00 + f[5] + f[6]));
+  uint16_t ck = (uint16_t)(0 - (0xFF + 0x06 + cmd + 0x01 + f[5] + f[6]));
   f[7] = (uint8_t)(ck >> 8); f[8] = (uint8_t)(ck & 0xFF);
   f[9] = 0xEF;
+  Serial.printf("# dfp tx ms=%lu cmd=%02X arg=%04X\n", (unsigned long)millis(), cmd, arg);
   Serial1.write(f, 10);
   Serial1.flush();
   delay(12);                     /* YX5200 digest gap, then repeat: fire-and-forget
@@ -64,6 +65,22 @@ static void pwDfpSendNow(uint8_t cmd, uint16_t arg) {
   Serial1.write(f, 10);
 #else
   (void)cmd; (void)arg;
+#endif
+}
+
+static void pwDfpRxDump() {
+#if PW_FX_AUDIO_ENABLE
+  static uint8_t rb[10]; static uint8_t rn = 0;
+  while (Serial1.available()) {
+    uint8_t b = (uint8_t)Serial1.read();
+    if (rn == 0 && b != 0x7E) continue;
+    rb[rn++] = b;
+    if (rn == 10) {
+      Serial.printf("# dfp rx ms=%lu: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
+        (unsigned long)millis(), rb[0],rb[1],rb[2],rb[3],rb[4],rb[5],rb[6],rb[7],rb[8],rb[9]);
+      rn = 0;
+    }
+  }
 #endif
 }
 
@@ -200,7 +217,20 @@ static uint32_t pwQuietSinceMs = 0;
 #endif
 
 static void pwFxService(uint32_t nowMs) {
-  float speed = encoderVelocityValid ? fabsf(omega) : 0.0f;
+  /* Hold last good speed through micro-dropouts: a 20ms validity flicker must
+   * not thrash the audio regime (PLAY-flood bug, 2026-08-06 night). Real
+   * staleness reaches us via the fault path and stops audio there. */
+  static float pwFxHeldSpeed = 0.0f;
+  static uint32_t pwFxFlickers = 0, pwFxFlickerRptMs = 0;
+  if (encoderVelocityValid) { pwFxHeldSpeed = fabsf(omega); }
+  else {
+    ++pwFxFlickers;
+    if (nowMs - pwFxFlickerRptMs > 2000) {
+      Serial.printf("# enc flicker count=%lu\n", (unsigned long)pwFxFlickers);
+      pwFxFlickerRptMs = nowMs;
+    }
+  }
+  float speed = pwFxHeldSpeed;
   bool faulted = (state == ST_FAULT_LATCHED);
 
   /* ---- spin-close observer: landing celebration / guest jingle ---------- */
@@ -310,6 +340,7 @@ static void pwFxService(uint32_t nowMs) {
   }
 
   pwDfpService(nowMs);
+  pwDfpRxDump();
   pwPrevState = (uint8_t)state;
 }
 
