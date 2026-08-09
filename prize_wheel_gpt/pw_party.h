@@ -62,10 +62,10 @@
 #define PW_DFP_TX_PIN 32       /* ESP32 TX -> 1 kOhm series -> DFPlayer RX    */
 #define PW_DFP_RX_PIN 33       /* DFPlayer TX -> ESP32 RX (optional, unread)  */
 #define PW_DFP_BAUD   9600
-#define PW_DFP_VOLUME 20       /* 0..30; live-adjust with V<n> + Enter        */
+#define PW_DFP_VOLUME 27       /* 0..30; live-adjust with V<n> + Enter        */
 #define PW_DFP_CMD_GAP_MS 120  /* global command rate limit (FX_TASK.md)      */
 #define PW_DFP_BOOT_DELAY_MS 2500
-#define PW_FX_IDLE_AMBIENCE 0  /* 1 = loop track 5 while idle (optional)      */
+#define PW_FX_IDLE_AMBIENCE 1  /* 1 = loop track 5 while idle (optional)      */
 /* /mp3 track numbers (media/ in this repo; copy /mp3 to the microSD root)    */
 #define PW_TRK_TICK     1
 #define PW_TRK_RATCHET  2
@@ -76,7 +76,7 @@
 /* ratchet <-> tick crossover with hysteresis (FX_TASK.md: 0.5 +/- 0.05)      */
 #define PW_FX_RATCHET_ON_REV_S  0.55f
 #define PW_FX_RATCHET_OFF_REV_S 0.45f
-#define PW_FX_LANDED_PAUSE_MS   400
+#define PW_FX_LANDED_PAUSE_MS   250
 
 /* ------------------------------ WS2812B ---------------------------------- */
 #define PW_LED_PIN    4        /* verified 3.3 V direct drive (LED_HANDOFF)   */
