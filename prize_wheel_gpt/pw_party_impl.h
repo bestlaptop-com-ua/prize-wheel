@@ -1,4 +1,4 @@
-/* ============================================================================
+﻿/* ============================================================================
  * pw_party_impl.h - implementations for pw_party.h
  *
  * Included ONCE at the very BOTTOM of prize_wheel_gpt.ino: everything here can
@@ -94,7 +94,8 @@ static CRGB pwLeds[PW_NUM_LEDS];
 #endif
 static volatile uint8_t pwFxMode = PWL_STANDBY;
 static volatile float pwFxOmega = 0.0f;          /* signed rev/s, live encoder */
-static volatile uint32_t pwFxCelebrateAtMs = 0;  /* celebrate window start     */
+static volatile uint32_t pwFxCelebrateAtMs = 0;  /* celebrate window start     */
+static volatile uint8_t  pwFxLandedWedge  = 255; /* landed wedge: celebration slams in its colour */
 static volatile bool pwLedEnabled = (PW_FX_LED_ENABLE != 0);
 static bool pwLedTaskRunning = false;
 
@@ -102,8 +103,8 @@ static bool pwLedTaskRunning = false;
 /* All rendering below runs ONLY in the core-0 task; it must never print and
  * never touch control globals (it reads the volatile scalars above).          */
 static void pwLedRenderStandby(uint32_t nowMs) {
-  uint8_t t1 = (uint8_t)(nowMs / 40);
-  uint8_t t2 = (uint8_t)(nowMs / 57);
+  uint8_t t1 = (uint8_t)(nowMs / 7);   /* ~6x faster: helix wrap hides half the travel */
+  uint8_t t2 = (uint8_t)(nowMs / 9);
   for (int i = 0; i < PW_NUM_LEDS; ++i) {
     uint8_t a = sin8((uint8_t)(i * 3 + t1));       /* two counter-drifting     */
     uint8_t b = sin8((uint8_t)(i * 2 - t2));       /* sine hue waves           */
@@ -131,8 +132,15 @@ static void pwLedRenderCelebrate(uint32_t elapsedMs) {
     fill_solid(pwLeds, PW_NUM_LEDS, CRGB::Black);
     for (int n = 0; n < PW_NUM_LEDS / 8; ++n)
       pwLeds[random16(PW_NUM_LEDS)] = CHSV(0, 0, bright);
-  } else {                                         /* full-strip colour slam   */
-    fill_solid(pwLeds, PW_NUM_LEDS, CHSV((uint8_t)(phase * 37), 255, bright));
+  } else {                          /* full-strip slam: the landed wedge's colour */
+    static const CRGB kWedgeColor[6] = {  /* wedge%6: green orange blue red yellow purple */
+      CRGB(0,220,0), CRGB(255,60,0), CRGB(0,70,255),
+      CRGB(255,0,0), CRGB(255,190,0), CRGB(140,0,255) };
+    uint8_t w = pwFxLandedWedge;
+    CRGB c = (w < 12) ? kWedgeColor[w % 6]
+                      : CRGB(CHSV((uint8_t)(phase * 37), 255, 255));
+    c.nscale8_video(bright);
+    fill_solid(pwLeds, PW_NUM_LEDS, c);
   }
 }
 
@@ -217,7 +225,8 @@ static void pwFxService(uint32_t nowMs) {
       pwDfpQueue(PW_DFP_CMD_STOP, 0);                /* short pause, then...   */
       pwRatchetOn = false;
       pwFanfareAtMs = nowMs + PW_FX_LANDED_PAUSE_MS; /* ...fanfare             */
-      pwFxCelebrateAtMs = pwFanfareAtMs;             /* LEDs sync to fanfare   */
+      pwFxCelebrateAtMs = pwFanfareAtMs;             /* LEDs sync to fanfare   */
+      pwFxLandedWedge = (uint8_t)spin.finalWedge;   /* slam in this wedge's colour */
     }
   }
   pwPrevSpinOpen = open;
@@ -252,10 +261,13 @@ static void pwFxService(uint32_t nowMs) {
      * straight through capture and braking - silence would be a tell.         */
     int wedge = currentWedge();
     if (wedge != pwPrevWedge) {
-      if (!pwRatchetOn && speed > 0.03f && pwFanfareAtMs == 0 &&
+      if (false && /* single-whirl mode: ticks disabled, whirl runs to stop (owner 2026-08-06) */
+          !pwRatchetOn && speed > 0.03f && pwFanfareAtMs == 0 &&
           nowMs - pwLastTickMs >= PW_DFP_CMD_GAP_MS) {
         pwDfpQueue(PW_DFP_CMD_PLAY_MP3, PW_TRK_TICK, /*coalesce=*/true);
         pwLastTickMs = nowMs;
+        Serial.printf("# clickq ms=%lu ang=%.1f w=%d om=%.3f\n",
+                      (unsigned long)nowMs, wheelAngleDeg(), wedge, speed);
       }
       pwPrevWedge = wedge;
     }
@@ -537,6 +549,14 @@ bool pwPartyCommandChar(char c) {
       pwLedEnabled = !pwLedEnabled;
       Serial.printf("# leds %s\n", pwLedEnabled ? "ON" : "OFF");
       return true;
+    case 'L': {                       /* LED slam test: cycles wedge colours */
+      static uint8_t testW = 0;
+      pwFxLandedWedge = testW;
+      pwFxCelebrateAtMs = nowMs;
+      Serial.printf("# LED slam test wedge=%u\n", testW);
+      testW = (uint8_t)((testW + 1) % 12);
+      return true;
+    }
     case 'w':
       pwPrintNet();
       return true;
