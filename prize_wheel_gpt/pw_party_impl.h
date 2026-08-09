@@ -56,6 +56,12 @@ static void pwDfpSendNow(uint8_t cmd, uint16_t arg) {
   f[7] = (uint8_t)(ck >> 8); f[8] = (uint8_t)(ck & 0xFF);
   f[9] = 0xEF;
   Serial1.write(f, 10);
+  Serial1.flush();
+  delay(12);                     /* YX5200 digest gap, then repeat: fire-and-forget
+                                  * insurance - a dropped frame is silent, a duplicate
+                                  * PLAY restarts 12ms in (inaudible), dup STOP/LOOP
+                                  * are no-ops (module drops ~1 in 10, 2026-08-06)   */
+  Serial1.write(f, 10);
 #else
   (void)cmd; (void)arg;
 #endif
