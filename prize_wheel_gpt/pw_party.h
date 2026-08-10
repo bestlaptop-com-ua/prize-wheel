@@ -65,16 +65,16 @@
 #define PW_DFP_VOLUME 27       /* 0..30; live-adjust with V<n> + Enter        */
 #define PW_DFP_CMD_GAP_MS 120  /* global command rate limit (FX_TASK.md)      */
 #define PW_DFP_BOOT_DELAY_MS 2500
-#define PW_FX_IDLE_AMBIENCE 0  /* 1 = loop track 5 while idle (optional)      */
+#define PW_FX_IDLE_AMBIENCE 1  /* 1 = loop track 5 while idle (optional)      */
 /* /mp3 track numbers (media/ in this repo; copy /mp3 to the microSD root)    */
 #define PW_TRK_TICK     1
-#define PW_TRK_RATCHET  3      /* 0002 corrupt-for-module (finishes in 33ms, wiretap 2026-08-06); drumroll instead */
+#define PW_TRK_RATCHET  2      /* re-synthesized 60s whirl, CBR 96k mono (2026-08-07) */
 #define PW_TRK_DRUMROLL 3      /* asset provided; unused by default logic     */
 #define PW_TRK_FANFARE  4
 #define PW_TRK_AMBIENCE 5
 #define PW_TRK_GUEST    6
 /* ratchet <-> tick crossover with hysteresis (FX_TASK.md: 0.5 +/- 0.05)      */
-#define PW_FX_RATCHET_ON_REV_S  99.0f
+#define PW_FX_RATCHET_ON_REV_S  0.30f
 #define PW_FX_RATCHET_OFF_REV_S 0.05f
 #define PW_FX_LANDED_PAUSE_MS   250
 
