@@ -315,7 +315,14 @@ static void pwFxService(uint32_t nowMs) {
   if (quiet) {
     if (pwQuietSinceMs == 0) pwQuietSinceMs = nowMs;
     if (!pwAmbienceOn && nowMs - pwQuietSinceMs > 8000) {
-      pwDfpQueue(0x17, 2);  /* loop folder /02: standby playlist (owner 2026-08-07) */
+      /* pseudo-shuffle: each quiet spell opens a random song (never the same
+       * as last time) and loops it for the lull. 7 songs in /02. */
+      static uint8_t pwPlLast = 0;
+      uint8_t pwPlN;
+      do { pwPlN = (uint8_t)(1 + (esp_random() % 7)); } while (pwPlN == pwPlLast);
+      pwPlLast = pwPlN;
+      pwDfpQueue(0x0F, (uint16_t)((2u << 8) | pwPlN));  /* play /02/00N */
+      pwDfpQueue(PW_DFP_CMD_LOOP_CUR, 0);
       pwAmbienceOn = true;
     }
   } else {
