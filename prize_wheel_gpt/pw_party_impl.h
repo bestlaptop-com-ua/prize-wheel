@@ -315,8 +315,7 @@ static void pwFxService(uint32_t nowMs) {
   if (quiet) {
     if (pwQuietSinceMs == 0) pwQuietSinceMs = nowMs;
     if (!pwAmbienceOn && nowMs - pwQuietSinceMs > 8000) {
-      pwDfpQueue(PW_DFP_CMD_PLAY_MP3, PW_TRK_AMBIENCE);
-      pwDfpQueue(PW_DFP_CMD_LOOP_CUR, 0);
+      pwDfpQueue(0x17, 2);  /* loop folder /02: standby playlist (owner 2026-08-07) */
       pwAmbienceOn = true;
     }
   } else {
