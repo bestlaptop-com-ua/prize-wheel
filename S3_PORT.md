@@ -35,13 +35,13 @@ and REDESIGN_REPORT.md for the control design before touching code.
 |---------------------|-------------|--------------------|
 | AS5600 SDA          | 21          | 8                  |
 | AS5600 SCL          | 22          | 9                  |
-| TMC UART RX2        | 16          | 17                 |
-| TMC UART TX2 (1k)   | 17          | 18  (Serial2 with explicit pins) |
+| TMC UART RX2 (ext 1k) | 16        | 16                 |
+| TMC UART TX2 (int 1k on module) | 17 | 17  (Serial2 with explicit pins) |
 | Motor EN            | 25          | 4                  |
 | Motor STEP          | 26          | 5                  |
 | Motor DIR           | 27          | 6                  |
 | DFPlayer TX (1k)    | 32          | 15                 |
-| DFPlayer RX         | 33          | 16                 |
+| DFPlayer RX         | 33          | 18                 |
 | DFPlayer BUSY       | 34          | 7                  |
 | WS2812B data        | 4           | 21 (through the 74AHCT125 shifter) |
 Wiring doctrine unchanged: star/bus ground with per-load returns; thin

@@ -46,8 +46,8 @@
 
 /* ----------------------------- PINS -------------------------------------- */
 #define TMC_SERIAL   Serial2
-#define TMC_RX_PIN   17
-#define TMC_TX_PIN   18
+#define TMC_RX_PIN   16
+#define TMC_TX_PIN   17
 #define TMC_ADDR     0b00
 #define R_SENSE      0.11f
 

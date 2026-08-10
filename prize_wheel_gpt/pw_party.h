@@ -59,7 +59,7 @@
 /* goes on UART1 mapped to the pins LED_HANDOFF.md reserved for it.  See the  */
 /* README wiring section and RISK_AUDIT.md.                                   */
 #define PW_DFP_TX_PIN 15       /* ESP32 TX -> 1 kOhm series -> DFPlayer RX    */
-#define PW_DFP_RX_PIN 16       /* DFPlayer TX -> ESP32 RX (optional, unread)  */
+#define PW_DFP_RX_PIN 18       /* DFPlayer TX -> ESP32 RX (optional, unread)  */
 #define PW_DFP_BAUD   9600
 #define PW_DFP_VOLUME 20       /* 0..30; live-adjust with V<n> + Enter        */
 #define PW_DFP_CMD_GAP_MS 120  /* global command rate limit (FX_TASK.md)      */
