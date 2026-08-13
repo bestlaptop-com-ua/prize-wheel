@@ -2355,7 +2355,17 @@ void setup() {
     Serial.println(F("# FATAL: stepperConnectToPin failed; control locked"));
   }
 
-  checkTmcUartOrFault();
+  // Boot grace (appliance power sequencing, owner 2026-08-07): the 24V rail
+  // can arrive seconds after the ESP boots. Retry before latching so a
+  // single-switch power-up never needs a USB r.
+  {
+    bool tmcBootOk = false;
+    for (int i = 0; i < 12 && !tmcBootOk; ++i) {   // up to ~6 s
+      tmcBootOk = checkTmcUartRaw();
+      if (!tmcBootOk) delay(500);
+    }
+    if (!tmcBootOk) enterFault(FC_TMC_UART, "test_connection failed");
+  }
   Serial.printf("# frame: label-true static rawZero=%u | dirCal=%s sign=%+d | tmc=%d\n",
                 rawZero, motorDirectionCalibrated ? "VALID" : "REQUIRED (p)",
                 motorPositiveEncoderSign, tmcOk ? 1 : 0);
@@ -2426,6 +2436,27 @@ void loop() {
   updateEncoder();
   handleSerial();
   uint32_t nowMs = millis();
+
+  // TMC auto-heal (appliance mode, owner 2026-08-07): a boot-scope TMC_UART
+  // latch self-clears once the driver rail arrives - full r-path semantics
+  // (freewheel, UART check, S2 config verify). Any session with a recorded
+  // spin keeps latches manual; runtime faults are never auto-cleared.
+  {
+    static uint32_t pwTmcHealLastMs = 0;
+    if (state == ST_FAULT_LATCHED && faultCode == FC_TMC_UART &&
+        spinCounter == 0 && !(stepper && stepper->isRunning()) &&
+        nowMs - pwTmcHealLastMs >= 3000) {
+      pwTmcHealLastMs = nowMs;
+      driverFreewheel();
+      if (checkTmcUartRaw() && pwS2ReconfigVerify()) {
+        faultCode = FC_NONE;
+        PW_S1_CLEAR();
+        state = ST_IDLE_STOPPED;
+        stateEnteredMs = nowMs;
+        Serial.println(F("# TMC auto-heal: driver rail arrived; boot fault cleared (S2 verified)"));
+      }
+    }
+  }
 
   // Encoder-outage watchdog for the unpowered motion states: every exit from
   // MOTION_CANDIDATE / MANUAL_ADJUSTMENT / SPIN_PUSH / SPIN_RELEASED needs a
