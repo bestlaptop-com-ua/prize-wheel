@@ -1,0 +1,219 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 1080" width="1560" height="1080" font-family="Helvetica, Arial, sans-serif">
+<rect width="1560" height="1080" fill="#fafafa"/>
+<text x="30" y="38" font-size="24" font-weight="bold" fill="#111">Prize wheel v2 — wiring scheme</text>
+<text x="30" y="58" font-size="14" fill="#555">ESP32-S3 (Lonely Binary, screw-terminal breakout) · TMC5160T Pro · AS5600 I2C · WS2815 halo · PCM5102A -&gt; TPA3116D2</text>
+<rect x="30" y="80" width="190" height="105" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="125.0" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">24 V PSU</text>
+<text x="125.0" y="119" font-size="10.5" text-anchor="middle" fill="#555">200 W LED driver, 8.33 A</text>
+<circle cx="220" cy="138" r="4" fill="#333"/><text x="212" y="142" font-size="11.5" text-anchor="end" fill="#111">V+</text>
+<circle cx="220" cy="158" r="4" fill="#333"/><text x="212" y="162" font-size="11.5" text-anchor="end" fill="#111">V-</text>
+<rect x="255" y="80" width="190" height="105" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="350.0" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">12 V PSU</text>
+<text x="350.0" y="119" font-size="10.5" text-anchor="middle" fill="#555">Mean Well LRS-100-12</text>
+<circle cx="445" cy="138" r="4" fill="#333"/><text x="437" y="142" font-size="11.5" text-anchor="end" fill="#111">V+</text>
+<circle cx="445" cy="158" r="4" fill="#333"/><text x="437" y="162" font-size="11.5" text-anchor="end" fill="#111">V-</text>
+<rect x="480" y="80" width="190" height="105" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="575.0" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">Buck 12-&gt;5 V</text>
+<text x="575.0" y="119" font-size="10.5" text-anchor="middle" fill="#555">3 A, logic + DAC</text>
+<circle cx="480" cy="138" r="4" fill="#333"/><text x="488" y="142" font-size="11.5" fill="#111">IN+</text>
+<circle cx="480" cy="158" r="4" fill="#333"/><text x="488" y="162" font-size="11.5" fill="#111">IN-</text>
+<circle cx="670" cy="138" r="4" fill="#333"/><text x="662" y="142" font-size="11.5" text-anchor="end" fill="#111">OUT+</text>
+<circle cx="670" cy="158" r="4" fill="#333"/><text x="662" y="162" font-size="11.5" text-anchor="end" fill="#111">OUT-</text>
+<rect x="705" y="80" width="165" height="105" rx="8" fill="#eee" stroke="#333" stroke-width="2"/>
+<text x="787.5" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">STAR GND</text>
+<text x="787.5" y="119" font-size="10.5" text-anchor="middle" fill="#555">one bolt / terminal block</text>
+<rect x="900" y="80" width="210" height="105" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="1005.0" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">USB isolator</text>
+<text x="1005.0" y="119" font-size="10.5" text-anchor="middle" fill="#555">ADuM4160 -&gt; laptop</text>
+<circle cx="1110" cy="138" r="4" fill="#333"/><text x="1102" y="142" font-size="11.5" text-anchor="end" fill="#111">USB</text>
+<rect x="1145" y="80" width="150" height="105" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="1220.0" y="102" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">Fan 24 V</text>
+<text x="1220.0" y="119" font-size="10.5" text-anchor="middle" fill="#555">on driver heatsink</text>
+<circle cx="1145" cy="138" r="4" fill="#333"/><text x="1153" y="142" font-size="11.5" fill="#111">+</text>
+<circle cx="1145" cy="158" r="4" fill="#333"/><text x="1153" y="162" font-size="11.5" fill="#111">-</text>
+<rect x="545" y="250" width="300" height="450" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="695.0" y="272" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">ESP32-S3  (screw-terminal breakout)</text>
+<text x="695.0" y="289" font-size="10.5" text-anchor="middle" fill="#555">leave 19/20 (USB) and 43/44 (console) empty</text>
+<circle cx="545" cy="308" r="4" fill="#333"/><text x="553" y="312" font-size="11.5" fill="#111">5V IN</text>
+<circle cx="545" cy="328" r="4" fill="#333"/><text x="553" y="332" font-size="11.5" fill="#111">3V3</text>
+<circle cx="545" cy="348" r="4" fill="#333"/><text x="553" y="352" font-size="11.5" fill="#111">GND</text>
+<circle cx="545" cy="368" r="4" fill="#333"/><text x="553" y="372" font-size="11.5" fill="#111">GPIO40</text>
+<circle cx="545" cy="388" r="4" fill="#333"/><text x="553" y="392" font-size="11.5" fill="#111">GPIO38 SDA</text>
+<circle cx="545" cy="408" r="4" fill="#333"/><text x="553" y="412" font-size="11.5" fill="#111">GPIO39 SCL</text>
+<circle cx="545" cy="428" r="4" fill="#333"/><text x="553" y="432" font-size="11.5" fill="#111">GPIO15</text>
+<circle cx="545" cy="448" r="4" fill="#333"/><text x="553" y="452" font-size="11.5" fill="#111">GPIO16</text>
+<circle cx="545" cy="468" r="4" fill="#333"/><text x="553" y="472" font-size="11.5" fill="#111">GPIO17</text>
+<circle cx="845" cy="308" r="4" fill="#333"/><text x="837" y="312" font-size="11.5" text-anchor="end" fill="#111">GPIO12 SCK</text>
+<circle cx="845" cy="328" r="4" fill="#333"/><text x="837" y="332" font-size="11.5" text-anchor="end" fill="#111">GPIO11 MOSI</text>
+<circle cx="845" cy="348" r="4" fill="#333"/><text x="837" y="352" font-size="11.5" text-anchor="end" fill="#111">GPIO13 MISO</text>
+<circle cx="845" cy="368" r="4" fill="#333"/><text x="837" y="372" font-size="11.5" text-anchor="end" fill="#111">GPIO10 CS</text>
+<circle cx="845" cy="388" r="4" fill="#333"/><text x="837" y="392" font-size="11.5" text-anchor="end" fill="#111">GPIO5 STEP</text>
+<circle cx="845" cy="408" r="4" fill="#333"/><text x="837" y="412" font-size="11.5" text-anchor="end" fill="#111">GPIO6 DIR</text>
+<circle cx="845" cy="428" r="4" fill="#333"/><text x="837" y="432" font-size="11.5" text-anchor="end" fill="#111">GPIO7 EN</text>
+<rect x="960" y="250" width="250" height="290" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="1085.0" y="272" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">TMC5160T Pro stepstick</text>
+<text x="1085.0" y="289" font-size="10.5" text-anchor="middle" fill="#555">CFG0-3 + CLK pins bent out, jumpered</text>
+<circle cx="960" cy="308" r="4" fill="#333"/><text x="968" y="312" font-size="11.5" fill="#111">VIO</text>
+<circle cx="960" cy="328" r="4" fill="#333"/><text x="968" y="332" font-size="11.5" fill="#111">GND</text>
+<circle cx="960" cy="348" r="4" fill="#333"/><text x="968" y="352" font-size="11.5" fill="#111">CFG2 SCK</text>
+<circle cx="960" cy="368" r="4" fill="#333"/><text x="968" y="372" font-size="11.5" fill="#111">CFG1 MOSI</text>
+<circle cx="960" cy="388" r="4" fill="#333"/><text x="968" y="392" font-size="11.5" fill="#111">CFG0 MISO</text>
+<circle cx="960" cy="408" r="4" fill="#333"/><text x="968" y="412" font-size="11.5" fill="#111">CFG3 CS</text>
+<circle cx="960" cy="428" r="4" fill="#333"/><text x="968" y="432" font-size="11.5" fill="#111">STP</text>
+<circle cx="960" cy="448" r="4" fill="#333"/><text x="968" y="452" font-size="11.5" fill="#111">DIR</text>
+<circle cx="960" cy="468" r="4" fill="#333"/><text x="968" y="472" font-size="11.5" fill="#111">EN</text>
+<circle cx="960" cy="488" r="4" fill="#333"/><text x="968" y="492" font-size="11.5" fill="#111">CLK</text>
+<circle cx="1210" cy="308" r="4" fill="#333"/><text x="1202" y="312" font-size="11.5" text-anchor="end" fill="#111">VM</text>
+<circle cx="1210" cy="328" r="4" fill="#333"/><text x="1202" y="332" font-size="11.5" text-anchor="end" fill="#111">GND pwr</text>
+<circle cx="1210" cy="348" r="4" fill="#333"/><text x="1202" y="352" font-size="11.5" text-anchor="end" fill="#111">A1</text>
+<circle cx="1210" cy="368" r="4" fill="#333"/><text x="1202" y="372" font-size="11.5" text-anchor="end" fill="#111">A2</text>
+<circle cx="1210" cy="388" r="4" fill="#333"/><text x="1202" y="392" font-size="11.5" text-anchor="end" fill="#111">B1</text>
+<circle cx="1210" cy="408" r="4" fill="#333"/><text x="1202" y="412" font-size="11.5" text-anchor="end" fill="#111">B2</text>
+<rect x="1290" y="270" width="150" height="170" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="1365.0" y="292" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">NEMA23 76 mm</text>
+<text x="1365.0" y="309" font-size="10.5" text-anchor="middle" fill="#555">dual shaft, 3 A</text>
+<circle cx="1290" cy="328" r="4" fill="#333"/><text x="1298" y="332" font-size="11.5" fill="#111">A+</text>
+<circle cx="1290" cy="348" r="4" fill="#333"/><text x="1298" y="352" font-size="11.5" fill="#111">A-</text>
+<circle cx="1290" cy="368" r="4" fill="#333"/><text x="1298" y="372" font-size="11.5" fill="#111">B+</text>
+<circle cx="1290" cy="388" r="4" fill="#333"/><text x="1298" y="392" font-size="11.5" fill="#111">B-</text>
+<rect x="960" y="590" width="250" height="130" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="1085.0" y="612" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">AS5600 (I2C 0x36)</text>
+<text x="1085.0" y="629" font-size="10.5" text-anchor="middle" fill="#555">24 AWG twisted, &lt;30 cm · 2.2k pull-ups</text>
+<circle cx="960" cy="648" r="4" fill="#333"/><text x="968" y="652" font-size="11.5" fill="#111">3V3</text>
+<circle cx="960" cy="668" r="4" fill="#333"/><text x="968" y="672" font-size="11.5" fill="#111">GND</text>
+<circle cx="960" cy="688" r="4" fill="#333"/><text x="968" y="692" font-size="11.5" fill="#111">SDA</text>
+<circle cx="960" cy="708" r="4" fill="#333"/><text x="968" y="712" font-size="11.5" fill="#111">SCL</text>
+<rect x="240" y="250" width="220" height="145" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="350.0" y="272" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">74AHCT125</text>
+<text x="350.0" y="289" font-size="10.5" text-anchor="middle" fill="#555">DIP-14 screw adapter · 100 nF</text>
+<circle cx="240" cy="308" r="4" fill="#333"/><text x="248" y="312" font-size="11.5" fill="#111">VCC 5V</text>
+<circle cx="240" cy="328" r="4" fill="#333"/><text x="248" y="332" font-size="11.5" fill="#111">GND</text>
+<circle cx="240" cy="348" r="4" fill="#333"/><text x="248" y="352" font-size="11.5" fill="#111">A1 in</text>
+<circle cx="240" cy="368" r="4" fill="#333"/><text x="248" y="372" font-size="11.5" fill="#111">/OE -&gt; GND</text>
+<circle cx="460" cy="308" r="4" fill="#333"/><text x="452" y="312" font-size="11.5" text-anchor="end" fill="#111">Y1 out</text>
+<rect x="30" y="445" width="430" height="140" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="245.0" y="467" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">WS2815 halo ring  (40", ~300 px)</text>
+<text x="245.0" y="484" font-size="10.5" text-anchor="middle" fill="#555">inject 12 V both ends · 330 ohm on DI</text>
+<circle cx="30" cy="503" r="4" fill="#333"/><text x="38" y="507" font-size="11.5" fill="#111">+12 V</text>
+<circle cx="30" cy="523" r="4" fill="#333"/><text x="38" y="527" font-size="11.5" fill="#111">GND</text>
+<circle cx="30" cy="543" r="4" fill="#333"/><text x="38" y="547" font-size="11.5" fill="#111">DI data</text>
+<circle cx="30" cy="563" r="4" fill="#333"/><text x="38" y="567" font-size="11.5" fill="#111">BI backup</text>
+<rect x="500" y="780" width="240" height="150" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="620.0" y="802" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">PCM5102A DAC</text>
+<text x="620.0" y="819" font-size="10.5" text-anchor="middle" fill="#555">SCK-&gt;GND · XSMT-&gt;3V3 · FLT/DEMP/FMT open</text>
+<circle cx="500" cy="838" r="4" fill="#333"/><text x="508" y="842" font-size="11.5" fill="#111">VIN 5V</text>
+<circle cx="500" cy="858" r="4" fill="#333"/><text x="508" y="862" font-size="11.5" fill="#111">GND</text>
+<circle cx="500" cy="878" r="4" fill="#333"/><text x="508" y="882" font-size="11.5" fill="#111">BCK</text>
+<circle cx="500" cy="898" r="4" fill="#333"/><text x="508" y="902" font-size="11.5" fill="#111">LRCK</text>
+<circle cx="500" cy="918" r="4" fill="#333"/><text x="508" y="922" font-size="11.5" fill="#111">DIN</text>
+<circle cx="740" cy="838" r="4" fill="#333"/><text x="732" y="842" font-size="11.5" text-anchor="end" fill="#111">LOUT</text>
+<rect x="880" y="780" width="230" height="150" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="995.0" y="802" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">TPA3116D2 amp</text>
+<text x="995.0" y="819" font-size="10.5" text-anchor="middle" fill="#555">fused 3 A</text>
+<circle cx="880" cy="838" r="4" fill="#333"/><text x="888" y="842" font-size="11.5" fill="#111">VCC 24V</text>
+<circle cx="880" cy="858" r="4" fill="#333"/><text x="888" y="862" font-size="11.5" fill="#111">GND</text>
+<circle cx="880" cy="878" r="4" fill="#333"/><text x="888" y="882" font-size="11.5" fill="#111">IN L</text>
+<circle cx="880" cy="898" r="4" fill="#333"/><text x="888" y="902" font-size="11.5" fill="#111">IN GND</text>
+<circle cx="1110" cy="838" r="4" fill="#333"/><text x="1102" y="842" font-size="11.5" text-anchor="end" fill="#111">OUT+</text>
+<circle cx="1110" cy="858" r="4" fill="#333"/><text x="1102" y="862" font-size="11.5" text-anchor="end" fill="#111">OUT-</text>
+<rect x="1200" y="790" width="160" height="110" rx="8" fill="#fff" stroke="#333" stroke-width="2"/>
+<text x="1280.0" y="812" font-size="15" font-weight="bold" text-anchor="middle" fill="#111">Speaker</text>
+<text x="1280.0" y="829" font-size="10.5" text-anchor="middle" fill="#555">Dayton B652, 8 ohm</text>
+<circle cx="1200" cy="848" r="4" fill="#333"/><text x="1208" y="852" font-size="11.5" fill="#111">+</text>
+<circle cx="1200" cy="868" r="4" fill="#333"/><text x="1208" y="872" font-size="11.5" fill="#111">-</text>
+<polyline points="220,138 235,148 235,62 1520,62 1520,255 1245,255 1245,308 1210,308" fill="none" stroke="#d62828" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="239" y="143" font-size="11" fill="#d62828">24 V  fuse 5 A  18 AWG</text>
+<polyline points="1520,255 1520,755 865,755 865,838 880,838" fill="none" stroke="#d62828" stroke-width="2.2" stroke-dasharray="6,4" stroke-linejoin="round"/>
+<text x="1450" y="749" font-size="11" fill="#d62828">fuse 3 A</text>
+<polyline points="1300,62 1300,66 1130,66 1130,138 1145,138" fill="none" stroke="#d62828" stroke-width="2.2" stroke-linejoin="round"/>
+<polyline points="220,158 232,168 232,205 760,205 760,138" fill="none" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+<text x="236" y="163" font-size="11" fill="#111">heavy GND</text>
+<polyline points="445,138 460,128 460,138 480,138" fill="none" stroke="#f77f00" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="464" y="123" font-size="11" fill="#f77f00">12 V</text>
+<polyline points="445,138 465,128 465,225 14,225 14,503 30,503" fill="none" stroke="#f77f00" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="469" y="123" font-size="11" fill="#f77f00">12 V  fuse 5 A  14 AWG</text>
+<polyline points="445,158 462,168 462,212 770,212 770,150" fill="none" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="30,523 10,523 10,240 775,240 775,160 770,160" fill="none" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="670,138 690,128 690,232 528,232 528,308 545,308" fill="none" stroke="#e91e63" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="694" y="123" font-size="11" fill="#e91e63">5 V</text>
+<polyline points="528,308 528,236 228,236 228,308 240,308" fill="none" stroke="#e91e63" stroke-width="2.2" stroke-dasharray="6,4" stroke-linejoin="round"/>
+<polyline points="528,308 528,745 485,745 485,838 500,838" fill="none" stroke="#e91e63" stroke-width="2.2" stroke-dasharray="6,4" stroke-linejoin="round"/>
+<polyline points="670,158 686,148 686,178 780,178 780,170" fill="none" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="800,135 880,135 880,243 522,243 522,348 545,348" fill="none" stroke="#111" stroke-width="2.4" stroke-linejoin="round"/>
+<text x="884" y="130" font-size="11" fill="#111">logic GND</text>
+<polyline points="1210,328 1250,328 1250,247 880,247 880,190 800,190 800,182" fill="none" stroke="#111" stroke-width="3" stroke-linejoin="round"/>
+<text x="1155" y="322" font-size="11" fill="#111">driver pwr GND</text>
+<polyline points="545,328 524,328 524,239 935,239 935,308 960,308" fill="none" stroke="#c9a800" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="528" y="323" font-size="11" fill="#c9a800">3V3</text>
+<polyline points="935,308 935,648 960,648" fill="none" stroke="#c9a800" stroke-width="2.2" stroke-dasharray="6,4" stroke-linejoin="round"/>
+<polyline points="545,348 518,348 518,252 944,252 944,328 960,328" fill="none" stroke="#111" stroke-width="2.2" stroke-dasharray="6,4" stroke-linejoin="round"/>
+<text x="522" y="360" font-size="11" fill="#111">logic ref</text>
+<polyline points="944,328 944,668 960,668" fill="none" stroke="#111" stroke-width="2.2" stroke-dasharray="6,4" stroke-linejoin="round"/>
+<polyline points="960,488 944,488" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="882.0" y="483.0" font-size="11" fill="#111">CLK-&gt;GND</text>
+<polyline points="845,308 855,308 855,348 960,348" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="859" y="303" font-size="11" fill="#7c3aed">SCK</text>
+<polyline points="845,328 871,328 871,368 960,368" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="875" y="323" font-size="11" fill="#7c3aed">MOSI</text>
+<polyline points="845,348 887,348 887,388 960,388" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="891" y="343" font-size="11" fill="#7c3aed">MISO</text>
+<polyline points="845,368 903,368 903,408 960,408" fill="none" stroke="#7c3aed" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="907" y="363" font-size="11" fill="#7c3aed">CS</text>
+<polyline points="845,388 895,388 895,428 960,428" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="899" y="383" font-size="11" fill="#1d4ed8">STEP</text>
+<polyline points="845,408 909,408 909,448 960,448" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="913" y="403" font-size="11" fill="#1d4ed8">DIR</text>
+<polyline points="845,428 923,428 923,468 960,468" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="927" y="423" font-size="11" fill="#1d4ed8">EN</text>
+<text x="20" y="612" font-size="11" fill="#111">LED GND -&gt; 12 V PSU V- (heavy 14 AWG)</text>
+<text x="962" y="556" font-size="11" fill="#555">EN is ACTIVE LOW: drive LOW to run</text>
+<polyline points="1210,348 1245,348 1245,328 1290,328" fill="none" stroke="#1d4ed8" stroke-width="2.6" stroke-linejoin="round"/>
+<polyline points="1210,368 1254,368 1254,348 1290,348" fill="none" stroke="#1d4ed8" stroke-width="2.6" stroke-linejoin="round"/>
+<polyline points="1210,388 1263,388 1263,368 1290,368" fill="none" stroke="#1d4ed8" stroke-width="2.6" stroke-linejoin="round"/>
+<polyline points="1210,408 1272,408 1272,388 1290,388" fill="none" stroke="#1d4ed8" stroke-width="2.6" stroke-linejoin="round"/>
+<text x="1290" y="462" font-size="11" fill="#555">front shaft -&gt; L075 -&gt; 3/4" wheel shaft</text>
+<text x="1290" y="478" font-size="11" fill="#555">rear stub -&gt; diametric magnet -&gt; AS5600</text>
+<text x="1290" y="494" font-size="11" fill="#555">2200 uF / 35 V across VM-GND at driver</text>
+<polyline points="545,388 512,388 512,722 925,722 925,688 960,688" fill="none" stroke="#0891b2" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="466" y="383" font-size="11" fill="#0891b2">SDA</text>
+<polyline points="545,408 506,408 506,730 931,730 931,708 960,708" fill="none" stroke="#0891b2" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="460" y="403" font-size="11" fill="#0891b2">SCL</text>
+<polyline points="545,368 505,368 505,415 225,415 225,348 240,348" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="509" y="363" font-size="11" fill="#1d4ed8">GPIO40 data</text>
+<polyline points="460,308 478,308 478,430 18,430 18,543 30,543" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="482" y="303" font-size="11" fill="#1d4ed8">5 V data 330 ohm</text>
+<polyline points="30,563 14,563" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="-40.0" y="579.0" font-size="11" fill="#111">BI-&gt;GND</text>
+<polyline points="240,368 232,368" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+<polyline points="240,328 232,328" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+<polyline points="545,428 500,428 500,760 470,760 470,878 500,878" fill="none" stroke="#0f766e" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="504" y="423" font-size="11" fill="#0f766e">BCK</text>
+<polyline points="545,448 494,448 494,766 464,766 464,898 500,898" fill="none" stroke="#0f766e" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="498" y="443" font-size="11" fill="#0f766e">LRCK</text>
+<polyline points="545,468 488,468 488,772 458,772 458,918 500,918" fill="none" stroke="#0f766e" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="492" y="463" font-size="11" fill="#0f766e">DIN</text>
+<polyline points="740,838 810,838 810,878 880,878" fill="none" stroke="#0f766e" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="814" y="833" font-size="11" fill="#0f766e">line out (shielded)</text>
+<polyline points="880,898 865,898" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+<polyline points="880,858 865,858" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="826.5" y="872.0" font-size="11" fill="#111">-&gt; star</text>
+<polyline points="500,858 485,858" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="444.5" y="853.0" font-size="11" fill="#111">-&gt; star</text>
+<polyline points="1110,838 1160,838 1160,848 1200,848" fill="none" stroke="#1d4ed8" stroke-width="2.6" stroke-linejoin="round"/>
+<polyline points="1110,858 1170,858 1170,868 1200,868" fill="none" stroke="#1d4ed8" stroke-width="2.6" stroke-linejoin="round"/>
+<text x="1198" y="920" font-size="11" fill="#555">bridged output: neither terminal to GND</text>
+<polyline points="1145,158 1140,158" fill="none" stroke="#111" stroke-width="2.2" stroke-linejoin="round"/>
+<text x="905" y="200" font-size="11" fill="#555">USB -&gt; S3 native USB port (program/tune only)</text>
+<line x1="30" y1="985" x2="66" y2="985" stroke="#d62828" stroke-width="3"/><text x="74" y="989" font-size="12.5" fill="#111">24 V</text>
+<line x1="190" y1="985" x2="226" y2="985" stroke="#f77f00" stroke-width="3"/><text x="234" y="989" font-size="12.5" fill="#111">12 V</text>
+<line x1="350" y1="985" x2="386" y2="985" stroke="#e91e63" stroke-width="3"/><text x="394" y="989" font-size="12.5" fill="#111">5 V</text>
+<line x1="510" y1="985" x2="546" y2="985" stroke="#c9a800" stroke-width="3"/><text x="554" y="989" font-size="12.5" fill="#111">3V3</text>
+<line x1="670" y1="985" x2="706" y2="985" stroke="#111" stroke-width="3"/><text x="714" y="989" font-size="12.5" fill="#111">GND</text>
+<line x1="830" y1="985" x2="866" y2="985" stroke="#1d4ed8" stroke-width="3"/><text x="874" y="989" font-size="12.5" fill="#111">logic / motor</text>
+<line x1="990" y1="985" x2="1026" y2="985" stroke="#7c3aed" stroke-width="3"/><text x="1034" y="989" font-size="12.5" fill="#111">SPI</text>
+<line x1="1150" y1="985" x2="1186" y2="985" stroke="#0891b2" stroke-width="3"/><text x="1194" y="989" font-size="12.5" fill="#111">I2C</text>
+<line x1="1310" y1="985" x2="1346" y2="985" stroke="#0f766e" stroke-width="3"/><text x="1354" y="989" font-size="12.5" fill="#111">audio</text>
+<text x="30" y="1020" font-size="11.5" fill="#555">Dashed = shared rail continuation. Fuses: 24 V motor 5 A, 24 V amp 3 A, 12 V LEDs 5 A. All grounds meet once at STAR GND.</text>
+<text x="30" y="1038" font-size="11.5" fill="#555">Driver SPI mode 3. AS5600 on its own I2C bus (GPIO38/39, 400 kHz). PCM5102A: SCK to GND and XSMT to 3V3 are required jumpers.</text>
+<text x="30" y="1056" font-size="11.5" fill="#555">If STEP/DIR/EN terminals 5/6/7 are absent on the breakout, substitute 47/48/21 and keep the rest unchanged.</text>
+</svg>
