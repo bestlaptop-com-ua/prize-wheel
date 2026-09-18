@@ -1,9 +1,10 @@
 # Wheel v2 - hardware decisions and pin map
 
-Status: build in progress (target: party build). This file records the v2
-hardware that replaces the bench rig described in `S3_PORT.md`. Firmware in
-`prize_wheel_gpt/` still carries the v1 bench pin map - see "Firmware deltas"
-at the bottom for what must change before the v2 loom is powered.
+Status: direct-drive v2 bring-up completed in part; reliability is not yet
+validated. The committed main sketch has the S3/TMC5160 SPI pin map below.
+See [bring-up observations](HARDWARE_EVAL_2026-09-17.md) and the
+[2026-09-18 review](HARDWARE_REVIEW_2026-09-18.md) for outstanding work.
+The NEMA34/DM860T and belt options are not installed configurations here.
 
 ## Mechanical
 
@@ -20,8 +21,11 @@ at the bottom for what must change before the v2 loom is powered.
 | Pegs | 12 on the wedge boundaries + flapper | mechanical clicks; this is why audio latency no longer matters |
 | Face | printed adhesive vinyl (dry-erase laminate) on sealed/primed ply | trim flush after applying; register to the HUB HOLE, not the edge |
 
-Torque budget: intercept at 0.55 rev/s with a 4 s decel needs ~0.6 N*m (1/2"
-disc) or ~0.8 N*m (3/4"). Motor supplies 1.9 N*m => 2.4-3x margin.
+Torque estimate: at 0.55 rev/s, a uniform 4 s stop with inertia
+0.6-0.9 kg*m^2 needs 0.52-0.78 N*m net braking torque. Gravity and friction
+alter motor demand; capture transients may be larger. The 1.9 N*m motor
+rating is holding torque, so it does not establish a 2.4-3x running margin.
+Neither does this estimate establish that the motor is inadequate.
 
 Balance statically on the bearings AFTER pegs and vinyl are on. 20 g at the
 rim is ~0.1 N*m, a real bite out of the budget.
@@ -69,8 +73,8 @@ If STEP/DIR/EN terminals 5/6/7 are absent on the breakout, substitute
 ### Wiring rules that bite if skipped
 
 - TMC5160T `CLK` -> GND (use the internal clock).
-- TMC5160T `EN` is ACTIVE LOW: drive LOW to run. This is inverted vs the
-  A4988-style `EN` on the v1 rig.
+- TMC5160T `EN` is ACTIVE LOW: drive LOW to run. Verify the actual carrier wiring;
+  A4988 enable is also active low.
 - The stepstick is seated in an A4988/DRV8825 DIP-switch breakout with the
   CFG0-CFG3 and CLK pins BENT OUT of the socket and jumpered directly, so the
   breakout's MS1/MS2/MS3 and RST/SLP wiring never touches the SPI lines.
@@ -92,23 +96,17 @@ If STEP/DIR/EN terminals 5/6/7 are absent on the breakout, substitute
 
 See `docs/prize_wheel_v2_wiring.svg` for the drawing.
 
-## Firmware deltas still to do
+## Firmware status and remaining work
 
-The sketch in `prize_wheel_gpt/` is still on the v1 bench map:
+The committed sketch already uses `TMC5160Stepper`, R_SENSE=0.075 ohm,
+SPI GPIO 10/11/13/12, enable GPIO 7, encoder GPIO 38/39, LED GPIO 40,
+and direct-drive `GEAR_RATIO=1.0`. It selects SpreadCycle with
+`en_pwm_mode(false)`; TMC2209-only calls are not valid replacements.
 
-- `TMC_RX_PIN 16` / `TMC_TX_PIN 17` / `R_SENSE 0.11f` - UART TMC2209 setup.
-  v2 is a TMC5160 over SPI: `TMC5160Stepper driver(CS, 0.075f, MOSI, MISO,
-  SCK)`, SPI mode 3, `rms_current(2800)`, `en_spreadCycle(false)`,
-  `pwm_autoscale(true)`.
-- `PIN_EN 4` -> 7. Verify enable polarity against the 5160T (also active-low,
-  so `setEnablePin(pin, true)` likely stands).
-- `PIN_SDA 8` / `PIN_SCL 9` -> 38 / 39.
-- LED data pin -> 40.
-- GPIO 15/16/17 are now I2S, not UART. Serial1 and all DFPlayer code come
-  out; the effect player becomes I2S from PSRAM.
-- Drive is now DIRECT 1:1, not the 2:1 belt: 4096 encoder counts cover ONE
-  wheel revolution. Re-derive anything that assumed two.
-- Re-measure `rawZero` on the new disc; re-run the friction calibration with
-  pegs fitted (the flapper changes the friction shape).
-- Retune the StealthChop current staging around the 3 A motor rather than
-  the 600/450 mA pair used on the v1 rig.
+Remaining work includes preserving learned friction values across restart,
+reconciling production-only changes, capture diagnostics and tuning, and
+integrating I2S audio (DFPlayer effects are disabled). Recalibrate `rawZero`
+and friction after mechanical changes, with pegs fitted. Do not increase
+current solely from the nominal 3 A motor rating without checking its
+rating convention. See the review for belt encoder constraints and the
+separate DM860T driver implementation required if that hardware is adopted.
