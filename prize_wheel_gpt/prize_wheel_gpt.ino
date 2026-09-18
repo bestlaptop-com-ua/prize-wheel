@@ -30,7 +30,7 @@
  *   (default 3807).  Raw decreases as clockwise wheel angle increases.  'z'
  *   stores the current raw as rawZero.  See HANDOFF_CHATGPT_FRAME.md.
  *
- * Hardware: ESP32-WROOM-32, BTT TMC2209 V1.3 (UART), NEMA17, 2:1 GT2 belt,
+ * Hardware: ESP32-S3, BTT TMC5160T Pro (SPI), NEMA23 76mm dual-shaft, 1:1 direct drive (v2),
  *           AS5600 on the wheel shaft.
  * Build:    ESP32 Arduino core 3.3.10, FastAccelStepper 1.2.7, TMCStepper.
  * ========================================================================== */
@@ -45,25 +45,25 @@
 #include "pw_party.h"
 
 /* ----------------------------- PINS -------------------------------------- */
-#define TMC_SERIAL   Serial2
-#define TMC_RX_PIN   16
-#define TMC_TX_PIN   17
-#define TMC_ADDR     0b00
-#define R_SENSE      0.11f
+#define TMC_CS_PIN   10
+#define TMC_MOSI_PIN 11
+#define TMC_SCK_PIN  12
+#define TMC_MISO_PIN 13
+#define R_SENSE      0.075f
 
-#define PIN_EN   4
+#define PIN_EN   7
 #define PIN_STEP 5
 #define PIN_DIR  6
 
-#define PIN_SDA  8
-#define PIN_SCL  9
+#define PIN_SDA  38
+#define PIN_SCL  39
 #define AS5600_ADDR 0x36
 #define AS5600_RAW  0x0C
 
 /* --------------------------- MECHANICAL ---------------------------------- */
 #define MOTOR_FULLSTEPS 200
 #define MICROSTEPS      16
-#define GEAR_RATIO      2.0f
+#define GEAR_RATIO      1.0f
 const float WHEEL_USTEPS_PER_REV = MOTOR_FULLSTEPS * MICROSTEPS * GEAR_RATIO;
 #define NUM_WEDGES 12
 const float WEDGE_DEG = 360.0f / NUM_WEDGES;
@@ -262,21 +262,21 @@ const uint16_t HOLD2_MS               = 1200;
 // rattles).  Current sets coupling stiffness; the braking force itself is
 // set by the commanded profile.  (600/450 only over-braked under the old
 // continuously-trailing law, which forced multi-pole slip at any current.)
-const uint16_t CUR_PRECHARGE_MA = 100;  // phase settle, no snap
-const uint16_t CUR_CAPTURE_MA   = 600;
-const uint16_t CUR_BRAKE_MA     = 450;
-const uint16_t CUR_TAPER_MA     = 300;  // final taper / settle watch
-const uint16_t CUR_HOLD1_MA     = 150;  // fade...
-const uint16_t CUR_HOLD2_MA     = 80;   // ...to freewheel
+const uint16_t CUR_PRECHARGE_MA = 350;  // phase settle, no snap (v2: NEMA23 scale)
+const uint16_t CUR_CAPTURE_MA   = 2200;
+const uint16_t CUR_BRAKE_MA     = 1650;
+const uint16_t CUR_TAPER_MA     = 1100;  // final taper / settle watch
+const uint16_t CUR_HOLD1_MA     = 550;  // fade...
+const uint16_t CUR_HOLD2_MA     = 300;   // ...to freewheel
 
 // --- direction probe ---
-const uint16_t DIR_PROBE_CURRENT_MA = 350;
+const uint16_t DIR_PROBE_CURRENT_MA = 1600;  // v2: NEMA23 direct-drive needs far more than the old NEMA17 belt figure
 const uint32_t DIR_PROBE_SPEED_HZ   = 100;
 const uint32_t DIR_PROBE_ACCEL_SPS2 = 300;
 const int32_t  DIR_PROBE_USTEPS     = 160;   // 9 deg at the wheel
 const float    DIR_PROBE_MIN_DEG    = 2.0f;
 const float    DIR_PROBE_RETURN_TOL_DEG = 3.0f;
-const uint32_t DIR_PROBE_TIMEOUT_MS = 7000;
+const uint32_t DIR_PROBE_TIMEOUT_MS = 15000;  // temp: diagnosing slow settle vs stuck isRunning()
 
 // --- encoder (proven P1 pipeline; unchanged) ---
 const uint32_t ENCODER_SAMPLE_PERIOD_US = 1000;
@@ -307,7 +307,7 @@ const float FIT_BLEND = 0.35f;
 const uint16_t FIT_PERSIST_MIN_FITS = 2;      // persist only once corroborated
 
 /* --------------------------- STATE --------------------------------------- */
-TMC2209Stepper driver(&TMC_SERIAL, R_SENSE, TMC_ADDR);
+TMC5160Stepper driver(TMC_CS_PIN, R_SENSE, TMC_MOSI_PIN, TMC_MISO_PIN, TMC_SCK_PIN);
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper* stepper = nullptr;
 Preferences preferences;
@@ -821,11 +821,11 @@ void updateEncoder() {
 // Bench-proven TMC2209 configuration, kept verbatim.
 void driverConfig() {
   driver.begin();
-  driver.I_scale_analog(false);   // internal Iref, NOT the Vref pot - critical
+  // I_scale_analog: N/A on TMC5160 (TMC2209-only GCONF bit, inaccessible here)
   driver.toff(4);
   driver.blank_time(24);
   driver.microsteps(16);
-  driver.en_spreadCycle(true);    // SpreadCycle = torque, no RPM cap
+  driver.en_pwm_mode(false);      // SpreadCycle = torque, no RPM cap (TMC5160: false=SpreadCycle)
   driver.pwm_autoscale(true);
   driver.rms_current(RMS_CURRENT_MA, 1.0);
   driver.TCOOLTHRS(0);
@@ -2311,6 +2311,16 @@ void setup() {
   ccw_b = preferences.getFloat("ccwB", 0.15f);
   cwFitCount = preferences.getUShort("cwN", 0);
   ccwFitCount = preferences.getUShort("ccwN", 0);
+  // v2 reseed: old fit (0.30/0.15) was tuned for the NEMA17/belt wheel and
+  // understates this 36" wheel's real drag, so the brake plan is consistently
+  // overtaken by faster-than-planned natural deceleration (FC_MOTOR_FIGHT).
+  // Forcibly override whatever is persisted; online fit refines from here.
+  cw_c = 0.55f; cw_b = 0.28f;
+  ccw_c = 0.55f; ccw_b = 0.28f;
+  cwFitCount = 0; ccwFitCount = 0;
+  preferences.putFloat("cwC", cw_c);   preferences.putFloat("cwB", cw_b);
+  preferences.putFloat("ccwC", ccw_c); preferences.putFloat("ccwB", ccw_b);
+  preferences.putUShort("cwN", 0);     preferences.putUShort("ccwN", 0);
   // Persisted values pass the same bounds as fresh fits: one corrupted NVS
   // float (or b<=0 -> NaN travel) must never poison target selection.
   if (!(cw_c >= FIT_C_MIN && cw_c <= FIT_C_MAX) ||
@@ -2342,8 +2352,7 @@ void setup() {
   pinMode(PIN_EN, OUTPUT);
   digitalWrite(PIN_EN, LOW);  // hold at boot; freewheel selected below
 
-  TMC_SERIAL.begin(115200, SERIAL_8N1, TMC_RX_PIN, TMC_TX_PIN);
-  driverConfig();
+  driverConfig();   // TMC5160T Pro over SPI - no serial begin needed
 
   engine.init();
   stepper = engine.stepperConnectToPin(PIN_STEP, DRIVER_MCPWM_PCNT);  /* S3: keep FAS off RMT so FastLED owns it (see S3_PORT.md) */

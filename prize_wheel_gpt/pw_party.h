@@ -33,7 +33,7 @@
 #define PW_S3_ENABLE 1   /* fitRej= + fit counts appended to SPIN SUMMARY      */
 
 #define PW_WIFI_ENABLE    0 /* SoftAP + telnet mirror/commands (WIFI_TASK.md)     */
-#define PW_FX_AUDIO_ENABLE 1 /* DFPlayer Mini on UART1 (see README wiring)     */
+#define PW_FX_AUDIO_ENABLE 0 /* v2: DFPlayer removed; pending I2S/PCM5102A port  */
 #define PW_FX_LED_ENABLE   1 /* WS2812B helix on GPIO4 (LED_HANDOFF.md)        */
 
 /* ------------------------------ WiFi ------------------------------------- */
@@ -78,7 +78,7 @@
 #define PW_FX_LANDED_PAUSE_MS   400
 
 /* ------------------------------ WS2812B ---------------------------------- */
-#define PW_LED_PIN    21        /* verified 3.3 V direct drive (LED_HANDOFF)   */
+#define PW_LED_PIN    40        /* v2: through 74AHCT125 5V level shifter to WS2815 */
 #define PW_NUM_LEDS   300      /* measured; helix around the pole             */
 #define PW_LED_ORDER  GRB
 #define PW_FX_MAX_MA  3000     /* buck headroom for TMC logic + DFPlayer      */
