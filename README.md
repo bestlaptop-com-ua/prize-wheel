@@ -1,5 +1,10 @@
 ﻿# Prize Wheel
 
+> **Current hardware evaluation:** The active prototype is the 36-inch,
+> direct-drive NEMA23 assembly. See the [September 18 test-session status](HARDWARE_SESSION_STATUS_2026-09-18.md)
+> for measured results, firmware availability, and the pending six-second braking test.
+> The overview and hardware table below describe the original 24-inch build.
+
 ESP32 firmware for a hand-spun 24" prize wheel that quietly steers away from two
 designated "dare" wedges while otherwise behaving like an ordinary free-spinning
 wheel.
