@@ -90,12 +90,14 @@
 
 /* --------------------- sanctioned-fix helper macros ----------------------- */
 #define PW_S1_NVS_KEY "fltLatch"
+bool pwPersistFaultLatch(uint8_t code);
+bool pwClearFaultLatch();
 #if PW_S1_ENABLE
-#define PW_S1_PERSIST(code) preferences.putUChar(PW_S1_NVS_KEY, (uint8_t)(code))
-#define PW_S1_CLEAR()       preferences.putUChar(PW_S1_NVS_KEY, 0)
+#define PW_S1_PERSIST(code) pwPersistFaultLatch((uint8_t)(code))
+#define PW_S1_CLEAR()       pwClearFaultLatch()
 #else
 #define PW_S1_PERSIST(code) do {} while (0)
-#define PW_S1_CLEAR()       do {} while (0)
+#define PW_S1_CLEAR()       true
 #endif
 
 #if PW_S3_ENABLE
