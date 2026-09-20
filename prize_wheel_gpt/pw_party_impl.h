@@ -560,19 +560,8 @@ void pwPartyBegin() {
     Serial.println(F("# WARN: last reset was BROWNOUT - check 5V rail under WiFi+LED load"));
   }
 
-#if PW_S1_ENABLE
-  /* S1: a fault latched before power-off stays latched.  Only 'r' clears it
-   * (and a passing attended probe for DIR_CAL, mirroring the RAM latch).     */
-  uint8_t stored = preferences.getUChar(PW_S1_NVS_KEY, 0);
-  if (stored != 0 && stored <= (uint8_t)FC_LANDING_UNSAFE &&
-      state != ST_FAULT_LATCHED) {
-    faultCode = (FaultCode)stored;
-    state = ST_FAULT_LATCHED;
-    stateEnteredMs = millis();
-    Serial.printf("# S1: latched fault %s restored from NVS; takeover locked until r\n",
-                  faultName(faultCode));
-  }
-#endif
+  // S1 restore now runs immediately after preferences.begin(), before any
+  // driver/encoder health check can replace the saved first fault.
 
 #if PW_FX_AUDIO_ENABLE
   Serial1.begin(PW_DFP_BAUD, SERIAL_8N1, PW_DFP_RX_PIN, PW_DFP_TX_PIN);

@@ -1,8 +1,9 @@
 ﻿# Prize Wheel
 
-> **Current hardware evaluation:** The active prototype is the 36-inch,
-> direct-drive NEMA23 assembly. See the [September 18 test-session status](HARDWARE_SESSION_STATUS_2026-09-18.md)
-> for measured results, firmware availability, and the pending six-second braking test.
+> **Unvalidated plywood-wheel integration:** Automatic takeover defaults off.
+> The 36-inch direct-drive assembly passed one diagnostic pickup direction and
+> failed the other. See the [September 20 findings](HARDWARE_REVIEW_2026-09-20.md),
+> [capture changes](CAPTURE_INTEGRATION.md), and [ESP32-S3 build instructions](BUILD_PRODUCTION.md).
 > The overview and hardware table below describe the original 24-inch build.
 
 ESP32 firmware for a hand-spun 24" prize wheel that quietly steers away from two

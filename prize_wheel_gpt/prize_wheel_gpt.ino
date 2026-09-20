@@ -1,23 +1,23 @@
 /* ============================================================================
  * prize_wheel_gpt.ino - Prize wheel firmware, correctness redesign
  *
- * Every genuine hand spin is captured mid-coast and guided to a random safe
- * wedge interior, continuing in the guest's direction with a monotonically
- * decreasing command speed.  Wedges 1 and 5 (dares) are never a controlled
- * landing.  Manual repositioning of a stopped wheel is left untouched.
+ * Unvalidated production integration: takeover defaults OFF. Eligible spins
+ * may be captured within the bounded test envelope and guided to a selected
+ * safe wedge. An infeasible plan remains a free coast. Wedges 1 and 5 are never
+ * selected targets; landing feedback still determines the actual result.
  *
  * State machine:
  *   IDLE_STOPPED -> MOTION_CANDIDATE -> (MANUAL_ADJUSTMENT | SPIN_PUSH)
- *   SPIN_PUSH -> SPIN_RELEASED -> TARGET_RESERVED -> SPEED_MATCH_CAPTURE
+ *   SPIN_PUSH -> SPIN_RELEASED -> TARGET_RESERVED -> CAPTURE_ARMING -> SPEED_MATCH_CAPTURE
  *   -> CONTROLLED_DECEL -> LANDING_SETTLE -> SOFT_HOLD -> IDLE_STOPPED
  *   Any powered state -> FAULT_LATCHED on hardware/invariant failure.
  *
  * Hard rules enforced here:
  *   - Spin detection is purely kinematic; target availability never delays or
  *     reclassifies a spin.
- *   - The motor only ever brakes: command speed never increases after capture,
- *     starts below a trailing-minimum wheel speed, and chases the wheel down
- *     if the wheel is ever slower than the field.
+ *   - Command speed never increases after capture. Target selection retains
+ *     the brake-reachable model; pulse-speed agreement does not establish
+ *     rotor electrical phase or prove exclusively braking mechanical torque.
  *   - Direction never reverses; FAS polarity comes only from the attended
  *     two-leg probe (NVS), never from INVERT_DIR.
  *   - Normal landings taper through stopMove() at the planned deceleration.
@@ -31,7 +31,7 @@
  *   stores the current raw as rawZero.  See HANDOFF_CHATGPT_FRAME.md.
  *
  * Hardware: ESP32-S3, BTT TMC5160T Pro (SPI), NEMA23 76mm dual-shaft, 1:1 direct drive (v2),
- *           AS5600 on the wheel shaft.
+ *           AS5600 on the motor rear shaft (not independent disc feedback).
  * Build:    ESP32 Arduino core 3.3.10, FastAccelStepper 1.2.7, TMCStepper.
  * ========================================================================== */
 
@@ -39,6 +39,15 @@
 #include <Preferences.h>
 #include <TMCStepper.h>
 #include <FastAccelStepper.h>
+#include "pw_step_clock.h"
+#include "pw_fault_policy.h"
+#include "pw_brake_profile.h"
+#include "pw_speedup_watch.h"
+#include "pw_capture_arm.h"
+#include "pw_capture_cycle.h"
+#include "pw_capture_lease.h"
+#include "pw_fit_lifecycle.h"
+#include "pw_friction_store.h"
 // Party additions (WiFi + FX + sanctioned fixes S1/S2/S3): declarations,
 // config switches and the serial mirror.  Implementations are included at the
 // very bottom of this file.  See PARTY_TASK.md / DELIVERY.md.
@@ -73,7 +82,8 @@ enum State : uint8_t {
   ST_IDLE_STOPPED, ST_MOTION_CANDIDATE, ST_MANUAL_ADJUSTMENT,
   ST_SPIN_PUSH, ST_SPIN_RELEASED, ST_TARGET_RESERVED,
   ST_SPEED_MATCH_CAPTURE, ST_CONTROLLED_DECEL, ST_LANDING_SETTLE,
-  ST_SOFT_HOLD, ST_DIR_PROBE, ST_FAULT_LATCHED
+  ST_SOFT_HOLD, ST_DIR_PROBE, ST_FAULT_LATCHED,
+  ST_CAPTURE_ARMING // append: observe STEP with EN high before torque
 };
 
 enum FaultCode : uint8_t {
@@ -90,11 +100,20 @@ enum FaultCode : uint8_t {
   FC_STEPPER_API,          // FastAccelStepper call returned an error
   FC_MONOTONIC_VIOLATION,  // internal: computed command tried to increase
   FC_TARGET_INVARIANT,     // internal: selected target was a dare
-  FC_LANDING_UNSAFE        // settled on a dare after a controlled attempt
+  FC_LANDING_UNSAFE,       // settled on a dare after a controlled attempt
+  FC_TRACKING_LOST = 14,   // persisted compatibility with the v2 bench build
+  FC_SELFSPIN_ABORT = 15,  // persisted compatibility; no selfspin commands here
+  FC_UNKNOWN_PERSISTED = 16, // raw stored ID is retained separately, never rewritten
+  FC_CONTROL_OVERSPEED = 17 // instantaneous powered-control speed ceiling
 };
+static_assert(FC_LANDING_UNSAFE == 13 && FC_TRACKING_LOST == 14 &&
+              FC_SELFSPIN_ABORT == 15 && FC_UNKNOWN_PERSISTED == 16 &&
+              FC_CONTROL_OVERSPEED == 17,
+              "Persisted fault IDs must remain compatible with deployed builds");
 
 enum CurrentStage : uint8_t {
-  CS_FREEWHEEL, CS_PRECHARGE, CS_CAPTURE, CS_BRAKE, CS_TAPER, CS_HOLD1, CS_HOLD2
+  CS_FREEWHEEL, CS_PRECHARGE, CS_CAPTURE, CS_BRAKE, CS_TAPER, CS_HOLD1, CS_HOLD2,
+  CS_CAPTURE_PREPARED // full current registers, outputs remain disabled
 };
 
 enum SpinResult : uint8_t {
@@ -164,8 +183,8 @@ const float ENGAGE_MAX_REV_S          = 0.72f;  // reserve once at/below this
 const float ENGAGE_URGENCY_WINDOW_DEG = 60.0f;  // engage before an OPEN window
                                                 // narrows past the largest
                                                 // safe-interior gap (46 deg)
-// Equivalent free-coast distance lost before braking is effective: 80 ms
-// precharge (no braking) plus ~250 ms pickup at partial braking authority.
+// Retained conservative model allowance for arming plus pickup. The actual
+// EN-high pulse-arming lease is independently limited to 150 ms.
 const float ENGAGE_LATENCY_S          = 0.22f;
 const float MIN_BRAKE_HEADROOM_DEG    = 15.0f;
 // A brake-only capture cannot use the full natural coast: the trailing phase
@@ -185,36 +204,30 @@ const float DARE_EDGE_MARGIN_DEG = 8.0f;  // margin at dare-facing boundaries - 
 const float LANDING_INTERIOR_MIN_DEG  = 5.0f;   // verification margin
 const float DARE_PROXIMITY_FAULT_DEG  = 2.0f;   // settle this close to a dare
                                                 // boundary = unsafe landing
-const uint16_t PRECHARGE_MS           = 80;
-// The pulse train STARTS at the 100 mA precharge level with the field
-// already sweeping at ~95% of wheel speed; full capture torque steps in
-// only after this delay, onto an already-synchronized pair.  Stepping
-// 600 mA onto a static field just before the pulses was the audible
-// capture tick.
-const uint16_t CAPTURE_CURRENT_DELAY_MS = 120;
+// Full-current registers are prepared with EN high. Pulse proof precedes the
+// first enable edge; no static field dwell or low-current capture stage.
 const uint16_t PICKUP_COHERENCE_MS    = 250;
 // Friction-model bootstrap: while a direction has fewer than the persist
 // threshold of valid fits, defer engagement (bounded by window width and
 // time) so the release coast can feed the online fit.
 const float CAL_DEFER_MIN_WIDTH_DEG   = 120.0f;
 const uint32_t CAL_DEFER_MAX_MS       = 3500;
-// Below this runway a capture cannot launch cleanly (precharge advance plus
-// the 7-deg launch floor); reserving would only flutter reserve/abandon.
+// Additional floor before the pulse-arming travel and 7-degree final plan gate.
 const float MIN_RESERVE_RUNWAY_DEG    = 8.0f;
 
 // --- braking profile ---
 const uint16_t CMD_UPDATE_MS          = 25;     // control tick
 const uint16_t CMD_RESYNC_MS          = 200;    // field-vs-command resync
 const float CMD_RESYNC_TOLERANCE      = 0.08f;  // relative field deviation
-// Capture entry fraction (owner spec 0.95): the field starts just under the
-// wheel so coupling is near-immediate and gentle.  Applied to the trailing
-// MINIMUM over ~200 ms, which already discounts filter lag, so the command
-// still starts strictly behind the physical wheel.
+// Entry is 0.95 of the current filtered forward speed. EN-high pulse evidence
+// checks that requested progression; it does not establish electrical phase
+// or guarantee gentle coupling. The trailing window is retained for telemetry.
 const float TRAIL_FRACTION            = 0.95f;
 const uint16_t TRAIL_WINDOW_TICKS     = 8;      // ~200 ms trailing window
-const float CAPTURE_MAX_CMD_REV_S     = 0.68f;  // 0.95 x engage ceiling
-const uint32_t DECEL_CEILING_SPS2     = 650;    // natural-motion decel ceiling
-const uint32_t ASSIST_DECEL_MAX_SPS2  = 1100;   // weak-spin nearest-target cap
+const float CAPTURE_MAX_CMD_REV_S     = 0.20f;  // bounded integration, at most 640 Hz
+const float CAPTURE_MAX_WHEEL_REV_S   = 0.20f;  // faster spins coast into the tested window
+const uint32_t DECEL_CEILING_SPS2     = 320;    // diagnostic envelope: total profile deceleration
+const uint32_t ASSIST_DECEL_MAX_SPS2  = 320;    // no aggressive fallback
 const float COUPLING_SLACK_REV_S      = 0.020f;
 const float FAS_MIN_CMD_REV_S         = 0.00625f; // 40 Hz taper floor
 const float STOP_GATE_EXTRA_DEG       = 2.0f;
@@ -222,7 +235,6 @@ const float OVERSHOOT_TOL_DEG         = 4.0f;
 // Above the phase-capture snap transient (~0.03-0.075 rev/s observed), below
 // any deliberate pull; the fault still needs a sustained rise.
 const float SPEEDUP_NOISE_REV_S       = 0.050f;
-const uint16_t SPEEDUP_TRIM_MS        = 30;     // trim command after this
 const uint16_t SPEEDUP_FAULT_MS       = 400;    // latch fault after this
 const float FIGHT_SPEED_FRACTION      = 0.45f;
 const uint16_t FIGHT_GRACE_MS         = 150;
@@ -231,7 +243,6 @@ const float FIGHT_MIN_CMD_REV_S       = 0.060f; // below this, stall != fight
 const float OPPOSITE_ABORT_REV_S      = 0.050f;
 const uint16_t OPPOSITE_ABORT_MS      = 75;
 const uint16_t VELOCITY_LOSS_FAULT_MS = 300;
-const uint16_t RESERVED_VEL_TIMEOUT_MS = 500;   // velocity wait cap in precharge
 const uint16_t ENCODER_OUTAGE_FAULT_MS = 1000;  // encoder loss in motion states
 const uint32_t TAKEOVER_TIMEOUT_MS    = 30000;
 // A slow final crawl legitimately restarts the stillness window several
@@ -241,12 +252,8 @@ const uint32_t SETTLE_TIMEOUT_MS      = 20000;
 // taper detent (friction-only coast from a 0.1 rev/s handoff is ~31 deg
 // unheld; the 300 mA detent cuts that well below a wedge): a hand is dragging.
 const float LANDING_DRAG_ABORT_DEG    = 45.0f;
-// FastAccelStepper's acceleration must out-pace the command profile so the
-// pulse generator can follow each 25 ms step-down and stepsToStop() stays
-// well below the remaining runway (a 1:1 ratio degenerates into one
-// open-loop ramp: stopMove would fire on the first tick).
-const uint8_t FAS_TRACK_ACCEL_FACTOR  = 8;   // was 3: field descent lagged natural decel and carried the wheel (diag 2026-08-06)
-const uint32_t FAS_TRACK_ACCEL_MAX_SPS2 = 6400; // was 2000 (=0.31 rev/s2 ceiling); wheel decays ~0.5 - field must descend faster than the wheel
+// The pulse generator, command limiter and final stop use the same planned
+// deceleration. No faster tracking ramp or clipped infeasible plan is used.
 
 // --- landing / hold ---
 const float STILL_REV_S               = 0.020f;
@@ -262,9 +269,9 @@ const uint16_t HOLD2_MS               = 1200;
 // rattles).  Current sets coupling stiffness; the braking force itself is
 // set by the commanded profile.  (600/450 only over-braked under the old
 // continuously-trailing law, which forced multi-pole slip at any current.)
-const uint16_t CUR_PRECHARGE_MA = 350;  // phase settle, no snap (v2: NEMA23 scale)
+const uint16_t CUR_PRECHARGE_MA = 350;  // legacy stage retained for the explicit direction probe
 const uint16_t CUR_CAPTURE_MA   = 2200;
-const uint16_t CUR_BRAKE_MA     = 1650;
+const uint16_t CUR_BRAKE_MA     = 2200; // retain capture torque through braking/settling
 const uint16_t CUR_TAPER_MA     = 1100;  // final taper / settle watch
 const uint16_t CUR_HOLD1_MA     = 550;  // fade...
 const uint16_t CUR_HOLD2_MA     = 300;   // ...to freewheel
@@ -305,19 +312,24 @@ const float FIT_B_MIN = 0.005f, FIT_B_MAX = 1.5f;
 const float FIT_ALPHA_CONTACT_RAD_S2 = 2.5f;
 const float FIT_BLEND = 0.35f;
 const uint16_t FIT_PERSIST_MIN_FITS = 2;      // persist only once corroborated
+const PwFrictionModel FRICTION_SEED = {0.55f, 0.28f, 0}; // existing v2 seeds, still require calibration
+const PwFrictionBounds FRICTION_BOUNDS = {FIT_C_MIN, FIT_C_MAX, FIT_B_MIN, FIT_B_MAX};
 
 /* --------------------------- STATE --------------------------------------- */
 TMC5160Stepper driver(TMC_CS_PIN, R_SENSE, TMC_MOSI_PIN, TMC_MISO_PIN, TMC_SCK_PIN);
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper* stepper = nullptr;
 Preferences preferences;
+bool preferencesAvailable = false;
+uint8_t persistedFaultRaw = 0;
+uint8_t recoveryGuardRaw = 0;
 
 State state = ST_IDLE_STOPPED;
 FaultCode faultCode = FC_NONE;
 CurrentStage currentStage = CS_FREEWHEEL;
 uint16_t g_currentMa = 0;   // actual commanded rms current, for telemetry
 bool debugLog = false;
-bool takeoverEnabled = true;
+bool takeoverEnabled = false; // integration unvalidated; explicit enable required
 bool tmcOk = false;
 
 uint16_t rawZero = 3807;  // label-true anchor (owner-measured 2026-07-28)
@@ -477,8 +489,8 @@ int32_t reserveCounts = 0;
 float planDecelRevS2 = 0.05f;
 uint32_t planDecelCapSps2 = DECEL_CEILING_SPS2;
 uint32_t reserveMs = 0;
-bool reserveRetried = false;
 uint32_t captureStartMs = 0;
+uint32_t lastPoweredHealthMs = 0;
 uint32_t controlStartMs = 0;
 float cmdRevS = 0.0f;
 uint32_t lastCmdTickMs = 0;
@@ -487,9 +499,13 @@ uint32_t lastResyncMs = 0;
 float trailRing[TRAIL_WINDOW_TICKS];
 uint8_t trailRingCount = 0;
 uint8_t trailRingHead = 0;
-float lowestForwardRevS = 0.0f;
-uint32_t speedupSinceMs = 0;
-uint32_t lastSpeedupTrimMs = 0;
+PwSpeedupWatch speedupWatch;
+PwCaptureArm captureArm;
+PwCaptureCycle captureCycle;
+PwCaptureLease captureLease;
+uint32_t captureEntryHz = 0;
+bool captureDirHigh = false;
+bool captureTimerReady = false;
 uint32_t fightSinceMs = 0;
 uint32_t oppositeSinceMs = 0;
 uint32_t velocityLossSinceMs = 0;
@@ -516,7 +532,7 @@ FitSample fitSamples[FIT_MAX_SAMPLES];
 uint8_t fitSampleCount = 0;
 int fitDir = 0;
 uint32_t fitLastSampleMs = 0;
-bool fitFinished = true;
+PwFitLifecycle fitLifecycle;
 
 /* ========================================================================== */
 /*                         ENCODER IMPLEMENTATION                             */
@@ -840,7 +856,12 @@ void driverConfig() {
 // Register traffic happens exclusively on stage transitions (defect-11), so
 // the 1 kHz encoder sampling cadence is never disturbed by UART writes.
 void setCurrentStage(CurrentStage next) {
+  if (next != CS_FREEWHEEL && faultCode != FC_NONE) {
+    digitalWrite(PIN_EN, HIGH);
+    return;  // no stage transition may re-enable a latched controller
+  }
   if (next == currentStage) return;
+  if (next != CS_FREEWHEEL) fitLifecycle.discard(); // powered samples never enter a coast fit
   bool outputsOk = true;
   switch (next) {
     case CS_FREEWHEEL:
@@ -856,6 +877,13 @@ void setCurrentStage(CurrentStage next) {
       if (stepper) outputsOk = stepper->enableOutputs();
       break;
     case CS_CAPTURE:   driver.rms_current(CUR_CAPTURE_MA, 1.0); g_currentMa = CUR_CAPTURE_MA; break;
+    case CS_CAPTURE_PREPARED:
+      digitalWrite(PIN_EN, HIGH);
+      if (stepper) outputsOk = stepper->disableOutputs();
+      driver.freewheel(0);
+      driver.rms_current(CUR_CAPTURE_MA, 1.0);
+      g_currentMa = CUR_CAPTURE_MA; // requested setting; EN still disabled
+      break;
     case CS_BRAKE:     driver.rms_current(CUR_BRAKE_MA, 1.0);   g_currentMa = CUR_BRAKE_MA;   break;
     case CS_TAPER:     driver.rms_current(CUR_TAPER_MA, 1.0);   g_currentMa = CUR_TAPER_MA;   break;
     case CS_HOLD1:     driver.rms_current(CUR_HOLD1_MA, 1.0);   g_currentMa = CUR_HOLD1_MA;   break;
@@ -875,6 +903,7 @@ void setCurrentStage(CurrentStage next) {
 // stopMove() ramp can survive for seconds and a later capture would energize
 // the motor onto an uncorrelated pulse train / reset position while moving.
 void driverFreewheel() {
+  captureLease.cancel(); // retire any pending EN permission before queue cleanup
   setCurrentStage(CS_FREEWHEEL);
   if (stepper) {
     if (stepper->isRunning()) stepper->forceStop();
@@ -942,14 +971,15 @@ void resetFrictionCapture(int dir) {
   fitSampleCount = 0;
   fitDir = dir;
   fitLastSampleMs = 0;
-  fitFinished = false;
+  fitLifecycle.begin();
 }
 
 // Samples are taken ONLY while the wheel free-coasts after hand release
 // (motor floating, guest's hand off).  Contact, motor power, invalid encoder
 // data, reversal, and speed-ups are all excluded before the fit.
 void captureFrictionSample(uint32_t nowMs) {
-  if (fitFinished || fitDir == 0 || fitSampleCount >= FIT_MAX_SAMPLES) return;
+  if (!fitLifecycle.canSample(currentStage == CS_FREEWHEEL && digitalRead(PIN_EN) == HIGH) ||
+      fitDir == 0 || fitSampleCount >= FIT_MAX_SAMPLES) return;
   if (!encoderVelocityValid) return;
   float forward = omega * (float)fitDir;
   if (forward < FIT_MIN_SPEED_REV_S || forward > FIT_MAX_SPEED_REV_S) return;
@@ -960,12 +990,12 @@ void captureFrictionSample(uint32_t nowMs) {
   fitLastSampleMs = nowMs;
 }
 
-void finishFrictionCapture(const char* reason) {
-  if (fitFinished) return;
-  fitFinished = true;
-  if (fitDir == 0 || fitSampleCount < FIT_MIN_SAMPLES) return;
-  float span = fitSamples[0].omegaRadS - fitSamples[fitSampleCount - 1].omegaRadS;
-  if (span < FIT_MIN_SPAN_RAD_S) return;
+void finishFrictionCapture(const char* reason, PwFitEnd end) {
+  float span = fitSampleCount > 0
+      ? fitSamples[0].omegaRadS - fitSamples[fitSampleCount - 1].omegaRadS : 0.0f;
+  bool enoughData = fitDir != 0 && fitSampleCount >= FIT_MIN_SAMPLES &&
+      span >= FIT_MIN_SPAN_RAD_S;
+  if (!fitLifecycle.beginAttempt(end, enoughData, fitSampleCount)) return;
 
   float sx = 0.0f, sy = 0.0f, sxx = 0.0f, sxy = 0.0f;
   int pairs = 0;
@@ -977,6 +1007,7 @@ void finishFrictionCapture(const char* reason) {
     if (dropRadS <= 0.0f) continue;          // reversal / speed-up: reject
     float alpha = dropRadS / dtS;
     if (alpha > FIT_ALPHA_CONTACT_RAD_S2) {  // hand contact: reject whole coast
+      fitLifecycle.completeAttempt(false, true);
       Serial.printf("SPIN#%lu FRICTION_REJECT contact alpha=%.3f reason=%s\n",
                     (unsigned long)spin.number, alpha, reason);
       PW_S3_COUNT_REJECT();
@@ -991,21 +1022,21 @@ void finishFrictionCapture(const char* reason) {
   if (fabsf(denom) < 1e-3f) return;
   float fitB = ((float)pairs * sxy - sx * sy) / denom;
   float fitC = (sy - fitB * sx) / (float)pairs;
-  if (fitC < FIT_C_MIN || fitC > FIT_C_MAX || fitB < FIT_B_MIN || fitB > FIT_B_MAX) {
+  if (!pwValidFriction({fitC, fitB, 0}, FRICTION_BOUNDS)) {
     Serial.printf("SPIN#%lu FRICTION_REJECT bounds fitC=%.4f fitB=%.4f pairs=%d reason=%s\n",
                   (unsigned long)spin.number, fitC, fitB, pairs, reason);
     PW_S3_COUNT_REJECT();
     return;
   }
+  fitLifecycle.completeAttempt(true); // each clean coast can update the model at most once
   float keep = 1.0f - FIT_BLEND;
   if (fitDir > 0) {
     cw_c = keep * cw_c + FIT_BLEND * fitC;
     cw_b = keep * cw_b + FIT_BLEND * fitB;
     ++cwFitCount;
     if (cwFitCount >= FIT_PERSIST_MIN_FITS) {
-      preferences.putFloat("cwC", cw_c);
-      preferences.putFloat("cwB", cw_b);
-      preferences.putUShort("cwN", cwFitCount);
+      if (!pwSaveFrictionDirection(preferences, true, {cw_c, cw_b, cwFitCount}))
+        Serial.println(F("# WARN: cw friction persistence failed"));
     }
     Serial.printf("SPIN#%lu FRICTION dir=+1 fitC=%.4f fitB=%.4f pairs=%d -> c=%.4f b=%.4f fits=%u\n",
                   (unsigned long)spin.number, fitC, fitB, pairs, cw_c, cw_b, cwFitCount);
@@ -1014,9 +1045,8 @@ void finishFrictionCapture(const char* reason) {
     ccw_b = keep * ccw_b + FIT_BLEND * fitB;
     ++ccwFitCount;
     if (ccwFitCount >= FIT_PERSIST_MIN_FITS) {
-      preferences.putFloat("ccwC", ccw_c);
-      preferences.putFloat("ccwB", ccw_b);
-      preferences.putUShort("ccwN", ccwFitCount);
+      if (!pwSaveFrictionDirection(preferences, false, {ccw_c, ccw_b, ccwFitCount}))
+        Serial.println(F("# WARN: ccw friction persistence failed"));
     }
     Serial.printf("SPIN#%lu FRICTION dir=-1 fitC=%.4f fitB=%.4f pairs=%d -> c=%.4f b=%.4f fits=%u\n",
                   (unsigned long)spin.number, fitC, fitB, pairs, ccw_c, ccw_b, ccwFitCount);
@@ -1070,9 +1100,16 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
       (cmd0est * cmd0est) /
           (2.0f * COUPLE_MARGIN * naturalDecelRevS2(speedRevS, dir)) * 360.0f;
   if (coupledMinDeg > winMin) winMin = coupledMinDeg;
+  const float profileMin = latencyDeg + pwBrakeDistanceDeg(
+      fminf(TRAIL_FRACTION * speedRevS, CAPTURE_MAX_CMD_REV_S),
+      (float)DECEL_CEILING_SPS2 / WHEEL_USTEPS_PER_REV);
+  winMin = fmaxf(winMin, profileMin);
   float assistMin = latencyDeg
                   + brakedStopDistanceDeg(speedRevS, dir, motorExtraRadS2(ASSIST_DECEL_MAX_SPS2))
                   + 2.0f;
+  assistMin = fmaxf(assistMin, latencyDeg + pwBrakeDistanceDeg(
+      fminf(TRAIL_FRACTION * speedRevS, CAPTURE_MAX_CMD_REV_S),
+      (float)ASSIST_DECEL_MAX_SPS2 / WHEEL_USTEPS_PER_REV));
 
   // Pass 1: wedge-uniform among safe wedges reachable at the natural ceiling.
   int candWedge[NUM_WEDGES];
@@ -1149,7 +1186,7 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   // (observed on hardware: a spin dying safely was braked short into the
   // dare it was passing through).  Clearance is required over the expected
   // settle segment [natural-4, natural].
-  if (!out.found && naturalDeg > 10.0f) {
+  if (!out.found && naturalDeg > 10.0f && naturalDeg - 2.0f >= assistMin) {
     float natAng = fmodf(curAngle + (float)dir * naturalDeg, 360.0f);
     if (natAng < 0.0f) natAng += 360.0f;
     float settleAng = fmodf(curAngle + (float)dir * (naturalDeg - 4.0f), 360.0f);
@@ -1254,6 +1291,10 @@ float reachWindowWidthDeg(float speedRevS, int dir) {
       (cmd0est * cmd0est) /
           (2.0f * COUPLE_MARGIN * naturalDecelRevS2(speedRevS, dir)) * 360.0f;
   if (coupledMinDeg > winMin) winMin = coupledMinDeg;
+  const float profileMin = latencyDeg + pwBrakeDistanceDeg(
+      fminf(TRAIL_FRACTION * speedRevS, CAPTURE_MAX_CMD_REV_S),
+      (float)DECEL_CEILING_SPS2 / WHEEL_USTEPS_PER_REV);
+  winMin = fmaxf(winMin, profileMin);
   return winMax - winMin;
 }
 
@@ -1306,6 +1347,7 @@ const char* stateName(State s) {
     case ST_SPIN_PUSH: return "SPIN_PUSH";
     case ST_SPIN_RELEASED: return "SPIN_RELEASED";
     case ST_TARGET_RESERVED: return "TARGET_RESERVED";
+    case ST_CAPTURE_ARMING: return "CAPTURE_ARMING";
     case ST_SPEED_MATCH_CAPTURE: return "SPEED_MATCH_CAPTURE";
     case ST_CONTROLLED_DECEL: return "CONTROLLED_DECEL";
     case ST_LANDING_SETTLE: return "LANDING_SETTLE";
@@ -1332,6 +1374,10 @@ const char* faultName(FaultCode f) {
     case FC_MONOTONIC_VIOLATION: return "MONOTONIC_VIOLATION";
     case FC_TARGET_INVARIANT: return "TARGET_INVARIANT";
     case FC_LANDING_UNSAFE: return "LANDING_UNSAFE";
+    case FC_TRACKING_LOST: return "TRACKING_LOST";
+    case FC_SELFSPIN_ABORT: return "SELFSPIN_ABORT";
+    case FC_UNKNOWN_PERSISTED: return "UNKNOWN_PERSISTED";
+    case FC_CONTROL_OVERSPEED: return "CONTROL_OVERSPEED";
   }
   return "?";
 }
@@ -1352,6 +1398,14 @@ const char* resultName(SpinResult r) {
 }
 
 void startSpinEvent(int confirmedDir, uint32_t nowMs) {
+  // Only the normal kinematic confirmation after a completed HOLD can use
+  // its one-use new-spin permission. Guest re-push/reversal/fault records
+  // cannot reset the physical attempt budget.
+  const bool confirmedHandSpin = (state == ST_MOTION_CANDIDATE ||
+      state == ST_MANUAL_ADJUSTMENT) && encoderMotionReady();
+  captureCycle.confirmHandSpinAfterHold(confirmedHandSpin,
+      faultCode == FC_NONE && currentStage == CS_FREEWHEEL,
+      digitalRead(PIN_EN) == HIGH, stepper && !stepper->isRunning());
   ++spinCounter;
   memset(&spin, 0, sizeof(spin));
   spin.number = spinCounter;
@@ -1371,7 +1425,7 @@ void startSpinEvent(int confirmedDir, uint32_t nowMs) {
   contactSinceMs = 0;
   prevContactMs = 0;
   resetFrictionCapture(confirmedDir);
-  fitFinished = true;  // sampling begins at hand release, not during the push
+  fitLifecycle.discard();  // sampling begins at hand release, not during the push
   Serial.printf("SPIN#%lu START dir=%+d omega=%.3f wedge=%d\n",
                 (unsigned long)spin.number, spinDir, omega, currentWedge());
 }
@@ -1398,7 +1452,8 @@ void closeSpin(SpinResult result) {
       "SPIN#%lu SUMMARY dir=%+d peak=%.3f releaseMs=%lu relAngle=%.1f relSpeed=%.3f "
       "targetW=%d targetAngle=%.1f runway=%.1f natStop=%.1f fricC=%.4f fricB=%.4f "
       "tkSpeed=%.3f cmdMax=%.3f cmdMin=%.3f rise=%.3f maxDecel=%.3f "
-      "final=%.1f finalW=%d err=%.1f quality=%u result=%s fault=%s%s\n",
+      "final=%.1f finalW=%d err=%.1f quality=%u result=%s fault=%s%s "
+      "captureAttempted=%d captureEnergized=%d captureAbandoned=%d\n",
       (unsigned long)spin.number, spin.dir, spin.peakRevS,
       (unsigned long)(spin.releaseMs ? spin.releaseMs - spin.pushStartMs : 0),
       spin.releaseAngleDeg, spin.releaseRevS,
@@ -1407,7 +1462,8 @@ void closeSpin(SpinResult result) {
       spin.takeoverRevS, spin.cmdMaxRevS, spin.cmdMinRevS,
       spin.maxSpeedRiseRevS, spin.maxDecelRevS2,
       spin.finalAngleDeg, spin.finalWedge, spin.targetErrDeg,
-      spin.targetQuality, resultName(result), faultName(spin.fault), fitSuffix);
+      spin.targetQuality, resultName(result), faultName(spin.fault), fitSuffix,
+      captureCycle.attempted(), captureCycle.energized(), captureCycle.abandoned());
   if (isDare(spin.finalWedge)) {
     Serial.printf("SPIN#%lu LANDED-DARE wedge=%d THIS IS A FAILURE result=%s fault=%s\n",
                   (unsigned long)spin.number, spin.finalWedge,
@@ -1418,23 +1474,69 @@ void closeSpin(SpinResult result) {
 /* ========================================================================== */
 /*                              FAULT PATH                                    */
 /* ========================================================================== */
+void restoreFaultLatch() {
+#if PW_S1_ENABLE
+  uint8_t raw = preferencesAvailable ? preferences.getUChar(PW_S1_NVS_KEY, 0) : 255;
+  recoveryGuardRaw = preferencesAvailable ? preferences.getUChar(PW_RECOVERY_GUARD_KEY, 0) : 255;
+  uint8_t restored = pwRestoreFaultWithRecoveryGuard(raw, recoveryGuardRaw,
+      (uint8_t)FC_SELFSPIN_ABORT);
+  PwStoredFault stored = pwDecodeStoredFault(restored, preferencesAvailable,
+      (uint8_t)FC_CONTROL_OVERSPEED, (uint8_t)FC_UNKNOWN_PERSISTED);
+  persistedFaultRaw = stored.raw;
+  if (recoveryGuardRaw != 0) {
+    Serial.printf("# RECOVERY_GUARD primary=%u guard=%u; interrupted recovery, outputs locked; diagnostic recovery required\n",
+                  (unsigned)raw, (unsigned)recoveryGuardRaw);
+  }
+  if (stored.locked) {
+    faultCode = (FaultCode)stored.code;
+    state = ST_FAULT_LATCHED;
+    stateEnteredMs = millis();
+    Serial.printf("# S1: saved fault=%s raw=%u restored; outputs disabled%s\n",
+                  faultName(faultCode), (unsigned)persistedFaultRaw,
+                  stored.unknown ? "; unknown ID/storage unavailable: r disabled" : "");
+  }
+#endif
+}
+
+bool pwPersistFaultLatch(uint8_t code) {
+  if (!preferencesAvailable) return false;
+  uint8_t stored = preferences.getUChar(PW_S1_NVS_KEY, 0);
+  uint8_t keep = pwFirstFaultByte(stored, code);
+  bool saved = stored == keep || preferences.putUChar(PW_S1_NVS_KEY, keep) == sizeof(uint8_t);
+  saved = saved && preferences.getUChar(PW_S1_NVS_KEY, 0) == keep;
+  persistedFaultRaw = keep;
+  if (!saved) Serial.println(F("# WARN: first fault could not be persisted"));
+  return saved;
+}
+
+bool pwClearFaultLatch() {
+  PwStoredFault known = pwDecodeStoredFault(persistedFaultRaw, preferencesAvailable,
+      (uint8_t)FC_CONTROL_OVERSPEED, (uint8_t)FC_UNKNOWN_PERSISTED);
+  if (!preferencesAvailable) return false;
+  uint8_t reread = preferences.getUChar(PW_S1_NVS_KEY, 0);
+  uint8_t guardReread = preferences.getUChar(PW_RECOVERY_GUARD_KEY, recoveryGuardRaw);
+  if (recoveryGuardRaw != 0 || !pwMayClearStoredFault(known, reread, guardReread)) return false;
+  if (reread != 0 &&
+      (preferences.putUChar(PW_S1_NVS_KEY, 0) != sizeof(uint8_t) ||
+       preferences.getUChar(PW_S1_NVS_KEY, 255) != 0)) return false;
+  persistedFaultRaw = 0;
+  return true;
+}
+
 void enterFault(FaultCode code, const char* detail) {
+  // First remove torque; queued pulses may drain only with EN high. Never
+  // perform serial or NVS work while a fault leaves the motor energized.
+  digitalWrite(PIN_EN, HIGH);
+  float faultCommand = cmdRevS;
+  driverFreewheel();
+  captureCycle.fault();
+  fitLifecycle.discard();
   if (state == ST_FAULT_LATCHED) return;
   faultCode = code;
   PW_S1_PERSIST(code);  // S1: latch survives a power cycle; only r clears
   Serial.printf("FAULT code=%s detail=%s state=%s angle=%.1f wedge=%d omega=%.3f cmd=%.3f\n",
                 faultName(code), detail, stateName(state), wheelAngleDeg(),
-                currentWedge(), omega, cmdRevS);
-  // Safest physically reasonable shutdown.  A fighting or reversing motor is
-  // actively harming the mechanism: abrupt stop is justified there and ONLY
-  // there.  Everything else ramps down at the configured deceleration.
-  if (stepper && stepper->isRunning()) {
-    if (code == FC_MOTOR_FIGHT || code == FC_UNEXPECTED_REVERSAL) {
-      stepper->forceStop();                 // emergency use only
-    } else if (!stepper->isStopping()) {
-      stepper->stopMove();
-    }
-  }
+                currentWedge(), omega, faultCommand);
   // An open spin is NOT closed here: its summary must record the real resting
   // wedge, so ST_FAULT_LATCHED closes it once the wheel is actually still
   // (also prevents the residual coast from being re-counted as a new spin).
@@ -1445,7 +1547,8 @@ void enterFault(FaultCode code, const char* detail) {
 }
 
 void serviceFault() {
-  // Finish any ramp-down, then float the coils and stay latched until 'r'.
+  // Outputs are already disabled. Wait for the dead queue to drain.
+  digitalWrite(PIN_EN, HIGH);
   if (stepper && stepper->isRunning()) return;
   if (currentStage != CS_FREEWHEEL) driverFreewheel();
 }
@@ -1483,6 +1586,14 @@ void startDirectionProbe() {
     Serial.println(F("# DIR PROBE refused: center the pointer in safe wedge 3 or 7-11 first"));
     return;
   }
+  // An explicit attended probe can recover DIR_CAL only. Verify the stored
+  // clear before enabling, so a write failure cannot leave a powered probe.
+  if (!PW_S1_CLEAR()) {
+    Serial.println(F("# DIR PROBE refused: saved fault could not be cleared"));
+    return;
+  }
+  faultCode = FC_NONE;
+  state = ST_IDLE_STOPPED;
   // Attended, at-rest calibration.  The stepper is idle, so the position can
   // be re-zeroed without an abrupt-stop call.  Restore the base DIR polarity
   // first: captures repolarize the pin per direction (always-runForward).
@@ -1503,8 +1614,6 @@ void startDirectionProbe() {
     return;
   }
   if (spinOpen) closeSpin(RES_CONTROL_LOCKED);  // never orphan an open record
-  faultCode = FC_NONE;   // probe may be used to recover from DIR_CAL fault
-  PW_S1_CLEAR();         // S1: mirror the RAM latch lifecycle exactly
   state = ST_DIR_PROBE;
   stateEnteredMs = millis();
   Serial.printf("# DIR PROBE leg 1/2: moving FAS+ %ld usteps; keep hands clear\n",
@@ -1574,15 +1683,15 @@ void serviceDirectionProbe() {
   driverFreewheel();
   state = ST_IDLE_STOPPED;
   stateEnteredMs = millis();
-  Serial.printf("# DIR PROBE PASS: FAS+ is encoder dir=%+d, retrace err=%.2f deg; takeover ENABLED\n",
-                motorPositiveEncoderSign, returnErrDeg);
+  Serial.printf("# DIR PROBE PASS: FAS+ is encoder dir=%+d, retrace err=%.2f deg; takeover=%d\n",
+                motorPositiveEncoderSign, returnErrDeg, takeoverEnabled ? 1 : 0);
 }
 
 /* ========================================================================== */
 /*                       CONTROL: RESERVE / CAPTURE / BRAKE                   */
 /* ========================================================================== */
 bool controlAvailable() {
-  return takeoverEnabled && motorDirectionCalibrated && tmcOk &&
+  return faultCode == FC_NONE && takeoverEnabled && motorDirectionCalibrated && tmcOk &&
          fasSignForEncoderDirection(spinDir) != 0;
 }
 
@@ -1610,12 +1719,12 @@ float trailingMinForwardRevS() {
 }
 
 bool tryReserveTarget(uint32_t nowMs) {
-  if (!encoderMotionReady()) return false;
+  if (!encoderMotionReady() || !captureTimerReady || !captureCycle.available()) return false;
   if (stepper && stepper->isRunning()) return false;  // stale queue must die first
   // FORWARD speed in the latched spin direction: a wheel moving the other way
   // must never reserve for the stale direction (the caller handles reversal).
   float speed = omega * (float)spinDir;
-  if (speed < 0.02f) return false;
+  if (!isfinite(speed) || speed < 0.02f || speed > CAPTURE_MAX_WHEEL_REV_S) return false;
 
   float width = reachWindowWidthDeg(speed, spinDir);
   bool inWindow = speed <= ENGAGE_MAX_REV_S;
@@ -1636,12 +1745,12 @@ bool tryReserveTarget(uint32_t nowMs) {
 
   // Fold this coast's samples into the model BEFORE targeting, so the
   // reachability decision uses the freshest friction estimate.
-  finishFrictionCapture("reserve");
+  finishFrictionCapture("reserve", PwFitEnd::Preview);
 
   TargetChoice choice = chooseSafeTarget(spinDir, wheelAngleDeg(), speed);
   if (!choice.found) return false;
-  // Too short to launch cleanly: reserving would only flutter through
-  // precharge/abandon cycles; the honest close path owns this spin.
+  // Reject short runway before reserving. Accepted pickup has one attempt,
+  // including any arming failure, until a later qualified physical rest.
   if (choice.runwayDeg < MIN_RESERVE_RUNWAY_DEG) return false;
 
   // Invariant: a dare can never be reserved.
@@ -1655,7 +1764,6 @@ bool tryReserveTarget(uint32_t nowMs) {
   targetCountsMT = encoderCountsMT + takeoverDir * countsForDegrees(choice.runwayDeg);
   planDecelCapSps2 = choice.decelCapSps2;
   reserveMs = nowMs;
-  reserveRetried = false;
 
   spin.targetWedge = choice.wedge;
   spin.targetAngleDeg = choice.targetAngleDeg;
@@ -1666,7 +1774,6 @@ bool tryReserveTarget(uint32_t nowMs) {
   spin.targetQuality = choice.quality;
 
   guestOverrideAboveMs = 0;   // never inherit a stale debounce timestamp
-  setCurrentStage(CS_PRECHARGE);
   state = ST_TARGET_RESERVED;
   stateEnteredMs = nowMs;
   Serial.printf("SPIN#%lu RESERVE targetW=%d targetAngle=%.1f runway=%.1f natStop=%.1f "
@@ -1677,122 +1784,181 @@ bool tryReserveTarget(uint32_t nowMs) {
   return true;
 }
 
-bool launchCapture(uint32_t nowMs) {
-  int fasSign = fasSignForEncoderDirection(takeoverDir);
-  if (fasSign == 0) {
-    enterFault(FC_DIR_CAL_INVALID, "fasSign=0 at capture");
-    return false;
+// Leave the chosen absolute prize unchanged. An unavailable plan is an honest
+// unpowered miss; no retry or prize reselection until qualified physical rest.
+void abandonCapture(const char* reason) {
+  driverFreewheel(); // EN high and lease revoked before logging
+  captureCycle.abandon();
+  captureArm.verified = false;
+  fitLifecycle.discard();
+  if (faultCode == FC_NONE) {
+    state = ST_SPIN_RELEASED;
+    stateEnteredMs = millis();
   }
-  if (stepper && stepper->isRunning()) {
-    // Guarded upstream; reaching here means a stale pulse train survived.
-    enterFault(FC_STEPPER_API, "queue active at capture");
-    return false;
+  Serial.printf("# CAPTURE_ABANDON reason=%s attempted=%d energized=%d; no retry until fresh rest\n",
+      reason, captureCycle.attempted(), captureCycle.energized());
+}
+
+bool captureDriverHealthy() {
+  const uint32_t drv = driver.DRV_STATUS();
+  const uint8_t gst = (uint8_t)driver.GSTAT();
+  return drv != 0 && drv != 0xFFFFFFFFUL && !(drv & 0x1E000000UL) && gst == 0 &&
+         driver.version() == 0x30 && driver.microsteps() == MICROSTEPS;
+}
+
+// Called initially and exactly once again after pulse verification. It never
+// changes targetCountsMT, selects another wedge, resets STEP or enables EN.
+bool prepareCapturePlan(uint32_t hz, float forward) {
+  const float remaining = remainingTargetDeg();
+  if (!isfinite(forward) || forward < 0.02f || forward > CAPTURE_MAX_WHEEL_REV_S ||
+      hz < 40 || hz > 640 || !isfinite(remaining) || remaining < 7.0f ||
+      isDare(spin.targetWedge)) return false;
+  // Preserve production's brake-reachable policy even if the inherited model
+  // is pessimistic. Do not use the diagnostic's distant gentle-test target.
+  const float naturalRemaining = naturalStopDistanceDeg(forward, takeoverDir);
+  if (!isfinite(naturalRemaining) || remaining > naturalRemaining) return false;
+  const PwBrakePlan plan = pwPlanBrake(hz, remaining, WHEEL_USTEPS_PER_REV, planDecelCapSps2);
+  if (!plan.feasible || (spin.targetQuality == 0 &&
+      plan.decelRevS2 > naturalDecelRevS2(forward, takeoverDir))) return false;
+  planDecelRevS2 = plan.decelRevS2;
+  return fasSetAcceleration(plan.accelerationSps2);
+}
+
+bool captureEnableOutput() {
+  // In pinned FAS 1.2.7 with ordinary GPIO7 this is GPIO-only. The lease holds
+  // the same lock as its cutoff callback around this EN edge.
+  return stepper && stepper->enableOutputs();
+}
+
+bool launchCapture(uint32_t nowMs) {
+  if (!controlAvailable() || !captureCycle.beginAttempt()) {
+    abandonCapture("capture ownership unavailable"); return false;
+  }
+  if (!captureLease.arm()) {
+    abandonCapture("capture lease unavailable"); return false;
+  }
+  const int fasSign = fasSignForEncoderDirection(takeoverDir);
+  const float forward = omega * (float)takeoverDir;
+  if (!fasSign || !stepper || stepper->isRunning() ||
+      digitalRead(PIN_EN) != HIGH || !encoderMotionReady() ||
+      !isfinite(forward) || forward < 0.02f || forward > CAPTURE_MAX_WHEEL_REV_S ||
+      !captureDriverHealthy()) {
+    abandonCapture("capture arming prerequisites"); return false;
+  }
+  captureEntryHz = (uint32_t)floorf(fminf(TRAIL_FRACTION * forward,
+      CAPTURE_MAX_CMD_REV_S) * WHEEL_USTEPS_PER_REV);
+  if (!prepareCapturePlan(captureEntryHz, forward) || !fasSetSpeedHz(captureEntryHz)) {
+    abandonCapture("initial fixed-target runway/plan infeasible"); return false;
+  }
+  const uint32_t acceleration = stepper->getAcceleration();
+  if (!acceleration) { abandonCapture("zero capture acceleration"); return false; }
+  const uint32_t jumpStep = (uint32_t)lroundf((float)captureEntryHz * captureEntryHz /
+      (2.0f * acceleration));
+  stepper->setJumpStart(jumpStep);
+  stepper->setCurrentPosition(0); // outputs off and queue empty above
+  captureDirHigh = fasSign > 0 ? INVERT_DIR : !INVERT_DIR;
+  stepper->setDirectionPin(PIN_DIR, captureDirHigh);
+  // Close clean fitting before register/STEP preparation; no powered sample
+  // can enter this fit even if a later state is reclassified as a free coast.
+  finishFrictionCapture("power", PwFitEnd::Powered);
+  state = ST_CAPTURE_ARMING;
+  stateEnteredMs = nowMs;
+  setCurrentStage(CS_CAPTURE_PREPARED);
+  if (captureLease.expired() || !captureArm.begin(micros(), stepper->getCurrentPosition(),
+      captureEntryHz, captureDirHigh) || digitalRead(PIN_EN) != HIGH || !fasRun(1)) {
+    abandonCapture("pulse-first launch rejected"); return false;
+  }
+  cmdRevS = (float)captureEntryHz / WHEEL_USTEPS_PER_REV;
+  lastAppliedHz = captureEntryHz;
+  return true;
+}
+
+void serviceCaptureArming(uint32_t nowMs) {
+  (void)nowMs;
+  if (!controlAvailable() || !stepper || !captureCycle.attempted() || captureCycle.energized() ||
+      currentStage != CS_CAPTURE_PREPARED || captureLease.expired()) {
+    abandonCapture("capture arming interlock/deadline"); return;
   }
   float forward = omega * (float)takeoverDir;
-  if (forward < 0.02f) return false;  // caller decides what to do
+  PwCaptureArm::Verdict decision = captureArm.update(micros(), stepper->getCurrentPosition(),
+      digitalRead(PIN_EN) == HIGH, digitalRead(PIN_DIR) == HIGH,
+      encoderMotionReady(), forward, WHEEL_USTEPS_PER_REV, TRAIL_FRACTION);
+  if (decision == PwCaptureArm::WAIT) return;
+  if (decision == PwCaptureArm::REJECT) {
+    abandonCapture("pulse-first observation rejected");
+    Serial.printf("# PULSEFIRST reject=%u hz=%.1f requested=%lu\n",
+        (unsigned)captureArm.reason, captureArm.pulseHz, (unsigned long)captureEntryHz);
+    return;
+  }
+  if (!stepper->isRunning() || !captureDriverHealthy() ||
+      !prepareCapturePlan(captureEntryHz, forward)) {
+    abandonCapture("final fixed-target health/runway/plan infeasible"); return;
+  }
+  stepper->applySpeedAcceleration();
+  // Register traffic may age encoder evidence. Only a fresh synchronous proof
+  // can authorize EN, under the independent 150 ms lease.
+  forward = omega * (float)takeoverDir;
+  decision = captureArm.update(micros(), stepper->getCurrentPosition(),
+      digitalRead(PIN_EN) == HIGH, digitalRead(PIN_DIR) == HIGH,
+      encoderMotionReady(), forward, WHEEL_USTEPS_PER_REV, TRAIL_FRACTION);
+  const bool validProof = decision == PwCaptureArm::READY && controlAvailable() &&
+      stepper->isRunning() && digitalRead(PIN_EN) == HIGH &&
+      (digitalRead(PIN_DIR) == HIGH) == captureArm.expectedDirHigh;
+  if (!captureLease.enable(validProof, captureArm.verifiedUs, captureEnableOutput) ||
+      digitalRead(PIN_EN) != LOW) {
+    abandonCapture("capture torque-on interlock"); return;
+  }
+  captureCycle.markEnergized();
+  captureArm.verified = false;
+  currentStage = CS_CAPTURE; // registers already contain 2200; no traffic at EN edge
+  const uint32_t torqueOnMs = millis();
+  lastPoweredHealthMs = torqueOnMs; // health was verified immediately before EN
+  lastResyncMs = torqueOnMs;
+  trailRingReset(forward);
+  speedupWatch.reset();
+  fightSinceMs = oppositeSinceMs = velocityLossSinceMs = guestOverrideAboveMs = 0;
+  stopRequested = false;
+  captureStartMs = controlStartMs = lastCmdTickMs = prevTickMs = torqueOnMs;
+  prevTickWheelRevS = forward;
+  spin.takeoverRevS = forward;
+  spin.cmdMaxRevS = spin.cmdMinRevS = cmdRevS;
+  state = ST_SPEED_MATCH_CAPTURE;
+  stateEnteredMs = torqueOnMs;
+  Serial.printf("# PULSEFIRST TORQUE_ON arm_us=%lu pulses=%ld hz=%.1f requested=%lu current=%u "
+                "EN=%d DIR=%d targetW=%d remain=%.1f a=%lu phase_unverified=1\n",
+      (unsigned long)(micros() - captureArm.startUs),
+      (long)(stepper->getCurrentPosition() - captureArm.startPosition), captureArm.pulseHz,
+      (unsigned long)captureEntryHz, g_currentMa, digitalRead(PIN_EN), digitalRead(PIN_DIR),
+      spin.targetWedge, remainingTargetDeg(), (unsigned long)stepper->getAcceleration());
+}
 
-  // Entry command: below a trailing-minimum estimate so the motor picks the
-  // wheel up strictly from behind.  Never above the capture cap.
-  float trailSeed = fminf(forward, fabsf(omega));
-  float cmd0 = fminf(TRAIL_FRACTION * trailSeed, CAPTURE_MAX_CMD_REV_S);
-  uint32_t hz = (uint32_t)floorf(cmd0 * WHEEL_USTEPS_PER_REV);
-  if (hz < 40) return false;
-
-  float remainingDeg = remainingTargetDeg();
-  if (remainingDeg < 7.0f) return false;
-
-  // Plan the command-profile deceleration to consume exactly the runway.
-  float remRev = remainingDeg / 360.0f;
-  float aPlan = (cmd0 * cmd0) / (2.0f * remRev);
-  float capRevS2 = (float)planDecelCapSps2 / WHEEL_USTEPS_PER_REV;
-  if (aPlan > capRevS2) aPlan = capRevS2;
-  if (aPlan < 0.008f) aPlan = 0.008f;
-  // Wedge-uniform targets must remain coupled-reachable after the precharge
-  // advance; a plan now steeper than natural decel would slip.  Abandon so
-  // the caller re-reserves from the fresh state.
-  if (spin.targetQuality == 0 &&
-      aPlan > naturalDecelRevS2(forward, takeoverDir)) {
+// Match the diagnostic's powered driver-health cadence. No GSTAT acknowledgement
+// or automatic fault recovery. The legacy TMC_UART fault label also covers
+// this board's SPI driver/status checks; enterFault removes torque first.
+bool controlDriverSafe(uint32_t nowMs) {
+  if (uint32_t(nowMs - lastPoweredHealthMs) < 100) return true;
+  lastPoweredHealthMs = nowMs;
+  if (!captureDriverHealthy()) {
+    enterFault(FC_TMC_UART, "powered SPI driver health/config/status failed");
     return false;
   }
-  planDecelRevS2 = aPlan;
-  // The FAS acceleration is the pulse generator's TRACKING rate, not the
-  // profile: it must exceed the profile decel so the field can follow each
-  // 25 ms command step and stepsToStop() stays a small fraction of the
-  // remaining runway (equal rates would trip the stop gate immediately and
-  // collapse the closed loop into one open-loop ramp).
-  uint32_t aPlanSps2 = (uint32_t)lroundf(aPlan * WHEEL_USTEPS_PER_REV);
-  if (aPlanSps2 < 50) aPlanSps2 = 50;
-  // aPlanSps2 <= ASSIST cap (1100) by construction, so 3x always exceeds the
-  // 2000 cap only from ~667 up; the cap can never fall below 1.8x the plan.
-  uint32_t aFasSps2 = aPlanSps2 * FAS_TRACK_ACCEL_FACTOR;
-  if (aFasSps2 > FAS_TRACK_ACCEL_MAX_SPS2) aFasSps2 = FAS_TRACK_ACCEL_MAX_SPS2;
+  return true;
+}
 
-  // Jump start: begin the pulse train at cmd0 instead of ramping from zero.
-  // The seeded ramp-down (stepsToStop == jumpStep) must fit comfortably
-  // inside the runway even with a legitimately high fitted friction model,
-  // or the stop gate degenerates to a first-tick open-loop ramp that can
-  // drag the wheel past its natural stop.  If it does not fit, lower the
-  // entry speed until it does.
-  uint32_t jumpStep = (uint32_t)lroundf(((float)hz * (float)hz) / (2.0f * (float)aFasSps2));
-  float remainingSteps = remainingDeg / 360.0f * WHEEL_USTEPS_PER_REV;
-  uint32_t maxJump = (uint32_t)(0.6f * remainingSteps);
-  if (jumpStep > maxJump) {
-    hz = (uint32_t)floorf(sqrtf(2.0f * (float)aFasSps2 * (float)maxJump));
-    if (hz < 40) return false;
-    cmd0 = (float)hz / WHEEL_USTEPS_PER_REV;
-    jumpStep = maxJump;
+// Immediate absolute ceiling from the bounded diagnostic, before debounced
+// speed-up/fight monitors. HOLD keeps its separate guest-release interaction.
+bool controlSpeedSafe() {
+  if (encoderMotionReady() && pwControlOverspeed(omega)) {
+    enterFault(FC_CONTROL_OVERSPEED, "absolute speed above 0.30 rps in powered control");
+    return false;
   }
-
-  if (!fasSetSpeedHz(hz)) return false;
-  if (!fasSetAcceleration(aFasSps2)) return false;
-  stepper->setJumpStart(jumpStep);
-  stepper->setCurrentPosition(0);   // motor is at standstill (asserted above)
-  // FastAccelStepper 1.2.7's backward (count-down) continuous path executes
-  // the live speed-change stream badly on this platform: captured traces
-  // show the pulse rate wandering at 50-60% of command with slow
-  // oscillations under runBackward, while runForward tracks within
-  // 1-3 milli-rev/s.  Both physical directions therefore run FORWARD, with
-  // rotation selected by DIR-pin polarity (safe: motor is at standstill).
-  stepper->setDirectionPin(PIN_DIR, fasSign > 0 ? INVERT_DIR : !INVERT_DIR);
-  // Current stays at the precharge level for the first pulses (soft start);
-  // ST_SPEED_MATCH_CAPTURE raises it to capture torque after
-  // CAPTURE_CURRENT_DELAY_MS, once the field and rotor are synchronized.
-  if (!fasRun(1)) return false;
-
-  cmdRevS = cmd0;
-  lastAppliedHz = hz;
-  lastResyncMs = nowMs;
-  trailRingReset(forward);
-  lowestForwardRevS = forward;
-  speedupSinceMs = 0;
-  lastSpeedupTrimMs = 0;
-  fightSinceMs = 0;
-  oppositeSinceMs = 0;
-  velocityLossSinceMs = 0;
-  guestOverrideAboveMs = 0;
-  stopRequested = false;
-  captureStartMs = nowMs;
-  controlStartMs = nowMs;
-  lastCmdTickMs = nowMs;
-  prevTickWheelRevS = forward;
-  prevTickMs = nowMs;
-
-  spin.takeoverRevS = forward;
-  spin.cmdMaxRevS = cmd0;
-  spin.cmdMinRevS = cmd0;
-
-  state = ST_SPEED_MATCH_CAPTURE;
-  stateEnteredMs = nowMs;
-  Serial.printf("SPIN#%lu CAPTURE fasDir=%+d wheel=%.3f cmd0=%.3f hz=%lu aPlan=%.4f(%lu sps2) aFas=%lu remain=%.1f\n",
-                (unsigned long)spin.number, fasSign, forward, cmd0,
-                (unsigned long)hz, aPlan, (unsigned long)aPlanSps2,
-                (unsigned long)aFasSps2, remainingDeg);
   return true;
 }
 
 // Shared safety monitors for the powered states.  Returns false if the state
 // was changed (fault or release) and the caller must stop processing.
 bool controlSafetyChecks(uint32_t nowMs) {
+  if (!controlSpeedSafe() || !controlDriverSafe(nowMs)) return false;
   // 1. Encoder position freshness is non-negotiable while powered.
   if (!encoderPositionFresh()) {
     enterFault(FC_ENCODER_STALE, "position stale in control");
@@ -1800,6 +1966,7 @@ bool controlSafetyChecks(uint32_t nowMs) {
   }
   // 2. Velocity may re-prime for a few tens of ms (normal); longer is a loss.
   if (!encoderVelocityValid) {
+    speedupWatch.reset();  // incomplete velocity evidence cannot age the debounce
     if (velocityLossSinceMs == 0) velocityLossSinceMs = nowMs;
     else if (nowMs - velocityLossSinceMs >= VELOCITY_LOSS_FAULT_MS) {
       enterFault(FC_ENCODER_VELOCITY, "velocity unusable in control");
@@ -1840,38 +2007,19 @@ bool controlSafetyChecks(uint32_t nowMs) {
     oppositeSinceMs = 0;
   }
 
-  // 5. Wheel speed-up detector: under power the wheel must never accelerate.
-  if (forward > 0.0f) {
-    if (forward < lowestForwardRevS) {
-      lowestForwardRevS = forward;
-      speedupSinceMs = 0;
-    } else if (forward > lowestForwardRevS + SPEEDUP_NOISE_REV_S) {
-      if (speedupSinceMs == 0) speedupSinceMs = nowMs;
-      float rise = forward - lowestForwardRevS;
-      if (rise > spin.maxSpeedRiseRevS) spin.maxSpeedRiseRevS = rise;
-      if (nowMs - speedupSinceMs >= SPEEDUP_TRIM_MS &&
-          nowMs - lastSpeedupTrimMs >= SPEEDUP_TRIM_MS) {
-        // Immediate torque/speed reduction; monotonic by construction.
-        lastSpeedupTrimMs = nowMs;
-        float trimmed = cmdRevS * 0.95f;
-        if (trimmed < cmdRevS) {
-          cmdRevS = trimmed;
-          uint32_t hz = (uint32_t)floorf(cmdRevS * WHEEL_USTEPS_PER_REV);
-          if (hz >= 40 && stepper && !stepper->isStopping()) {
-            if (!fasSetSpeedHz(hz)) return false;
-            stepper->applySpeedAcceleration();
-            lastAppliedHz = hz;
-          }
-          if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
-        }
-      }
-      if (nowMs - speedupSinceMs >= SPEEDUP_FAULT_MS) {
-        enterFault(FC_SUSTAINED_SPEEDUP, "wheel accelerating under power");
-        return false;
-      }
-    } else {
-      speedupSinceMs = 0;
-    }
+  // 5. A short low outlier must not poison the reference for the rest of
+  // the spin. Preserve the speed-rise threshold and confirmation time,
+  // but establish the baseline and rising condition from robust samples.
+  bool sustainedSpeedup = speedupWatch.update(nowMs, forward,
+      SPEEDUP_NOISE_REV_S, SPEEDUP_FAULT_MS);
+  if (speedupWatch.rise() > spin.maxSpeedRiseRevS)
+    spin.maxSpeedRiseRevS = speedupWatch.rise();
+  if (sustainedSpeedup) {
+    Serial.printf("# SPEEDUP median=%.3f baseline=%.3f rise=%.3f sustained_ms=%lu\n",
+                  speedupWatch.median(), speedupWatch.baseline(), speedupWatch.rise(),
+                  (unsigned long)speedupWatch.sustainedMs(nowMs));
+    enterFault(FC_SUSTAINED_SPEEDUP, "sustained robust speed rise under power");
+    return false;
   }
 
   // 6. Fight watchdog: the wheel far below the *actual* field speed means
@@ -1924,62 +2072,50 @@ void serviceDecelTick(uint32_t nowMs) {
     prevTickMs = nowMs;
   }
 
-  if (stopRequested) return;  // FAS ignores speed updates while stopping
+  if (stopRequested) {
+    // The library now owns the smooth final ramp at planDecelRevS2.
+    cmdRevS = fminf(cmdRevS, fasWheelRevS());
+    if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
+    return;
+  }
 
   float remaining = remainingTargetDeg();
   int32_t toleranceCounts = countsForDegrees(OVERSHOOT_TOL_DEG);
 
-  // Overshoot: begin the taper at once.  (stopMove still queues its own
-  // ramp-down distance - small at these speeds with the raised FAS tracking
-  // accel - so this bounds the excursion, it cannot cancel it.)
-  if (takeoverDir * (encoderCountsMT - targetCountsMT) > toleranceCounts) {
-    stopRequested = true;
-    setCurrentStage(CS_TAPER);
-    stepper->stopMove();
-    return;
-  }
-
-  // Encoder-gated stop: begin the natural taper when the hardware ramp-down
-  // distance meets the remaining runway.
+  // Both overshoot and normal stop use the SAME planned acceleration.
+  // Keep braking current while pulses ramp down; do not weaken coupling
+  // at the instant the motor is asked to finish the stop.
   float stopLeadDeg = (float)stepper->stepsToStop() * 360.0f / WHEEL_USTEPS_PER_REV
                     + STOP_GATE_EXTRA_DEG;
-  if (remaining <= stopLeadDeg) {
+  if (takeoverDir * (encoderCountsMT - targetCountsMT) > toleranceCounts ||
+      remaining <= stopLeadDeg) {
     stopRequested = true;
-    setCurrentStage(CS_TAPER);
     stepper->stopMove();
+    Serial.printf("# RAMP_STOP a=%lu remain=%.1f lead=%.1f fas=%.3f\n",
+                  (unsigned long)stepper->getAcceleration(), remaining,
+                  stopLeadDeg, fasWheelRevS());
     return;
   }
 
-  // Monotonic command computation.  The command follows the sqrt PROFILE that
-  // consumes the remaining runway at planDecel; the wheel decays naturally
-  // onto the field once (the entry sits at 0.88x the trailing wheel speed),
-  // couples, and is then paced down in synchronization - silent load-angle
-  // braking.  The command must NOT continuously track a fraction of the
-  // wheel speed: doing so re-opens the slip gap every tick and turns the
-  // whole takeover into an audible pole-slip ratchet with ~5x the planned
-  // braking force (observed on hardware at both 450 and 300 mA).  The wheel
-  // can never be pulled: targets are capped below the natural stop, so a
-  // coupled wheel always pushes INTO the field, and the chase-down plus the
-  // speed-up detector guard the remaining pull paths.
+  // Position supplies a desired speed, while elapsed time bounds changes.
+  // The hardware uses the same acceleration limit, rather than an 8x ramp.
   float prevCmd = cmdRevS;
   float remRev = fmaxf(remaining, 0.0f) / 360.0f;
   float profile = sqrtf(2.0f * planDecelRevS2 * remRev);
   float newCmd = fminf(prevCmd, profile);
 
   float trailMin = trailingMinForwardRevS();  // telemetry / debug reference
-  // Capture-ramp surge fix (bench 2026-08-06, spins #16/#19/#27): cmd0 is
-  // computed at reservation and goes stale by naturalDecel x rampTime on
-  // urgent high-speed takeovers; the ramp tail then shoves the decayed wheel
-  // back up (rise 0.07-0.11 rev/s, user-visible). Zero coupling slack while
-  // in SPEED_MATCH_CAPTURE so the field can never lead the wheel; braking
-  // keeps the original 0.020 slack. Lowering-only - cannot ratchet.
+  // A slower encoder can lower the desired command, but cannot introduce
+  // an unbounded step. Existing reversal, speed-up and fight faults remain.
   float couplingSlack = (state == ST_SPEED_MATCH_CAPTURE) ? 0.0f : COUPLING_SLACK_REV_S;
   if (encoderVelocityValid && forward < newCmd - couplingSlack) {
-    // Wheel slower than the field: reduce toward the wheel so the motor can
-    // never lead it.  (Also naturally sheds braking authority when the wheel
-    // is dying early: the field settles to the wheel's own speed.)
+    // Request a lower field speed when the encoder is slower. The ramp
+    // limiter below bounds the response; the fault monitors remain active.
     newCmd = fminf(newCmd, fmaxf(forward, 0.0f));
   }
+
+  newCmd = pwLimitBrakeCommand(prevCmd, newCmd, planDecelRevS2,
+                               (float)dtMs * 0.001f);
 
   // Invariant: commanded motor speed never increases after capture.
   if (newCmd > prevCmd + 1.0e-4f) {
@@ -1993,7 +2129,6 @@ void serviceDecelTick(uint32_t nowMs) {
     // Below FastAccelStepper's practical floor.  Taper out here; landing
     // verification still requires safe-interior position AND stillness.
     stopRequested = true;
-    setCurrentStage(CS_TAPER);
     stepper->stopMove();
     cmdRevS = newCmd;
     if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
@@ -2003,14 +2138,8 @@ void serviceDecelTick(uint32_t nowMs) {
   cmdRevS = newCmd;
   if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
 
-  // Apply to the pulse generator only on meaningful change, and RESYNC the
-  // field to the command periodically.  FastAccelStepper re-derives its ramp
-  // position with log2 fixed-point rounding on every applySpeedAcceleration;
-  // a dense stream of applies compounds that rounding and the actual field
-  // speed can sag far below the command (observed ~45% low on hardware,
-  // over-braking the wheel into a long crawl).  Re-asserting the target
-  // recovers the sag; the field approaching the command from BELOW remains
-  // under 0.88x the trailing wheel speed, so it can never lead the wheel.
+  // Avoid unnecessary library ramp re-quantization. Actual acceleration
+  // stays bounded by aPlanSps2 even when a lower target is requested.
   uint32_t deltaHz = (hz > lastAppliedHz) ? hz - lastAppliedHz : lastAppliedHz - hz;
   bool applyNow = (float)deltaHz >= fmaxf(4.0f, 0.01f * (float)lastAppliedHz);
   if (state == ST_SPEED_MATCH_CAPTURE && hz < lastAppliedHz) applyNow = true;  // capture: track the wheel down immediately
@@ -2085,6 +2214,11 @@ void landingVerdict() {
   } else {
     result = RES_OFF_TARGET_SAFE;
   }
+  captureCycle.markSuccessfulLanding(faultCode == FC_NONE &&
+      state == ST_LANDING_SETTLE && encoderMotionReady() && fabsf(omega) <= STILL_REV_S &&
+      settleStillSinceMs != 0 && millis() - settleStillSinceMs >= SETTLE_MS &&
+      fabsf(degreesForCounts(encoderCountsMT - settleWindowCounts)) <= 1.5f &&
+      stepper && !stepper->isRunning());
   closeSpin(result);
   setCurrentStage(CS_HOLD1);
   state = ST_SOFT_HOLD;
@@ -2148,6 +2282,7 @@ void serviceDiagnosticCapture() {
 /*                             SERIAL UI                                      */
 /* ========================================================================== */
 void help() {
+  Serial.println(F("# build: plywood-capture-review-20260920; takeover defaults OFF"));
   Serial.println(F(
     "\n=== PRIZE WHEEL (correctness redesign) ===\n"
     " z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)\n"
@@ -2169,7 +2304,7 @@ void printStatus() {
   uint32_t ageUs = encoderPrimed ? (uint32_t)(micros() - lastGoodUs) : 0;
   Serial.printf("# state=%s fault=%s angle=%.2f wedge=%d omega=%.4f natStop=%.1f "
                 "pos=%s vel=%s age_us=%lu dirCal=%d(sign %+d) tmc=%d takeover=%d "
-                "rawZero=%u stage=%u cmd=%.3f\n",
+                "rawZero=%u stage=%u cmd=%.3f savedFaultRaw=%u\n",
                 stateName(state), faultName(faultCode), wheelAngleDeg(),
                 currentWedge(), omega,
                 encoderVelocityValid
@@ -2179,7 +2314,7 @@ void printStatus() {
                 encoderVelocityValid ? "VALID" : "REPRIME",
                 (unsigned long)ageUs, motorDirectionCalibrated ? 1 : 0,
                 motorPositiveEncoderSign, tmcOk ? 1 : 0, takeoverEnabled ? 1 : 0,
-                rawZero, (unsigned)currentStage, cmdRevS);
+                rawZero, (unsigned)currentStage, cmdRevS, (unsigned)persistedFaultRaw);
 }
 
 // WIFI_TASK: one shared single-char parser for the serial console AND the
@@ -2233,11 +2368,13 @@ void handleCommandChar(char command) {
       break;
     case 'F':
       if (state == ST_IDLE_STOPPED || state == ST_FAULT_LATCHED) {
-        cw_c = 0.30f; cw_b = 0.15f; ccw_c = 0.30f; ccw_b = 0.15f;
+        cw_c = FRICTION_SEED.c; cw_b = FRICTION_SEED.b;
+        ccw_c = FRICTION_SEED.c; ccw_b = FRICTION_SEED.b;
         cwFitCount = 0; ccwFitCount = 0;
-        preferences.remove("cwC"); preferences.remove("cwB"); preferences.remove("cwN");
-        preferences.remove("ccwC"); preferences.remove("ccwB"); preferences.remove("ccwN");
-        Serial.println(F("# friction model reset to seeds"));
+        bool savedCw = preferencesAvailable && pwSaveFrictionDirection(preferences, true, FRICTION_SEED);
+        bool savedCcw = preferencesAvailable && pwSaveFrictionDirection(preferences, false, FRICTION_SEED);
+        bool saved = savedCw && savedCcw && pwSaveFrictionVersion(preferences);
+        Serial.printf("# friction model reset to v2 seeds; persisted=%d\n", saved ? 1 : 0);
       } else Serial.println(F("# F ignored: controller busy"));
       break;
     case 'x':
@@ -2251,6 +2388,20 @@ void handleCommandChar(char command) {
       break;
     case 'r':
       if (state == ST_FAULT_LATCHED) {
+        if (recoveryGuardRaw != 0) {
+          Serial.printf("# r refused: recovery guard=%u; finish the diagnostic recovery procedure\n",
+                        (unsigned)recoveryGuardRaw);
+          break;
+        }
+        if (faultCode == FC_UNKNOWN_PERSISTED || !preferencesAvailable) {
+          Serial.printf("# r refused: unknown saved fault raw=%u; use firmware that understands it\n",
+                        (unsigned)persistedFaultRaw);
+          break;
+        }
+        if (!encoderMotionReady() || fabsf(omega) > STILL_REV_S) {
+          Serial.println(F("# r ignored: fresh, valid stopped-wheel feedback required"));
+          break;
+        }
         if (stepper && stepper->isRunning()) {
           Serial.println(F("# r ignored: motor still ramping down"));
           break;
@@ -2275,8 +2426,11 @@ void handleCommandChar(char command) {
           Serial.println(F("# r: TMC config re-apply failed; fault remains latched"));
           break;
         }
+        if (!PW_S1_CLEAR()) {
+          Serial.println(F("# r: saved fault clear failed; fault remains latched"));
+          break;
+        }
         faultCode = FC_NONE;
-        PW_S1_CLEAR();  // S1: the r command is the only routine latch clear
         state = ST_IDLE_STOPPED;
         stateEnteredMs = millis();
         Serial.printf("# fault cleared; tmc=%d dirCal=%d%s\n",
@@ -2296,43 +2450,27 @@ void handleCommandChar(char command) {
 /*                          SETUP / MAIN LOOP                                 */
 /* ========================================================================== */
 void setup() {
+  pinMode(PIN_EN, OUTPUT);
+  digitalWrite(PIN_EN, HIGH); // no boot hold; GPIO initialized before Arduino digitalWrite
   Serial.begin(115200);
   delay(300);
   randomSeed(esp_random());
 
-  preferences.begin("prizewheel", false);
+  preferencesAvailable = preferences.begin("prizewheel", false);
+  restoreFaultLatch(); // first: never overwrite an existing fault during boot checks
   rawZero = preferences.getUShort("rawZero", rawZero);  // label-true anchor
   motorPositiveEncoderSign = preferences.getInt("pos_sign", 0);
   motorDirectionCalibrated = preferences.getBool("dir_ok", false) &&
       (motorPositiveEncoderSign == 1 || motorPositiveEncoderSign == -1);
-  cw_c = preferences.getFloat("cwC", 0.30f);
-  cw_b = preferences.getFloat("cwB", 0.15f);
-  ccw_c = preferences.getFloat("ccwC", 0.30f);
-  ccw_b = preferences.getFloat("ccwB", 0.15f);
-  cwFitCount = preferences.getUShort("cwN", 0);
-  ccwFitCount = preferences.getUShort("ccwN", 0);
-  // v2 reseed: old fit (0.30/0.15) was tuned for the NEMA17/belt wheel and
-  // understates this 36" wheel's real drag, so the brake plan is consistently
-  // overtaken by faster-than-planned natural deceleration (FC_MOTOR_FIGHT).
-  // Forcibly override whatever is persisted; online fit refines from here.
-  cw_c = 0.55f; cw_b = 0.28f;
-  ccw_c = 0.55f; ccw_b = 0.28f;
-  cwFitCount = 0; ccwFitCount = 0;
-  preferences.putFloat("cwC", cw_c);   preferences.putFloat("cwB", cw_b);
-  preferences.putFloat("ccwC", ccw_c); preferences.putFloat("ccwB", ccw_b);
-  preferences.putUShort("cwN", 0);     preferences.putUShort("ccwN", 0);
-  // Persisted values pass the same bounds as fresh fits: one corrupted NVS
-  // float (or b<=0 -> NaN travel) must never poison target selection.
-  if (!(cw_c >= FIT_C_MIN && cw_c <= FIT_C_MAX) ||
-      !(cw_b >= FIT_B_MIN && cw_b <= FIT_B_MAX)) {
-    cw_c = 0.30f; cw_b = 0.15f; cwFitCount = 0;
-    Serial.println(F("# NVS cw friction out of bounds; reset to seeds"));
+  if (preferencesAvailable) {
+    PwFrictionLoad model = pwLoadFriction(preferences, FRICTION_SEED, FRICTION_BOUNDS);
+    cw_c = model.cw.c; cw_b = model.cw.b; cwFitCount = model.cw.fits;
+    ccw_c = model.ccw.c; ccw_b = model.ccw.b; ccwFitCount = model.ccw.fits;
+    Serial.printf("# friction schema=%u migrated=%d resetCW=%d resetCCW=%d persisted=%d\n",
+        (unsigned)PW_FRICTION_VERSION, model.migrated, model.resetCw, model.resetCcw, model.saved);
   }
-  if (!(ccw_c >= FIT_C_MIN && ccw_c <= FIT_C_MAX) ||
-      !(ccw_b >= FIT_B_MIN && ccw_b <= FIT_B_MAX)) {
-    ccw_c = 0.30f; ccw_b = 0.15f; ccwFitCount = 0;
-    Serial.println(F("# NVS ccw friction out of bounds; reset to seeds"));
-  }
+  // rawZero/dir_ok/pos_sign are intentionally untouched: these legacy keys
+  // have no hardware generation and still require physical verification.
 
   Wire.begin(PIN_SDA, PIN_SCL);
   Wire.setClock(400000);
@@ -2349,9 +2487,6 @@ void setup() {
                   encoderRead.txStatus, encoderRead.requested, encoderRead.available);
   }
 
-  pinMode(PIN_EN, OUTPUT);
-  digitalWrite(PIN_EN, LOW);  // hold at boot; freewheel selected below
-
   driverConfig();   // TMC5160T Pro over SPI - no serial begin needed
 
   engine.init();
@@ -2360,6 +2495,9 @@ void setup() {
     stepper->setDirectionPin(PIN_DIR, INVERT_DIR);
     stepper->setEnablePin(PIN_EN, true);
     stepper->setAutoEnable(false);
+    if (!pwFixStepperClock()) {
+      enterFault(FC_STEPPER_API, "STEP clock configuration unsupported");
+    }
   } else {
     Serial.println(F("# FATAL: stepperConnectToPin failed; control locked"));
   }
@@ -2379,7 +2517,10 @@ void setup() {
     stateEnteredMs = millis();
   }
 
-  // Party additions: S1 fault-latch restore, DFPlayer, LED task, SoftAP.
+  captureTimerReady = captureLease.begin((gpio_num_t)PIN_EN);
+  if (!captureTimerReady) enterFault(FC_STEPPER_API, "capture timer unavailable");
+
+  // Party additions: DFPlayer, LED task, SoftAP. S1 was restored before boot checks.
   pwPartyBegin();
 }
 
@@ -2435,6 +2576,10 @@ void loop() {
   updateEncoder();
   handleSerial();
   uint32_t nowMs = millis();
+  captureCycle.observe(nowMs, state == ST_IDLE_STOPPED && !spinOpen &&
+      faultCode == FC_NONE && encoderMotionReady() && fabsf(omega) <= STILL_REV_S &&
+      currentStage == CS_FREEWHEEL && digitalRead(PIN_EN) == HIGH &&
+      stepper && !stepper->isRunning(), encoderCountsMT, countsForDegrees(1.0f));
 
   // Encoder-outage watchdog for the unpowered motion states: every exit from
   // MOTION_CANDIDATE / MANUAL_ADJUSTMENT / SPIN_PUSH / SPIN_RELEASED needs a
@@ -2579,7 +2724,7 @@ void loop() {
         if (releasedReverseSinceMs == 0) releasedReverseSinceMs = nowMs;
         else if (nowMs - releasedReverseSinceMs >= 150) {
           releasedReverseSinceMs = 0;
-          finishFrictionCapture("reversed");
+          finishFrictionCapture("reversed", PwFitEnd::Reversal);
           closeSpin(RES_GUEST_STOPPED);
           candidateStartCounts = encoderCountsMT;
           spinArmMs = 0;
@@ -2595,13 +2740,16 @@ void loop() {
       if (speed > spin.peakRevS * 1.02f && speed > SPIN_DETECT_REV_S) {
         spin.peakRevS = speed;
         lastPeakMs = nowMs;
-        finishFrictionCapture("re-push");
+        finishFrictionCapture("re-push", PwFitEnd::Repush);
         state = ST_SPIN_PUSH;
         stateEnteredMs = nowMs;
         break;
       }
+      if (contactDetected(nowMs)) {
+        spin.hadContact = 1;  // sticky for the close
+        finishFrictionCapture("contact", PwFitEnd::Contact);
+      }
       captureFrictionSample(nowMs);
-      if (contactDetected(nowMs)) spin.hadContact = 1;  // sticky for the close
 
       if (controlAvailable()) {
         if (tryReserveTarget(nowMs)) break;
@@ -2612,7 +2760,7 @@ void loop() {
       if (speed <= STILL_REV_S) {
         if (settleStillSinceMs == 0) settleStillSinceMs = nowMs;
         else if (nowMs - settleStillSinceMs >= SETTLE_MS) {
-          finishFrictionCapture("coast-end");
+          finishFrictionCapture("coast-end", PwFitEnd::CoastEnd);
           SpinResult res = !controlAvailable() ? RES_CONTROL_LOCKED
                           : (spin.hadContact ? RES_GUEST_STOPPED
                                              : RES_NO_REACHABLE_SAFE);
@@ -2627,79 +2775,12 @@ void loop() {
     }
 
     case ST_TARGET_RESERVED: {
-      // 80 ms low-current phase settle.  No pulses yet.
-      if (!encoderPositionFresh()) {
-        enterFault(FC_ENCODER_STALE, "stale during precharge");
-        break;
-      }
-      // A guest grabbing the wheel during the precharge supersedes the spin.
-      if (encoderMotionReady() && fabsf(omega) > GUEST_OVERRIDE_REV_S) {
-        if (guestOverrideAboveMs == 0) guestOverrideAboveMs = nowMs;
-        if (nowMs - guestOverrideAboveMs >= GUEST_OVERRIDE_MS) {
-          guestOverrideAboveMs = 0;
-          driverFreewheel();
-          closeSpin(RES_GUEST_RESPUN);
-          startSpinEvent((omega >= 0.0f) ? 1 : -1, nowMs);
-          state = ST_SPIN_PUSH;
-          stateEnteredMs = nowMs;
-          break;
-        }
-      } else {
-        guestOverrideAboveMs = 0;
-      }
-      if (nowMs - stateEnteredMs < PRECHARGE_MS) break;
-      if (!encoderMotionReady()) {
-        // Velocity re-primes within tens of ms; a powered wait must not be
-        // unbounded (this state has no other time budget yet).
-        if (nowMs - stateEnteredMs >= PRECHARGE_MS + RESERVED_VEL_TIMEOUT_MS) {
-          enterFault(FC_ENCODER_VELOCITY, "velocity lost during precharge");
-        }
-        break;
-      }
+      launchCapture(nowMs); // never reselect the absolute reserved prize
+      break;
+    }
 
-      // The wheel advanced during precharge; re-validate the runway.
-      float remaining = remainingTargetDeg();
-      float speed = fabsf(omega);
-      float minNow = speed * 0.05f * 360.0f +
-          brakedStopDistanceDeg(speed, spinDir, motorExtraRadS2(ASSIST_DECEL_MAX_SPS2));
-      if (remaining < minNow || speed < 0.02f) {
-        bool replaced = false;
-        if (!reserveRetried) {
-          reserveRetried = true;
-          TargetChoice choice = chooseSafeTarget(spinDir, wheelAngleDeg(), speed);
-          if (choice.found && !isDare(choice.wedge)) {
-            targetCountsMT = encoderCountsMT +
-                             takeoverDir * countsForDegrees(choice.runwayDeg);
-            planDecelCapSps2 = choice.decelCapSps2;
-            spin.targetWedge = choice.wedge;
-            spin.targetAngleDeg = choice.targetAngleDeg;
-            spin.runwayDeg = choice.runwayDeg;
-            spin.targetQuality = choice.quality;
-            spin.naturalStopDeg = naturalStopDistanceDeg(speed, spinDir);
-            spin.fricC = (spinDir > 0) ? cw_c : ccw_c;
-            spin.fricB = (spinDir > 0) ? cw_b : ccw_b;
-            replaced = true;
-            Serial.printf("SPIN#%lu RESERVE-ADJUST targetW=%d runway=%.1f\n",
-                          (unsigned long)spin.number, choice.wedge, choice.runwayDeg);
-          }
-        }
-        if (!replaced) {
-          // Never launch toward a target already inside the minimum braking
-          // distance: release and let SPIN_RELEASED re-evaluate honestly.
-          driverFreewheel();
-          state = ST_SPIN_RELEASED;
-          stateEnteredMs = nowMs;
-          break;
-        }
-      }
-      if (!launchCapture(nowMs)) {
-        if (state == ST_TARGET_RESERVED) {
-          // Nothing catastrophic - the wheel is simply too slow to capture.
-          driverFreewheel();
-          state = ST_SPIN_RELEASED;
-          stateEnteredMs = nowMs;
-        }
-      }
+    case ST_CAPTURE_ARMING: {
+      serviceCaptureArming(nowMs);
       break;
     }
 
@@ -2707,11 +2788,6 @@ void loop() {
       if (!controlSafetyChecks(nowMs)) break;
       serviceDecelTick(nowMs);   // trailing window keeps filling; cmd is const
       if (state != ST_SPEED_MATCH_CAPTURE) break;  // tick may have faulted
-      // Torque steps in only after the field has swept in sync for a while.
-      if (currentStage == CS_PRECHARGE &&
-          nowMs - captureStartMs >= CAPTURE_CURRENT_DELAY_MS) {
-        setCurrentStage(CS_CAPTURE);
-      }
       if (nowMs - captureStartMs >= PICKUP_COHERENCE_MS) {
         // Never step the ladder back up if the stop taper already began.
         if (!stopRequested) setCurrentStage(CS_BRAKE);
@@ -2735,13 +2811,14 @@ void loop() {
     }
 
     case ST_LANDING_SETTLE: {
+      if (!controlSpeedSafe() || !controlDriverSafe(nowMs)) break;
       // Pulse train has tapered to zero; the wheel settles under taper
       // current.  Landing requires BOTH interior position AND stillness.
       if (!encoderPositionFresh()) {
         enterFault(FC_ENCODER_STALE, "stale during settle");
         break;
       }
-      setCurrentStage(CS_TAPER);  // idempotent; undoes any late CS_BRAKE write
+      setCurrentStage(CS_BRAKE);  // retain 2200 mA through verified settling
       if (encoderMotionReady() &&
           fabsf(omega) > fmaxf(GUEST_OVERRIDE_REV_S, 0.3f)) {
         // Grabbed and re-spun before the summary: hand it back to detection.
@@ -2798,6 +2875,7 @@ void loop() {
     }
 
     case ST_SOFT_HOLD: {
+      if (!controlDriverSafe(nowMs)) break;
       // Fade the hold torque so release is imperceptible, then float.
       uint32_t age = nowMs - stateEnteredMs;
       if (currentStage == CS_HOLD1 && age >= HOLD1_MS) setCurrentStage(CS_HOLD2);
@@ -2806,6 +2884,8 @@ void loop() {
         // Between-spins driver health check (wheel at rest, timing harmless).
         checkTmcUartOrFault();
         if (state == ST_FAULT_LATCHED) break;
+        captureCycle.holdReleased(faultCode == FC_NONE && currentStage == CS_FREEWHEEL &&
+            digitalRead(PIN_EN) == HIGH && stepper && !stepper->isRunning());
         state = ST_IDLE_STOPPED;
         stateEnteredMs = nowMs;
         break;
@@ -2813,6 +2893,8 @@ void loop() {
       // A new hand motion during the fade releases the wheel immediately.
       if (encoderMotionReady() && fabsf(omega) >= SPIN_DETECT_REV_S) {
         driverFreewheel();
+        captureCycle.holdReleased(faultCode == FC_NONE && currentStage == CS_FREEWHEEL &&
+            digitalRead(PIN_EN) == HIGH && stepper && !stepper->isRunning());
         candidateStartCounts = encoderCountsMT;
         spinArmMs = 0;
         settleStillSinceMs = 0;   // never inherit the landing's stillness age
