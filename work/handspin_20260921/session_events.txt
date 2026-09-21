@@ -1,0 +1,8 @@
+1790018012.8 armed initial
+1790018250.2 dump 1 complete
+1790018251.7 re-armed
+1790020232.4 dump 2 complete
+1790020234.0 re-armed
+1790020429.3 dump 3 complete
+1790020430.8 re-armed
+1790022512.8 logger exit

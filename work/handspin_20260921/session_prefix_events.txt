@@ -1,0 +1,12 @@
+1790006266.2 armed initial
+1790006624.2 dump 1 complete
+1790006625.8 re-armed
+1790007059.2 dump 2 complete
+1790007060.8 re-armed
+1790008502.3 dump 3 complete
+1790008503.8 re-armed
+1790008627.1 dump 4 complete
+1790008628.7 re-armed
+1790008815.5 dump 5 complete
+1790008817.1 re-armed
+1790010766.2 logger exit
