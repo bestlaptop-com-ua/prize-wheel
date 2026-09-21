@@ -1,0 +1,16 @@
+[HOST 2026-09-18T15:26:58.169] Serial opened; DTR/RTS false; 2-hour lease; automatic diagnostic re-arm after completed dump
+[HOST 2026-09-18T15:26:58.223] TX ?
+[HOST 2026-09-18T15:26:58.223] TX s
+[HOST 2026-09-18T15:26:58.224] TX d
+[HOST 2026-09-18T15:27:38.666] RX SPIN#1 START dir=-1 omega=-0.208 wedge=10
+[HOST 2026-09-18T15:27:39.254] RX SPIN#1 RELEASE speed=0.490 peak=0.533 angle=213.8
+[HOST 2026-09-18T15:27:39.262] RX SPIN#1 RESERVE targetW=10 targetAngle=324.7 runway=249.2 natStop=251.2 speed=0.490 q=3 urgent=0
+[HOST 2026-09-18T15:27:39.338] RX SPIN#1 CAPTURE fasDir=+1 wheel=0.462 cmd0=0.438 hz=1403 aPlan=0.1462(468 sps2) aFas=468 remain=236.7
+[HOST 2026-09-18T15:27:39.359] RX # RAMP_STOP a=468 remain=232.6 lead=239.1 fas=0.438
+[HOST 2026-09-18T15:27:39.907] RX FAULT code=SUSTAINED_SPEEDUP detail=wheel accelerating under power state=CONTROLLED_DECEL angle=119.1 wedge=3 omega=-0.382 cmd=0.365
+[HOST 2026-09-18T15:27:50.995] RX SPIN#1 SUMMARY dir=-1 peak=0.533 releaseMs=587 relAngle=213.8 relSpeed=0.490 targetW=10 targetAngle=324.7 runway=249.2 natStop=251.2 fricC=0.5500 fricB=0.2800 tkSpeed=0.462 cmdMax=0.438 cmdMin=0.365 rise=0.139 maxDecel=6.810 final=302.6 finalW=10 err=22.1 quality=3 result=FAULTED fault=SUSTAINED_SPEEDUP fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T15:28:16.153] TX s
+[HOST 2026-09-18T15:29:59.288] TX d (automatic after completed dump)
+[HOST 2026-09-18T15:31:19.595] TX s
+[HOST 2026-09-18T15:31:46.235] TX s
+[HOST 2026-09-18T15:35:17.601] Serial capture ended

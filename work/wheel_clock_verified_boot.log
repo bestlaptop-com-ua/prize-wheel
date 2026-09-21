@@ -1,0 +1,48 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x1 (POWERON),boot:0x29 (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x10cc
+load:0x403c8700,len:0xc2c
+load:0x403cb700,len:0x30c0
+entry 0x403c88b8
+# AS5600 initial read failed tx=0 req=0 avail=0; retrying in loop
+# STEP clock before: group=4 timer=4
+# STEP clock: 16 MHz correction OK
+# frame: label-true static rawZero=88 | dirCal=VALID sign=-1 | tmc=1
+# friction cw c=0.5500 b=0.2800 (0 fits) ccw c=0.5500 b=0.2800 (0 fits)
+
+=== PRIZE WHEEL (correctness redesign) ===
+# build: v2-step-clock-fix-20260918; baseline control + fault capture
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ x  clear stored direction calibration
+ r  fault reset (re-checks TMC UART)
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   l  LEDs on/off   w  network status
+ V<n>+Enter  DFPlayer volume 0-30 (e.g. V18)
+# S1: latched fault MOTOR_FIGHT restored from NVS; takeover locked until r
+EspIO: backend=UART0 (compile-time choice; #define FASTLED_ESP_FORCE_USB_SERIAL_JTAG to switch)
+src/fl/channels/manager.cpp.hpp(38): ChannelManager: Initializing
+src/fl/channels/manager.cpp.hpp(171): ChannelManager: Added driver 'RMT' (priority 2, caps: CLOCKLESS)
+# fx: WS2812B x300 on GPIO40, 50 fps task on core 0, cap 3000 mA (FAS=MCPWM, LEDs=RMT: no channel conflict)
+# party build: S1=1 S2=1 S3=1 wifi=0 audio=0 leds=1
+src/platforms/esp/32/drivers/rmt/rmt_5/rmt_memory_manager.cpp.hpp(49): RMT Memory (ESP32-S3): TX=192 words, RX=192 words (DEDICATED pools)
+src/platforms/esp/32/drivers/rmt/rmt_5/rmt5_peripheral_esp.cpp.hpp(685): WARN: [RMT5_ENCODER] Timing config: resolution=40000000Hz, ns_per_tick=25
+src/platforms/esp/32/drivers/rmt/rmt_5/rmt5_peripheral_esp.cpp.hpp(687): WARN: [RMT5_ENCODER] Bit0: high=10 ticks, low=40 ticks
+src/platforms/esp/32/drivers/rmt/rmt_5/rmt5_peripheral_esp.cpp.hpp(688): WARN: [RMT5_ENCODER] Bit1: high=35 ticks, low=15 ticks
+src/platforms/esp/32/drivers/rmt/rmt_5/rmt5_peripheral_esp.cpp.hpp(689): WARN: [RMT5_ENCODER] Reset: 11200 ticks
+src/platforms/esp/32/drivers/rmt/rmt_5/rmt5_peripheral_esp.cpp.hpp(722): WARN: [RMT5_ENCODER] Encoder created successfully
+E (1224) cache: esp_cache_msync(113): invalid addr or null pointer
+src/platforms/esp/32/drivers/rmt/rmt_5/rmt5_peripheral_esp.cpp.hpp(464): RMT5_PERIPH: Cache sync disabled due to ESP_ERR_INVALID_ARG. Memory barriers will ensure ordering.
+# state=FAULT_LATCHED fault=MOTOR_FIGHT angle=118.83 wedge=3 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=620 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=88 stage=0 cmd=0.000

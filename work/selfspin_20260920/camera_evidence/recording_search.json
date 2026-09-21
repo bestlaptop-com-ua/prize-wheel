@@ -1,0 +1,22 @@
+{
+  "storage": {
+    "status": 200,
+    "body": ""
+  },
+  "finder": {
+    "status": 200,
+    "body": "result=3035254088\r\n"
+  },
+  "search": {
+    "status": 400,
+    "body": "Error\r\nBad Request!\r\n"
+  },
+  "close": {
+    "status": 200,
+    "body": "OK\r\n"
+  },
+  "destroy": {
+    "status": 200,
+    "body": "OK\r\n"
+  }
+}

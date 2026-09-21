@@ -1,0 +1,38 @@
+[HOST 2026-09-18T15:38:37.314] Serial opened; DTR/RTS false; 2-hour lease; automatic diagnostic re-arm after completed dump
+[HOST 2026-09-18T15:38:37.372] TX ?
+[HOST 2026-09-18T15:38:37.373] TX s
+[HOST 2026-09-18T15:38:37.373] TX d
+[HOST 2026-09-18T15:53:00.797] RX SPIN#1 START dir=-1 omega=-0.190 wedge=9
+[HOST 2026-09-18T15:53:02.455] RX SPIN#1 RELEASE speed=0.400 peak=0.435 angle=51.0
+[HOST 2026-09-18T15:53:02.463] RX SPIN#1 RESERVE targetW=7 targetAngle=230.0 runway=180.9 natStop=182.9 speed=0.400 q=3 urgent=0
+[HOST 2026-09-18T15:53:02.540] RX SPIN#1 CAPTURE fasDir=+1 wheel=0.385 cmd0=0.366 hz=1170 aPlan=0.1419(454 sps2) aFas=454 remain=169.9
+[HOST 2026-09-18T15:53:02.560] RX # RAMP_STOP a=454 remain=166.4 lead=172.0 fas=0.366
+[HOST 2026-09-18T15:53:05.669] RX SPIN#1 SUMMARY dir=-1 peak=0.435 releaseMs=1657 relAngle=51.0 relSpeed=0.400 targetW=7 targetAngle=230.0 runway=180.9 natStop=182.9 fricC=0.5500 fricB=0.2800 tkSpeed=0.385 cmdMax=0.366 cmdMin=0.000 rise=0.000 maxDecel=3.832 final=220.3 finalW=7 err=9.7 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T15:53:05.673] RX # HOLD current=1650 mA; retained until sustained spin motion
+[HOST 2026-09-18T15:53:15.668] TX s (timed persistent-hold check)
+[HOST 2026-09-18T15:53:35.669] TX s (timed persistent-hold check)
+[HOST 2026-09-18T15:54:05.668] TX s (timed persistent-hold check)
+[HOST 2026-09-18T15:55:28.801] TX d (automatic after completed dump)
+[HOST 2026-09-18T16:01:24.252] TX s
+[HOST 2026-09-18T16:10:57.921] RX # HOLD released: sustained motion dir=+1 omega=0.342
+[HOST 2026-09-18T16:10:57.981] RX SPIN#2 START dir=+1 omega=0.514 wedge=8
+[HOST 2026-09-18T16:10:59.573] RX SPIN#2 RELEASE speed=0.472 peak=0.514 angle=165.9
+[HOST 2026-09-18T16:10:59.581] RX SPIN#2 RESERVE targetW=10 targetAngle=316.7 runway=150.8 natStop=237.2 speed=0.472 q=1 urgent=0
+[HOST 2026-09-18T16:10:59.657] RX SPIN#2 CAPTURE fasDir=-1 wheel=0.465 cmd0=0.441 hz=1412 aPlan=0.2547(815 sps2) aFas=815 remain=137.6
+[HOST 2026-09-18T16:10:59.678] RX # RAMP_STOP a=815 remain=133.7 lead=139.9 fas=0.441
+[HOST 2026-09-18T16:11:01.907] RX SPIN#2 SETTLE-TRAVEL: excess motion during settle; source unknown
+[HOST 2026-09-18T16:11:01.935] RX SPIN#2 SUMMARY dir=+1 peak=0.514 releaseMs=1591 relAngle=165.9 relSpeed=0.472 targetW=10 targetAngle=316.7 runway=150.8 natStop=237.2 fricC=0.5500 fricB=0.2800 tkSpeed=0.465 cmdMax=0.441 cmdMin=0.000 rise=0.077 maxDecel=8.064 final=93.7 finalW=3 err=136.9 quality=1 result=GUEST_STOPPED fault=NONE fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T16:11:01.969] RX SPIN#3 START dir=+1 omega=0.240 wedge=3
+[HOST 2026-09-18T16:11:02.369] RX SPIN#3 RELEASE speed=0.217 peak=0.240 angle=132.6
+[HOST 2026-09-18T16:11:02.377] RX SPIN#3 RESERVE targetW=6 targetAngle=197.9 runway=65.1 natStop=67.1 speed=0.217 q=3 urgent=0
+[HOST 2026-09-18T16:11:02.454] RX SPIN#3 CAPTURE fasDir=-1 wheel=0.104 cmd0=0.098 hz=315 aPlan=0.0294(94 sps2) aFas=94 remain=59.9
+[HOST 2026-09-18T16:11:02.474] RX # RAMP_STOP a=94 remain=57.7 lead=61.5 fas=0.098
+[HOST 2026-09-18T16:11:06.341] RX SPIN#3 SUMMARY dir=+1 peak=0.240 releaseMs=400 relAngle=132.6 relSpeed=0.217 targetW=6 targetAngle=197.9 runway=65.1 natStop=67.1 fricC=0.5500 fricB=0.2800 tkSpeed=0.104 cmdMax=0.098 cmdMin=0.000 rise=0.010 maxDecel=4.714 final=211.6 finalW=7 err=13.7 quality=3 result=EDGE_SAFE fault=NONE fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T16:11:06.348] RX # HOLD current=1650 mA; retained until sustained spin motion
+[HOST 2026-09-18T16:11:16.341] TX s (timed persistent-hold check)
+[HOST 2026-09-18T16:11:36.341] TX s (timed persistent-hold check)
+[HOST 2026-09-18T16:11:48.401] TX s
+[HOST 2026-09-18T16:12:06.341] TX s (timed persistent-hold check)
+[HOST 2026-09-18T16:13:36.501] TX d (automatic after completed dump)
+[HOST 2026-09-18T16:15:39.018] TX s
+[HOST 2026-09-18T16:47:26.656] Serial capture ended

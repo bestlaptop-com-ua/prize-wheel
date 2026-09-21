@@ -1,0 +1,62 @@
+[HOST 2026-09-18T16:48:18.225] Serial opened; DTR/RTS false; 2-hour lease; automatic diagnostic re-arm after completed dump
+[HOST 2026-09-18T16:48:18.282] TX ?
+[HOST 2026-09-18T16:48:18.283] TX s
+[HOST 2026-09-18T16:48:18.283] TX d
+[HOST 2026-09-18T16:48:39.534] TX s
+[HOST 2026-09-18T16:49:05.348] RX SPIN#1 START dir=+1 omega=0.199 wedge=8
+[HOST 2026-09-18T16:49:05.957] RX SPIN#1 RELEASE speed=0.440 peak=0.478 angle=358.9
+[HOST 2026-09-18T16:49:05.965] RX SPIN#1 RESERVE targetW=6 targetAngle=209.6 runway=210.6 natStop=212.6 speed=0.440 q=3 urgent=0
+[HOST 2026-09-18T16:49:06.041] RX SPIN#1 CAPTURE fasDir=-1 wheel=0.099 cmd0=0.093 hz=299 aPlan=0.0081(26 sps2) aFas=26 remain=205.8
+[HOST 2026-09-18T16:49:06.539] RX # RAMP_STOP a=26 remain=190.2 lead=190.3 fas=0.092
+[HOST 2026-09-18T16:49:07.493] RX # SPEEDUP median=0.312 baseline=0.078 rise=0.234 sustained_ms=400
+[HOST 2026-09-18T16:49:07.504] RX FAULT code=SUSTAINED_SPEEDUP detail=sustained robust speed rise under power state=CONTROLLED_DECEL angle=100.1 wedge=3 omega=0.443 cmd=0.085
+[HOST 2026-09-18T16:49:16.307] RX SPIN#1 SUMMARY dir=+1 peak=0.478 releaseMs=609 relAngle=358.9 relSpeed=0.440 targetW=6 targetAngle=209.6 runway=210.6 natStop=212.6 fricC=0.5500 fricB=0.2800 tkSpeed=0.099 cmdMax=0.093 cmdMin=0.085 rise=0.258 maxDecel=8.336 final=313.6 finalW=10 err=104.0 quality=3 result=FAULTED fault=SUSTAINED_SPEEDUP fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T16:49:24.940] TX s
+[HOST 2026-09-18T16:51:28.431] TX d (automatic after completed dump)
+[HOST 2026-09-18T16:51:43.709] TX s
+[HOST 2026-09-18T16:53:39.903] RX SPIN#2 START dir=+1 omega=0.126 wedge=2
+[HOST 2026-09-18T16:53:39.908] RX SPIN#2 FAULT ACTIVE (SUSTAINED_SPEEDUP): spin will NOT be controlled
+[HOST 2026-09-18T16:53:44.727] RX SPIN#2 SUMMARY dir=+1 peak=0.126 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5500 fricB=0.2800 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=235.5 finalW=7 err=0.0 quality=0 result=CONTROL_LOCKED fault=SUSTAINED_SPEEDUP fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T16:53:47.615] RX SPIN#3 START dir=+1 omega=0.140 wedge=9
+[HOST 2026-09-18T16:53:47.621] RX SPIN#3 FAULT ACTIVE (SUSTAINED_SPEEDUP): spin will NOT be controlled
+[HOST 2026-09-18T16:54:04.583] RX SPIN#3 SUMMARY dir=+1 peak=0.140 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5500 fricB=0.2800 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=233.1 finalW=7 err=0.0 quality=0 result=CONTROL_LOCKED fault=SUSTAINED_SPEEDUP fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T16:54:06.669] RX SPIN#4 START dir=-1 omega=-0.149 wedge=6
+[HOST 2026-09-18T16:54:06.674] RX SPIN#4 FAULT ACTIVE (SUSTAINED_SPEEDUP): spin will NOT be controlled
+[HOST 2026-09-18T16:54:09.060] RX SPIN#4 SUMMARY dir=-1 peak=0.149 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5500 fricB=0.2800 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=141.6 finalW=4 err=0.0 quality=0 result=CONTROL_LOCKED fault=SUSTAINED_SPEEDUP fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T16:54:36.279] TX s
+[HOST 2026-09-18T16:54:53.958] RX SPIN#5 START dir=+1 omega=0.213 wedge=5
+[HOST 2026-09-18T16:54:53.964] RX SPIN#5 FAULT ACTIVE (SUSTAINED_SPEEDUP): spin will NOT be controlled
+[HOST 2026-09-18T16:54:56.729] TX r
+[HOST 2026-09-18T16:54:56.730] TX s
+[HOST 2026-09-18T16:55:23.726] RX SPIN#5 SUMMARY dir=+1 peak=0.213 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5500 fricB=0.2800 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=228.1 finalW=7 err=0.0 quality=0 result=CONTROL_LOCKED fault=SUSTAINED_SPEEDUP fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T16:55:55.984] TX s
+[HOST 2026-09-18T16:56:03.523] TX d (automatic after completed dump)
+[HOST 2026-09-18T16:56:06.890] TX r
+[HOST 2026-09-18T16:56:06.890] TX s
+[HOST 2026-09-18T16:56:55.080] RX SPIN#6 START dir=+1 omega=0.211 wedge=5
+[HOST 2026-09-18T16:56:56.386] RX SPIN#6 RELEASE speed=0.472 peak=0.514 angle=19.5
+[HOST 2026-09-18T16:56:56.394] RX SPIN#6 RESERVE targetW=8 targetAngle=254.9 runway=235.4 natStop=237.4 speed=0.472 q=3 urgent=0
+[HOST 2026-09-18T16:56:56.470] RX SPIN#6 CAPTURE fasDir=-1 wheel=0.470 cmd0=0.446 hz=1428 aPlan=0.1619(518 sps2) aFas=518 remain=221.7
+[HOST 2026-09-18T16:56:56.491] RX # RAMP_STOP a=518 remain=217.4 lead=223.7 fas=0.446
+[HOST 2026-09-18T16:56:59.780] RX SPIN#6 SUMMARY dir=+1 peak=0.514 releaseMs=1305 relAngle=19.5 relSpeed=0.472 targetW=8 targetAngle=254.9 runway=235.4 natStop=237.4 fricC=0.5500 fricB=0.2800 tkSpeed=0.470 cmdMax=0.446 cmdMin=0.000 rise=0.039 maxDecel=6.350 final=300.8 finalW=10 err=45.9 quality=3 result=EDGE_SAFE fault=NONE fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T16:56:59.784] RX # HOLD current=1650 mA; retained until sustained spin motion
+[HOST 2026-09-18T16:57:09.780] TX s (timed persistent-hold check)
+[HOST 2026-09-18T16:57:29.778] TX s (timed persistent-hold check)
+[HOST 2026-09-18T16:57:46.759] TX s
+[HOST 2026-09-18T16:57:59.780] TX s (timed persistent-hold check)
+[HOST 2026-09-18T16:59:25.906] TX d (automatic after completed dump)
+[HOST 2026-09-18T17:02:07.752] TX s
+[HOST 2026-09-18T17:02:26.969] TX e
+[HOST 2026-09-18T17:02:26.969] TX s
+[HOST 2026-09-18T17:02:26.969] TX d
+[HOST 2026-09-18T17:03:47.677] RX # HOLD released: sustained motion dir=+1 omega=0.211
+[HOST 2026-09-18T17:03:47.760] RX SPIN#7 START dir=+1 omega=0.196 wedge=10
+[HOST 2026-09-18T17:03:49.463] RX SPIN#7 RELEASE speed=0.397 peak=0.431 angle=196.2
+[HOST 2026-09-18T17:04:12.705] TX s
+[HOST 2026-09-18T17:04:14.303] RX SPIN#7 SUMMARY dir=+1 peak=0.431 releaseMs=1702 relAngle=196.2 relSpeed=0.397 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5500 fricB=0.2800 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=234.8 finalW=7 err=0.0 quality=0 result=CONTROL_LOCKED fault=NONE fitRej=0 fitsCW=0 fitsCCW=0
+[HOST 2026-09-18T17:06:43.706] TX d (automatic after completed dump)
+[HOST 2026-09-18T17:06:54.378] TX s
+[HOST 2026-09-18T17:11:27.407] TX s
+[HOST 2026-09-18T17:12:56.431] TX s
+[HOST 2026-09-18T17:13:45.995] TX s
+[HOST 2026-09-18T17:13:54.061] Serial capture ended

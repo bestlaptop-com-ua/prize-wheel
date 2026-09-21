@@ -1,0 +1,13 @@
+[
+  "C:\\Users\\Mill\\AppData\\Local\\Programs\\arduino-ide\\resources\\app\\lib\\backend\\resources\\arduino-cli.exe",
+  "compile",
+  "--fqbn",
+  "esp32:esp32:esp32s3:CDCOnBoot=default,FlashSize=16M,PSRAM=opi,PartitionScheme=app3M_fat9M_16MB,UploadSpeed=921600",
+  "--build-path",
+  "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\capture_v2_20260920\\build_disabled",
+  "--output-dir",
+  "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\capture_v2_20260920\\firmware_disabled",
+  "--build-property",
+  "compiler.cpp.extra_flags=-DPW_SELFSPIN_MOTION_ENABLE=0",
+  "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\capture_v2_20260920\\prize_wheel_gpt"
+]

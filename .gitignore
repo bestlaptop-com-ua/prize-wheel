@@ -6,3 +6,19 @@ build/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# work/ evidence tree: keep scripts, logs, traces; drop toolchain output and media
+*.o
+*.d
+*.a
+*.dll
+*.pyd
+*.pyc
+*.mkv
+*.b64
+*.pid
+__pycache__/
+work/*-firmware/
+work/**/firmware*/
+work/**/build*/
+work/**/_internal/

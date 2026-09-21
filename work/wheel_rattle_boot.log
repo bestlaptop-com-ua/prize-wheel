@@ -1,0 +1,22 @@
+
+=== PRIZE WHEEL (correctness redesign) ===
+# build: v2-rattle-diag-20260918; clock fix + extended diagnostics; control unchanged
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ D  dump current trace at rest with outputs disabled
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ x  clear stored direction calibration
+ r  fault reset (re-checks TMC UART)
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   l  LEDs on/off   w  network status
+ V<n>+Enter  DFPlayer volume 0-30 (e.g. V18)
+# state=IDLE_STOPPED fault=NONE angle=345.50 wedge=11 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=474 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=88 stage=0 cmd=0.000
+# friction cw: c=0.5500 b=0.2800 fits=0 | ccw: c=0.5500 b=0.2800 fits=0

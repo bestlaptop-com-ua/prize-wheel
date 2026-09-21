@@ -1,0 +1,15 @@
+{
+  "video_frames": 82,
+  "audio_frames": 96,
+  "timing_seconds": {
+    "audio": {
+      "first": 0.01,
+      "last": 6.149
+    },
+    "video": {
+      "first": 2.05,
+      "last": 6.157
+    }
+  },
+  "all_frames_decoded": true
+}

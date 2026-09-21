@@ -1,0 +1,31 @@
+{"utc": "2026-09-20T18:06:41.582303+00:00", "monotonic": 1435388.906, "kind": "open_attempt", "port": "COM7", "dtr": false, "rts": false, "execute": false}
+{"utc": "2026-09-20T18:06:41.797535+00:00", "monotonic": 1435389.125, "kind": "send_attempt", "command": "?"}
+{"utc": "2026-09-20T18:06:41.797535+00:00", "monotonic": 1435389.125, "kind": "send_complete", "command": "?"}
+{"utc": "2026-09-20T18:06:41.800482+00:00", "monotonic": 1435389.125, "kind": "receive", "line": ""}
+{"utc": "2026-09-20T18:06:41.803487+00:00", "monotonic": 1435389.125, "kind": "receive", "line": "=== PRIZE WHEEL (correctness redesign) ==="}
+{"utc": "2026-09-20T18:06:41.808486+00:00", "monotonic": 1435389.125, "kind": "receive", "line": "# build: v2-capture-pulsefirst-20260920; based on gentle6"}
+{"utc": "2026-09-20T18:06:41.814482+00:00", "monotonic": 1435389.14, "kind": "receive", "line": " [ / ] one-shot encoder-dir -1 / +1; ! sticky abort; no automatic rearm"}
+{"utc": "2026-09-20T18:06:41.820489+00:00", "monotonic": 1435389.14, "kind": "receive", "line": " z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)"}
+{"utc": "2026-09-20T18:06:41.825488+00:00", "monotonic": 1435389.156, "kind": "receive", "line": " p  attended two-leg direction probe (safe wedge center only)"}
+{"utc": "2026-09-20T18:06:41.828486+00:00", "monotonic": 1435389.156, "kind": "receive", "line": " s  status"}
+{"utc": "2026-09-20T18:06:41.831489+00:00", "monotonic": 1435389.156, "kind": "receive", "line": " d  arm high-rate RAM capture (dumps after true stop/fault)"}
+{"utc": "2026-09-20T18:06:41.836486+00:00", "monotonic": 1435389.156, "kind": "receive", "line": " D  dump current trace at rest with outputs disabled"}
+{"utc": "2026-09-20T18:06:41.839486+00:00", "monotonic": 1435389.156, "kind": "receive", "line": " v  toggle live control logs"}
+{"utc": "2026-09-20T18:06:41.842486+00:00", "monotonic": 1435389.171, "kind": "receive", "line": " e  toggle automatic takeover"}
+{"utc": "2026-09-20T18:06:41.845486+00:00", "monotonic": 1435389.171, "kind": "receive", "line": " f  print friction model"}
+{"utc": "2026-09-20T18:06:41.847483+00:00", "monotonic": 1435389.171, "kind": "receive", "line": " F  reset friction model to seeds"}
+{"utc": "2026-09-20T18:06:41.850486+00:00", "monotonic": 1435389.171, "kind": "receive", "line": " x  clear stored direction calibration"}
+{"utc": "2026-09-20T18:06:41.858486+00:00", "monotonic": 1435389.187, "kind": "receive", "line": " r  disabled build only: acknowledge preserved trace, recover known SELFSPIN_ABORT"}
+{"utc": "2026-09-20T18:06:41.858486+00:00", "monotonic": 1435389.187, "kind": "receive", "line": " m  print dare mask"}
+{"utc": "2026-09-20T18:06:41.861482+00:00", "monotonic": 1435389.187, "kind": "receive", "line": " ?  help"}
+{"utc": "2026-09-20T18:06:41.861482+00:00", "monotonic": 1435389.187, "kind": "receive", "line": " --- party additions ---"}
+{"utc": "2026-09-20T18:06:41.867486+00:00", "monotonic": 1435389.187, "kind": "receive", "line": " t  FX/WiFi loop-budget max-tracker (resets window)"}
+{"utc": "2026-09-20T18:06:41.872487+00:00", "monotonic": 1435389.203, "kind": "receive", "line": " a  audio on/off   l  LEDs on/off   w  network status"}
+{"utc": "2026-09-20T18:06:41.875486+00:00", "monotonic": 1435389.203, "kind": "receive", "line": " V<n>+Enter  DFPlayer volume 0-30 (e.g. V18)"}
+{"utc": "2026-09-20T18:06:41.903633+00:00", "monotonic": 1435389.234, "kind": "receive", "line": "# selfspin motion_compiled=1 timer_ready=1 consumed=1 active=0 inhibit=1 phase=4 idle_ms=1201232 diag_buffer=1 diag_armed=0 diag_frozen=1 dump_active=0 deadline_reason=0 coast_min_ms=300 capture_attempted=1 capture_energized=1 recovery_revision=2 recovery_pending=0 recovery_used=0 recovery_guard=0 persistence_uncertain=0"}
+{"utc": "2026-09-20T18:06:43.898601+00:00", "monotonic": 1435391.218, "kind": "send_attempt", "command": "s"}
+{"utc": "2026-09-20T18:06:43.898601+00:00", "monotonic": 1435391.218, "kind": "send_complete", "command": "s"}
+{"utc": "2026-09-20T18:06:43.915601+00:00", "monotonic": 1435391.234, "kind": "receive", "line": "# state=FAULT_LATCHED fault=SELFSPIN_ABORT angle=287.67 wedge=9 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=80 dirCal=1(sign -1) tmc=1 takeover=0 rawZero=88 stage=0 cmd=0.000"}
+{"utc": "2026-09-20T18:06:43.921601+00:00", "monotonic": 1435391.25, "kind": "receive", "line": "# motor fas=0.0000 current=0 EN=1 hold_ms=0"}
+{"utc": "2026-09-20T18:06:43.949601+00:00", "monotonic": 1435391.281, "kind": "receive", "line": "# selfspin motion_compiled=1 timer_ready=1 consumed=1 active=0 inhibit=1 phase=4 idle_ms=2047 diag_buffer=1 diag_armed=0 diag_frozen=1 dump_active=0 deadline_reason=0 coast_min_ms=300 capture_attempted=1 capture_energized=1 recovery_revision=2 recovery_pending=0 recovery_used=0 recovery_guard=0 persistence_uncertain=0"}
+{"utc": "2026-09-20T18:06:43.949601+00:00", "monotonic": 1435391.281, "kind": "status", "status": {"state": {"state": "FAULT_LATCHED", "fault": "SELFSPIN_ABORT", "angle": "287.67", "wedge": "9", "omega": "0.0000", "natStop": "0.0", "pos": "FRESH", "vel": "VALID", "age_us": "80", "dirCal": "1", "tmc": "1", "takeover": "0", "rawZero": "88", "stage": "0", "cmd": "0.000"}, "motor": {"fas": "0.0000", "current": "0", "EN": "1", "hold_ms": "0"}, "selfspin": {"motion_compiled": "1", "timer_ready": "1", "consumed": "1", "active": "0", "inhibit": "1", "phase": "4", "idle_ms": "2047", "diag_buffer": "1", "diag_armed": "0", "diag_frozen": "1", "dump_active": "0", "deadline_reason": "0", "coast_min_ms": "300", "capture_attempted": "1", "capture_energized": "1", "recovery_revision": "2", "recovery_pending": "0", "recovery_used": "0", "recovery_guard": "0", "persistence_uncertain": "0"}}}

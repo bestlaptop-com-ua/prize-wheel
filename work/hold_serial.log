@@ -1,0 +1,33 @@
+
+[HOST 2026-09-18T14:45:34.631] Serial opened; DTR/RTS false; 2-hour lease; automatic diagnostic re-arm after completed dump
+
+[HOST 2026-09-18T14:45:34.683] TX ?
+
+[HOST 2026-09-18T14:45:34.683] TX s
+
+[HOST 2026-09-18T14:45:34.683] TX d
+
+=== PRIZE WHEEL (correctness redesign) ===
+# build: v2-persistent-hold-20260918; 550mA hold until next spin; STEP clock fixed
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ D  dump current trace at rest with outputs disabled
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ x  clear stored direction calibration
+ r  fault reset (re-checks TMC UART)
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   l  LEDs on/off   w  network status
+ V<n>+Enter  DFPlayer volume 0-30 (e.g. V18)
+# state=IDLE_STOPPED fault=NONE angle=326.69 wedge=10 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=647 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=88 stage=0 cmd=0.000
+# motor fas=0.0000 current=0 EN=1 hold_ms=0
+# DIAG armed: 8192 PSRAM samples, PCNT + driver status; includes 5 seconds of hold.
+
+[HOST 2026-09-18T14:48:19.739] Serial capture ended

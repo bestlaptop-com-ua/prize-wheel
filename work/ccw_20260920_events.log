@@ -1,0 +1,33 @@
+2026-09-20T11:05:24.258 OPEN COM7, DTR/RTS false; 30-minute lease; read/diagnostic commands only
+2026-09-20T11:05:24.258 TX ?
+2026-09-20T11:05:24.359 TX s
+2026-09-20T11:05:24.459 TX f
+2026-09-20T11:05:24.560 TX d
+2026-09-20T11:05:24.661 RX 
+2026-09-20T11:05:24.661 RX === PRIZE WHEEL (correctness redesign) ===
+2026-09-20T11:05:24.661 RX # build: v2-gentle6-20260918; TEST min6s cap320; brake2200; hold1650
+2026-09-20T11:05:24.661 RX z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)
+2026-09-20T11:05:24.661 RX p  attended two-leg direction probe (safe wedge center only)
+2026-09-20T11:05:24.661 RX s  status
+2026-09-20T11:05:24.661 RX d  arm high-rate RAM capture (dumps after true stop/fault)
+2026-09-20T11:05:24.661 RX D  dump current trace at rest with outputs disabled
+2026-09-20T11:05:24.662 RX v  toggle live control logs
+2026-09-20T11:05:24.662 RX e  toggle automatic takeover
+2026-09-20T11:05:24.662 RX f  print friction model
+2026-09-20T11:05:24.662 RX F  reset friction model to seeds
+2026-09-20T11:05:24.662 RX x  clear stored direction calibration
+2026-09-20T11:05:24.662 RX r  fault reset (re-checks TMC UART)
+2026-09-20T11:05:24.662 RX m  print dare mask
+2026-09-20T11:05:24.662 RX ?  help
+2026-09-20T11:05:24.662 RX --- party additions ---
+2026-09-20T11:05:24.662 RX t  FX/WiFi loop-budget max-tracker (resets window)
+2026-09-20T11:05:24.662 RX a  audio on/off   l  LEDs on/off   w  network status
+2026-09-20T11:05:24.662 RX V<n>+Enter  DFPlayer volume 0-30 (e.g. V18)
+2026-09-20T11:05:24.662 RX # state=SOFT_HOLD fault=NONE angle=244.34 wedge=8 omega=0.0006 natStop=0.0 pos=FRESH vel=VALID age_us=163 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=88 stage=5 cmd=0.000
+2026-09-20T11:05:24.662 RX # motor fas=0.0000 current=1650 EN=0 hold_ms=1653007
+2026-09-20T11:05:24.662 RX # friction cw: c=0.5500 b=0.2800 fits=0 | ccw: c=0.5500 b=0.2800 fits=0
+2026-09-20T11:05:24.662 RX # DIAG armed: 16384 PSRAM samples, PCNT + driver status; includes 5 seconds of hold.
+2026-09-20T11:18:52.618 TX s
+2026-09-20T11:18:52.638 RX # state=SOFT_HOLD fault=NONE angle=244.25 wedge=8 omega=0.0005 natStop=0.0 pos=FRESH vel=VALID age_us=150 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=88 stage=5 cmd=0.000
+2026-09-20T11:18:52.642 RX # motor fas=0.0000 current=1650 EN=0 hold_ms=2461276
+2026-09-20T11:35:24.675 CLOSED

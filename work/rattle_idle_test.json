@@ -1,0 +1,16 @@
+{
+  "samples": 371,
+  "columns": 22,
+  "psram": true,
+  "clock_fix": true,
+  "all_EN_high": true,
+  "all_step_counts_zero": true,
+  "all_freewheel": true,
+  "driver_status_values": [
+    "811D003B"
+  ],
+  "gstat_values": [
+    "00"
+  ],
+  "max_dt_us": 1357
+}

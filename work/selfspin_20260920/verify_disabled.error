@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Users\Mill\Desktop\prize-wheel\work\selfspin_20260920\verify_disabled.py", line 18, in <module>
+    assert 'pos=FRESH vel=VALID' in status and 'dirCal=1' in status and 'tmc=1' in status
+AssertionError

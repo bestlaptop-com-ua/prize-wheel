@@ -1,0 +1,107 @@
+{
+  "mode": "execute",
+  "port": "COM7",
+  "motion_command_sent": true,
+  "direction": -1,
+  "outcome_line": "# SELFSPIN SEQUENCE_DONE reason=normal landing finished; diagnostic releases hold pulses=2874 EN=1 capture_started=1 result=CONTROLLED_SAFE; consumed",
+  "status": {
+    "state": {
+      "state": "IDLE_STOPPED",
+      "fault": "NONE",
+      "angle": "282.57",
+      "wedge": "9",
+      "omega": "0.0000",
+      "natStop": "0.0",
+      "pos": "FRESH",
+      "vel": "VALID",
+      "age_us": "356",
+      "dirCal": "1",
+      "tmc": "1",
+      "takeover": "0",
+      "rawZero": "88",
+      "stage": "0",
+      "cmd": "0.000"
+    },
+    "motor": {
+      "fas": "0.0000",
+      "current": "0",
+      "EN": "1",
+      "hold_ms": "0"
+    },
+    "selfspin": {
+      "motion_compiled": "1",
+      "timer_ready": "1",
+      "consumed": "1",
+      "active": "0",
+      "inhibit": "1",
+      "phase": "4",
+      "idle_ms": "0",
+      "diag_buffer": "1",
+      "diag_armed": "0",
+      "diag_frozen": "1",
+      "dump_active": "0",
+      "deadline_reason": "0",
+      "coast_min_ms": "300",
+      "capture_attempted": "1",
+      "capture_energized": "1",
+      "recovery_revision": "2",
+      "recovery_pending": "0",
+      "recovery_used": "0",
+      "recovery_guard": "0",
+      "persistence_uncertain": "0"
+    }
+  },
+  "trace_rows": 16384,
+  "sequence_aborted": false,
+  "motion_problem": null,
+  "note": "Sequence completion does not establish quiet or accurate capture.",
+  "camera": {
+    "directory": "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\capture_v2r2_20260920\\trial_negative_01\\camera",
+    "process_id": 44452,
+    "process_exit": 0,
+    "still_recording": false,
+    "metadata": {
+      "start_utc": "2026-09-20T17:37:32.420454+00:00",
+      "requested_seconds": 45.0,
+      "camera": "192.168.0.182",
+      "av_version": "18.1.0",
+      "status": "captured",
+      "streams": [
+        {
+          "index": 0,
+          "type": "video",
+          "codec": "hevc",
+          "width": 2592,
+          "height": 1944,
+          "average_rate": "20"
+        },
+        {
+          "index": 1,
+          "type": "audio",
+          "codec": "aac",
+          "sample_rate": 16000
+        }
+      ],
+      "input_opened_utc": "2026-09-20T17:37:33.836615+00:00",
+      "ready": {
+        "event": "CAMERA_READY",
+        "host_utc": "2026-09-20T17:37:34.823061+00:00",
+        "host_monotonic_s": 1433642.14,
+        "frame_pts": 184500,
+        "frame_time_base": "1/90000",
+        "warmup_seconds": 0.9839999999385327
+      },
+      "elapsed_seconds": 46.015000000130385,
+      "post_ready_seconds": 45.03100000019185,
+      "packets": {
+        "0": 940,
+        "1": 737
+      },
+      "packet_bytes": 19646329,
+      "bytes": 19659817,
+      "sha256": "c9bec213bdd7605c65e5f288601588fbd4fa3c90fd9c2bb920cabdc03672aa3e",
+      "end_utc": "2026-09-20T17:38:19.864185+00:00"
+    }
+  },
+  "logs": "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\capture_v2r2_20260920\\trial_negative_01"
+}

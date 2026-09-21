@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Users\Mill\Desktop\prize-wheel\work\run_smooth_audit.py", line 20, in <module>
+    assert b'AUDIT PASS ALL; MOTOR DISABLED' in data,'audit did not pass'
+AssertionError: audit did not pass

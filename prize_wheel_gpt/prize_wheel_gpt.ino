@@ -39,6 +39,11 @@
 #include <Preferences.h>
 #include <TMCStepper.h>
 #include <FastAccelStepper.h>
+#include "pw_step_clock.h"
+#include "pw_brake_profile.h"
+#include "pw_gentle_test.h"
+#include "pw_speedup_watch.h"
+#include <esp_heap_caps.h>
 // Party additions (WiFi + FX + sanctioned fixes S1/S2/S3): declarations,
 // config switches and the serial mirror.  Implementations are included at the
 // very bottom of this file.  See PARTY_TASK.md / DELIVERY.md.
@@ -90,7 +95,8 @@ enum FaultCode : uint8_t {
   FC_STEPPER_API,          // FastAccelStepper call returned an error
   FC_MONOTONIC_VIOLATION,  // internal: computed command tried to increase
   FC_TARGET_INVARIANT,     // internal: selected target was a dare
-  FC_LANDING_UNSAFE        // settled on a dare after a controlled attempt
+  FC_LANDING_UNSAFE,       // settled on a dare after a controlled attempt
+  FC_TRACKING_LOST         // continued travel after the commanded stop
 };
 
 enum CurrentStage : uint8_t {
@@ -180,7 +186,8 @@ const float NATURAL_SHAVE_MARGIN_DEG  = 5.0f;   // brake shaves, never adds
 // the target (owner spec).  Applies to the wedge-uniform pass; the weak-spin
 // assist passes may still slip briefly by design.
 const float COUPLE_MARGIN             = 1.05f;
-const float SAFE_EDGE_MARGIN_DEG = 4.5f;  // margin at safe|safe boundaries (scatter widened, owner req 2026-08-06; was 8.0 uniform)
+const float SAFE_EDGE_MARGIN_DEG = 4.5f;  // margin at safe|safe boundaries (scatter widened, owner req 2026-08-06; was 8.0 uniform)
+
 const float DARE_EDGE_MARGIN_DEG = 8.0f;  // margin at dare-facing boundaries - the certified value, unchanged
 const float LANDING_INTERIOR_MIN_DEG  = 5.0f;   // verification margin
 const float DARE_PROXIMITY_FAULT_DEG  = 2.0f;   // settle this close to a dare
@@ -213,8 +220,10 @@ const float CMD_RESYNC_TOLERANCE      = 0.08f;  // relative field deviation
 const float TRAIL_FRACTION            = 0.95f;
 const uint16_t TRAIL_WINDOW_TICKS     = 8;      // ~200 ms trailing window
 const float CAPTURE_MAX_CMD_REV_S     = 0.68f;  // 0.95 x engage ceiling
-const uint32_t DECEL_CEILING_SPS2     = 650;    // natural-motion decel ceiling
-const uint32_t ASSIST_DECEL_MAX_SPS2  = 1100;   // weak-spin nearest-target cap
+const bool GENTLE_BRAKE_TEST = true; // attended evaluation; bypass guessed friction targeting
+const float GENTLE_TEST_MIN_SECONDS = 6.0f;
+const uint32_t DECEL_CEILING_SPS2     = 320;    // 0.10 rev/s^2 maximum
+const uint32_t ASSIST_DECEL_MAX_SPS2  = 320;    // no aggressive fallback
 const float COUPLING_SLACK_REV_S      = 0.020f;
 const float FAS_MIN_CMD_REV_S         = 0.00625f; // 40 Hz taper floor
 const float STOP_GATE_EXTRA_DEG       = 2.0f;
@@ -222,7 +231,6 @@ const float OVERSHOOT_TOL_DEG         = 4.0f;
 // Above the phase-capture snap transient (~0.03-0.075 rev/s observed), below
 // any deliberate pull; the fault still needs a sustained rise.
 const float SPEEDUP_NOISE_REV_S       = 0.050f;
-const uint16_t SPEEDUP_TRIM_MS        = 30;     // trim command after this
 const uint16_t SPEEDUP_FAULT_MS       = 400;    // latch fault after this
 const float FIGHT_SPEED_FRACTION      = 0.45f;
 const uint16_t FIGHT_GRACE_MS         = 150;
@@ -241,18 +249,18 @@ const uint32_t SETTLE_TIMEOUT_MS      = 20000;
 // taper detent (friction-only coast from a 0.1 rev/s handoff is ~31 deg
 // unheld; the 300 mA detent cuts that well below a wedge): a hand is dragging.
 const float LANDING_DRAG_ABORT_DEG    = 45.0f;
-// FastAccelStepper's acceleration must out-pace the command profile so the
-// pulse generator can follow each 25 ms step-down and stepsToStop() stays
-// well below the remaining runway (a 1:1 ratio degenerates into one
-// open-loop ramp: stopMove would fire on the first tick).
-const uint8_t FAS_TRACK_ACCEL_FACTOR  = 8;   // was 3: field descent lagged natural decel and carried the wheel (diag 2026-08-06)
-const uint32_t FAS_TRACK_ACCEL_MAX_SPS2 = 6400; // was 2000 (=0.31 rev/s2 ceiling); wheel decays ~0.5 - field must descend faster than the wheel
+// The pulse generator uses the planned deceleration, including stopMove().
+// No faster tracking acceleration is used during normal braking.
 
 // --- landing / hold ---
 const float STILL_REV_S               = 0.020f;
 const uint16_t SETTLE_MS              = 500;
-const uint16_t HOLD1_MS               = 1500;
-const uint16_t HOLD2_MS               = 1200;
+const uint16_t HOLD_HEALTH_MS         = 1000;
+const uint16_t HOLD_RELEASE_CONFIRM_MS = 40;
+const uint16_t DIAG_HOLD_RECORD_MS    = 5000;
+uint32_t holdReleaseSinceMs = 0;
+uint32_t holdLastHealthMs = 0;
+int8_t holdReleaseDir = 0;
 
 // --- current ladder (written ONLY on stage transitions) ---
 // With the profile-PACED command law the motor brakes through the load angle
@@ -264,10 +272,10 @@ const uint16_t HOLD2_MS               = 1200;
 // continuously-trailing law, which forced multi-pole slip at any current.)
 const uint16_t CUR_PRECHARGE_MA = 350;  // phase settle, no snap (v2: NEMA23 scale)
 const uint16_t CUR_CAPTURE_MA   = 2200;
-const uint16_t CUR_BRAKE_MA     = 1650;
+const uint16_t CUR_BRAKE_MA     = 2200; // retain capture torque through deceleration
 const uint16_t CUR_TAPER_MA     = 1100;  // final taper / settle watch
-const uint16_t CUR_HOLD1_MA     = 550;  // fade...
-const uint16_t CUR_HOLD2_MA     = 300;   // ...to freewheel
+const uint16_t CUR_HOLD1_MA     = 1650; // continuous hold after confirmed stillness
+const uint16_t CUR_HOLD2_MA     = 1650; // legacy stage ID retained; no timed fade
 
 // --- direction probe ---
 const uint16_t DIR_PROBE_CURRENT_MA = 1600;  // v2: NEMA23 direct-drive needs far more than the old NEMA17 belt figure
@@ -377,7 +385,7 @@ enum EncoderDiagFlag : uint8_t {
   DIAG_DIR_FLIP   = 1 << 7
 };
 
-struct DiagnosticSample {      // 28 bytes; 3072 samples = ~86 KB, ~3 s at 1 kHz
+struct DiagnosticSample {      // PSRAM trace; controller timing is unchanged
   uint32_t doneUs;
   int32_t counts;
   uint16_t raw;
@@ -393,25 +401,33 @@ struct DiagnosticSample {      // 28 bytes; 3072 samples = ~86 KB, ~3 s at 1 kHz
   uint8_t state;
   uint8_t stage;               // current stage (defect-11 ladder position)
   uint8_t curMa10;             // commanded motor current / 10 mA
+  int32_t stepCount;          // FAS hardware PCNT position, not speed estimate
+  uint32_t stepUs;
+  uint32_t drvStatus;
+  uint32_t tstep;
+  uint16_t driverAgeUs;
+  uint8_t gstat;
+  uint8_t pins;               // bit 0 EN, bit 1 DIR
 };
 
-// 2944 x 28 bytes = ~80 KB static DRAM (~2.9 s at 1 kHz).  3072 overflowed
-// dram0_0_seg by ~2 KB on core 3.3.10 with FastAccelStepper's MCPWM machinery.
-// Party build: the WiFi/Network stack adds ~31 KB of static DRAM, which no
-// longer coexists with the full buffer (measured link overflow: 31192 B).
-// The diagnostic buffer is a bench instrument, not control logic; it yields
-// the space while WiFi is compiled in and returns to full size with
-// PW_WIFI_ENABLE 0.  See DELIVERY.md.
-#if PW_WIFI_ENABLE
-const uint16_t DIAG_CAPACITY = 1664;   // ~1.66 s at 1 kHz
-#else
-const uint16_t DIAG_CAPACITY = 2304;   // original bench capacity
-#endif
-DiagnosticSample diagnosticBuffer[DIAG_CAPACITY];
+// Eight seconds at 1 kHz, allocated only in external RAM. No control data
+// uses this buffer; allocation failure disables diagnostics, not the wheel.
+const uint16_t DIAG_CAPACITY = 16384;
+DiagnosticSample* diagnosticBuffer = nullptr;
+bool diagnosticDumpActive = false;
+uint16_t diagnosticDumpFirst = 0, diagnosticDumpIndex = 0;
+uint8_t diagnosticDumpPhase = 0;
+char diagnosticDumpLine[320];
+size_t diagnosticDumpLength = 0, diagnosticDumpOffset = 0;
+uint32_t diagnosticDriverUs = 0, diagnosticDrvStatus = 0, diagnosticTstep = 0;
+uint8_t diagnosticGstat = 0;
+uint8_t diagnosticDriverStage = 255;
 uint16_t diagnosticHead = 0;
 uint16_t diagnosticCount = 0;
 bool diagnosticWrapped = false;
 bool diagnosticCapture = false;
+// Retain the lead-up to a fault instead of overwriting it during free coast.
+bool diagnosticFrozen = false;
 bool diagnosticSawMotion = false;
 uint32_t diagnosticStillSinceUs = 0;
 float diagWindowRevS = 0.0f;   // latest unfiltered window slope for logging
@@ -440,7 +456,7 @@ struct SpinRecord {
   float targetErrDeg;
   SpinResult result;
   FaultCode fault;
-  uint8_t targetQuality;       // 0 wedge-uniform, 1 nearest-int, 2 edge, 3 shadow
+  uint8_t targetQuality;       // 0 uniform, 1 nearest, 2 edge, 3 shadow, 4 gentle test
   uint8_t hadContact;          // sticky: external contact seen after release
 };
 SpinRecord spin;               // active spin; summary printed once at close
@@ -487,9 +503,7 @@ uint32_t lastResyncMs = 0;
 float trailRing[TRAIL_WINDOW_TICKS];
 uint8_t trailRingCount = 0;
 uint8_t trailRingHead = 0;
-float lowestForwardRevS = 0.0f;
-uint32_t speedupSinceMs = 0;
-uint32_t lastSpeedupTrimMs = 0;
+PwSpeedupWatch speedupWatch;
 uint32_t fightSinceMs = 0;
 uint32_t oppositeSinceMs = 0;
 uint32_t velocityLossSinceMs = 0;
@@ -710,7 +724,7 @@ float remainingTargetDeg() {
 }
 
 void recordDiagnostic(uint32_t dtGoodUs, int16_t delta, uint8_t flags) {
-  if (!diagnosticCapture) return;
+  if (!diagnosticCapture || diagnosticFrozen || !diagnosticBuffer) return;
   const EncoderRead& read = encoderRead;
   DiagnosticSample& s = diagnosticBuffer[diagnosticHead];
   s.doneUs = read.doneUs;
@@ -732,6 +746,24 @@ void recordDiagnostic(uint32_t dtGoodUs, int16_t delta, uint8_t flags) {
   s.state = (uint8_t)state;
   s.stage = (uint8_t)currentStage;
   s.curMa10 = (uint8_t)(g_currentMa / 10 > 255 ? 255 : g_currentMa / 10);
+  s.stepUs = micros();
+  s.stepCount = stepper ? stepper->getCurrentPosition() : 0;
+  s.pins = (digitalRead(PIN_EN) ? 1 : 0) | (digitalRead(PIN_DIR) ? 2 : 0);
+  if (diagnosticDriverStage != (uint8_t)currentStage ||
+      (uint32_t)(s.stepUs - diagnosticDriverUs) >= 50000UL) {
+    // Read-only SPI snapshots, at stage changes or 20 Hz. dt_good_us records
+    // any timing cost on the next sample; no driver registers are written.
+    diagnosticDrvStatus = driver.DRV_STATUS();
+    diagnosticTstep = driver.TSTEP();
+    diagnosticGstat = (uint8_t)driver.GSTAT();
+    diagnosticDriverUs = micros();
+    diagnosticDriverStage = (uint8_t)currentStage;
+  }
+  s.drvStatus = diagnosticDrvStatus;
+  s.tstep = diagnosticTstep;
+  s.gstat = diagnosticGstat;
+  uint32_t driverAge = (uint32_t)(micros() - diagnosticDriverUs);
+  s.driverAgeUs = driverAge > 65535U ? 65535U : (uint16_t)driverAge;
   diagnosticHead = (diagnosticHead + 1) % DIAG_CAPACITY;
   if (diagnosticCount < DIAG_CAPACITY) ++diagnosticCount;
   else diagnosticWrapped = true;
@@ -1046,7 +1078,31 @@ static inline void wedgeEdgeMargins(int w, float* loM, float* hiM) {
   *hiM = isDare(next) ? DARE_EDGE_MARGIN_DEG : SAFE_EDGE_MARGIN_DEG;
 }
 
+TargetChoice chooseGentleTestTarget(int dir, float curAngle, uint32_t entryHz,
+                                   float advanceDeg) {
+  uint32_t forbidden = 0;
+  for (int w = 0; w < NUM_WEDGES; ++w) if (isDare(w)) forbidden |= 1UL << w;
+  PwGentleTarget t = pwGentleTarget(entryHz, curAngle, dir, forbidden,
+      NUM_WEDGES, WHEEL_USTEPS_PER_REV, DECEL_CEILING_SPS2,
+      GENTLE_TEST_MIN_SECONDS, advanceDeg);
+  TargetChoice out;
+  out.found = t.found;
+  out.wedge = t.wedge;
+  out.targetAngleDeg = t.angleDeg;
+  out.runwayDeg = t.runwayDeg;
+  out.decelCapSps2 = t.accelerationLimit;
+  out.quality = 4; // attended six-second-minimum braking test
+  return out;
+}
+
 TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
+  if (GENTLE_BRAKE_TEST) {
+    uint32_t entryHz = (uint32_t)floorf(fminf(TRAIL_FRACTION * speedRevS,
+        CAPTURE_MAX_CMD_REV_S) * WHEEL_USTEPS_PER_REV);
+    return chooseGentleTestTarget(dir, curAngle, entryHz,
+        speedRevS * ENGAGE_LATENCY_S * 360.0f);
+  }
+
   TargetChoice out;
   out.found = false;
   out.wedge = -1;
@@ -1055,7 +1111,8 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   out.decelCapSps2 = DECEL_CEILING_SPS2;
   out.quality = 0;
 
-  // Per-edge margins: dare-facing edges keep the certified 8.0; safe|safe edges
+  // Per-edge margins: dare-facing edges keep the certified 8.0; safe|safe edges
+
   // relax to 4.5 so landings scatter visibly instead of clustering mid-wedge.
   float latencyDeg = speedRevS * ENGAGE_LATENCY_S * 360.0f;
   float naturalDeg = naturalStopDistanceDeg(speedRevS, dir);
@@ -1070,9 +1127,16 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
       (cmd0est * cmd0est) /
           (2.0f * COUPLE_MARGIN * naturalDecelRevS2(speedRevS, dir)) * 360.0f;
   if (coupledMinDeg > winMin) winMin = coupledMinDeg;
+  float profileMinDeg = latencyDeg + pwBrakeDistanceDeg(
+      fminf(cmd0est, CAPTURE_MAX_CMD_REV_S),
+      (float)DECEL_CEILING_SPS2 / WHEEL_USTEPS_PER_REV) + STOP_GATE_EXTRA_DEG;
+  if (profileMinDeg > winMin) winMin = profileMinDeg;
   float assistMin = latencyDeg
                   + brakedStopDistanceDeg(speedRevS, dir, motorExtraRadS2(ASSIST_DECEL_MAX_SPS2))
                   + 2.0f;
+  assistMin = fmaxf(assistMin, latencyDeg + pwBrakeDistanceDeg(
+      fminf(cmd0est, CAPTURE_MAX_CMD_REV_S),
+      (float)ASSIST_DECEL_MAX_SPS2 / WHEEL_USTEPS_PER_REV) + STOP_GATE_EXTRA_DEG);
 
   // Pass 1: wedge-uniform among safe wedges reachable at the natural ceiling.
   int candWedge[NUM_WEDGES];
@@ -1149,7 +1213,7 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   // (observed on hardware: a spin dying safely was braked short into the
   // dare it was passing through).  Clearance is required over the expected
   // settle segment [natural-4, natural].
-  if (!out.found && naturalDeg > 10.0f) {
+  if (!out.found && naturalDeg > 10.0f && naturalDeg - 2.0f >= assistMin) {
     float natAng = fmodf(curAngle + (float)dir * naturalDeg, 360.0f);
     if (natAng < 0.0f) natAng += 360.0f;
     float settleAng = fmodf(curAngle + (float)dir * (naturalDeg - 4.0f), 360.0f);
@@ -1254,6 +1318,10 @@ float reachWindowWidthDeg(float speedRevS, int dir) {
       (cmd0est * cmd0est) /
           (2.0f * COUPLE_MARGIN * naturalDecelRevS2(speedRevS, dir)) * 360.0f;
   if (coupledMinDeg > winMin) winMin = coupledMinDeg;
+  float profileMinDeg = latencyDeg + pwBrakeDistanceDeg(
+      fminf(cmd0est, CAPTURE_MAX_CMD_REV_S),
+      (float)DECEL_CEILING_SPS2 / WHEEL_USTEPS_PER_REV) + STOP_GATE_EXTRA_DEG;
+  if (profileMinDeg > winMin) winMin = profileMinDeg;
   return winMax - winMin;
 }
 
@@ -1332,6 +1400,7 @@ const char* faultName(FaultCode f) {
     case FC_MONOTONIC_VIOLATION: return "MONOTONIC_VIOLATION";
     case FC_TARGET_INVARIANT: return "TARGET_INVARIANT";
     case FC_LANDING_UNSAFE: return "LANDING_UNSAFE";
+    case FC_TRACKING_LOST: return "TRACKING_LOST";
   }
   return "?";
 }
@@ -1379,6 +1448,9 @@ void startSpinEvent(int confirmedDir, uint32_t nowMs) {
 // One immutable per-spin summary.  Printed exactly once, at spin close.
 void closeSpin(SpinResult result) {
   if (!spinOpen) return;
+  if (diagnosticCapture && diagnosticSawMotion &&
+      result != RES_CONTROLLED_SAFE && result != RES_EDGE_SAFE &&
+      result != RES_OFF_TARGET_SAFE) diagnosticFrozen = true;
   spinOpen = false;
   spin.result = result;
   spin.fault = faultCode;
@@ -1421,6 +1493,7 @@ void closeSpin(SpinResult result) {
 void enterFault(FaultCode code, const char* detail) {
   if (state == ST_FAULT_LATCHED) return;
   faultCode = code;
+  if (diagnosticCapture) diagnosticFrozen = true;  // before NVS/serial latency
   PW_S1_PERSIST(code);  // S1: latch survives a power cycle; only r clears
   Serial.printf("FAULT code=%s detail=%s state=%s angle=%.1f wedge=%d omega=%.3f cmd=%.3f\n",
                 faultName(code), detail, stateName(state), wheelAngleDeg(),
@@ -1628,7 +1701,7 @@ bool tryReserveTarget(uint32_t nowMs) {
   // free coast feed the online fit before engaging - bounded by both window
   // width (safety) and time, and never past the urgency trigger.
   uint16_t fits = (spinDir > 0) ? cwFitCount : ccwFitCount;
-  if (fits < FIT_PERSIST_MIN_FITS && !urgent &&
+  if (!GENTLE_BRAKE_TEST && fits < FIT_PERSIST_MIN_FITS && !urgent &&
       width > CAL_DEFER_MIN_WIDTH_DEG &&
       spin.releaseMs != 0 && nowMs - spin.releaseMs < CAL_DEFER_MAX_MS) {
     return false;
@@ -1698,50 +1771,42 @@ bool launchCapture(uint32_t nowMs) {
   uint32_t hz = (uint32_t)floorf(cmd0 * WHEEL_USTEPS_PER_REV);
   if (hz < 40) return false;
 
+  if (GENTLE_BRAKE_TEST) {
+    // Re-select using actual entry speed AFTER precharge. A speed change must
+    // not shorten the six-second minimum calculated at reservation.
+    TargetChoice test = chooseGentleTestTarget(takeoverDir, wheelAngleDeg(), hz, 0);
+    if (!test.found) return false;
+    targetCountsMT = encoderCountsMT + takeoverDir * countsForDegrees(test.runwayDeg);
+    planDecelCapSps2 = test.decelCapSps2;
+    spin.targetWedge = test.wedge;
+    spin.targetAngleDeg = test.targetAngleDeg;
+    spin.runwayDeg = degreesForCounts(takeoverDir * (targetCountsMT - reserveCounts));
+    spin.targetQuality = test.quality;
+    Serial.printf("# GENTLE_TEST min_s=%.1f cap=%lu targetW=%d runway=%.1f\n",
+        GENTLE_TEST_MIN_SECONDS, (unsigned long)planDecelCapSps2,
+        test.wedge, test.runwayDeg);
+  }
+
   float remainingDeg = remainingTargetDeg();
   if (remainingDeg < 7.0f) return false;
 
-  // Plan the command-profile deceleration to consume exactly the runway.
-  float remRev = remainingDeg / 360.0f;
-  float aPlan = (cmd0 * cmd0) / (2.0f * remRev);
-  float capRevS2 = (float)planDecelCapSps2 / WHEEL_USTEPS_PER_REV;
-  if (aPlan > capRevS2) aPlan = capRevS2;
-  if (aPlan < 0.008f) aPlan = 0.008f;
-  // Wedge-uniform targets must remain coupled-reachable after the precharge
-  // advance; a plan now steeper than natural decel would slip.  Abandon so
-  // the caller re-reserves from the fresh state.
+  // Quantize entry speed before planning. Reject a too-short target rather
+  // than clipping acceleration and creating an immediate speed discontinuity.
+  cmd0 = (float)hz / WHEEL_USTEPS_PER_REV;
+  PwBrakePlan plan = pwPlanBrake(hz, remainingDeg, WHEEL_USTEPS_PER_REV,
+                                planDecelCapSps2);
+  if (!plan.feasible) return false;
+  float aPlan = plan.decelRevS2;
   if (spin.targetQuality == 0 &&
-      aPlan > naturalDecelRevS2(forward, takeoverDir)) {
-    return false;
-  }
+      aPlan > naturalDecelRevS2(forward, takeoverDir)) return false;
   planDecelRevS2 = aPlan;
-  // The FAS acceleration is the pulse generator's TRACKING rate, not the
-  // profile: it must exceed the profile decel so the field can follow each
-  // 25 ms command step and stepsToStop() stays a small fraction of the
-  // remaining runway (equal rates would trip the stop gate immediately and
-  // collapse the closed loop into one open-loop ramp).
-  uint32_t aPlanSps2 = (uint32_t)lroundf(aPlan * WHEEL_USTEPS_PER_REV);
-  if (aPlanSps2 < 50) aPlanSps2 = 50;
-  // aPlanSps2 <= ASSIST cap (1100) by construction, so 3x always exceeds the
-  // 2000 cap only from ~667 up; the cap can never fall below 1.8x the plan.
-  uint32_t aFasSps2 = aPlanSps2 * FAS_TRACK_ACCEL_FACTOR;
-  if (aFasSps2 > FAS_TRACK_ACCEL_MAX_SPS2) aFasSps2 = FAS_TRACK_ACCEL_MAX_SPS2;
-
-  // Jump start: begin the pulse train at cmd0 instead of ramping from zero.
-  // The seeded ramp-down (stepsToStop == jumpStep) must fit comfortably
-  // inside the runway even with a legitimately high fitted friction model,
-  // or the stop gate degenerates to a first-tick open-loop ramp that can
-  // drag the wheel past its natural stop.  If it does not fit, lower the
-  // entry speed until it does.
-  uint32_t jumpStep = (uint32_t)lroundf(((float)hz * (float)hz) / (2.0f * (float)aFasSps2));
-  float remainingSteps = remainingDeg / 360.0f * WHEEL_USTEPS_PER_REV;
-  uint32_t maxJump = (uint32_t)(0.6f * remainingSteps);
-  if (jumpStep > maxJump) {
-    hz = (uint32_t)floorf(sqrtf(2.0f * (float)aFasSps2 * (float)maxJump));
-    if (hz < 40) return false;
-    cmd0 = (float)hz / WHEEL_USTEPS_PER_REV;
-    jumpStep = maxJump;
-  }
+  uint32_t aPlanSps2 = plan.accelerationSps2;
+  uint32_t aFasSps2 = aPlanSps2;
+  // Jump-start the pulse clock near the already-moving rotor. This is a
+  // ramp coordinate, not extra commanded travel; do not clamp it to 60%
+  // of the runway and silently lower the entry speed.
+  uint32_t jumpStep = (uint32_t)lroundf(
+      (float)hz * (float)hz / (2.0f * (float)aFasSps2));
 
   if (!fasSetSpeedHz(hz)) return false;
   if (!fasSetAcceleration(aFasSps2)) return false;
@@ -1763,9 +1828,7 @@ bool launchCapture(uint32_t nowMs) {
   lastAppliedHz = hz;
   lastResyncMs = nowMs;
   trailRingReset(forward);
-  lowestForwardRevS = forward;
-  speedupSinceMs = 0;
-  lastSpeedupTrimMs = 0;
+  speedupWatch.reset();
   fightSinceMs = 0;
   oppositeSinceMs = 0;
   velocityLossSinceMs = 0;
@@ -1800,6 +1863,7 @@ bool controlSafetyChecks(uint32_t nowMs) {
   }
   // 2. Velocity may re-prime for a few tens of ms (normal); longer is a loss.
   if (!encoderVelocityValid) {
+    speedupWatch.reset();  // incomplete velocity evidence cannot age the debounce
     if (velocityLossSinceMs == 0) velocityLossSinceMs = nowMs;
     else if (nowMs - velocityLossSinceMs >= VELOCITY_LOSS_FAULT_MS) {
       enterFault(FC_ENCODER_VELOCITY, "velocity unusable in control");
@@ -1840,38 +1904,19 @@ bool controlSafetyChecks(uint32_t nowMs) {
     oppositeSinceMs = 0;
   }
 
-  // 5. Wheel speed-up detector: under power the wheel must never accelerate.
-  if (forward > 0.0f) {
-    if (forward < lowestForwardRevS) {
-      lowestForwardRevS = forward;
-      speedupSinceMs = 0;
-    } else if (forward > lowestForwardRevS + SPEEDUP_NOISE_REV_S) {
-      if (speedupSinceMs == 0) speedupSinceMs = nowMs;
-      float rise = forward - lowestForwardRevS;
-      if (rise > spin.maxSpeedRiseRevS) spin.maxSpeedRiseRevS = rise;
-      if (nowMs - speedupSinceMs >= SPEEDUP_TRIM_MS &&
-          nowMs - lastSpeedupTrimMs >= SPEEDUP_TRIM_MS) {
-        // Immediate torque/speed reduction; monotonic by construction.
-        lastSpeedupTrimMs = nowMs;
-        float trimmed = cmdRevS * 0.95f;
-        if (trimmed < cmdRevS) {
-          cmdRevS = trimmed;
-          uint32_t hz = (uint32_t)floorf(cmdRevS * WHEEL_USTEPS_PER_REV);
-          if (hz >= 40 && stepper && !stepper->isStopping()) {
-            if (!fasSetSpeedHz(hz)) return false;
-            stepper->applySpeedAcceleration();
-            lastAppliedHz = hz;
-          }
-          if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
-        }
-      }
-      if (nowMs - speedupSinceMs >= SPEEDUP_FAULT_MS) {
-        enterFault(FC_SUSTAINED_SPEEDUP, "wheel accelerating under power");
-        return false;
-      }
-    } else {
-      speedupSinceMs = 0;
-    }
+  // 5. A short low outlier must not poison the reference for the rest of
+  // the spin. Preserve the speed-rise threshold and confirmation time,
+  // but establish the baseline and rising condition from robust samples.
+  bool sustainedSpeedup = speedupWatch.update(nowMs, forward,
+      SPEEDUP_NOISE_REV_S, SPEEDUP_FAULT_MS);
+  if (speedupWatch.rise() > spin.maxSpeedRiseRevS)
+    spin.maxSpeedRiseRevS = speedupWatch.rise();
+  if (sustainedSpeedup) {
+    Serial.printf("# SPEEDUP median=%.3f baseline=%.3f rise=%.3f sustained_ms=%lu\n",
+                  speedupWatch.median(), speedupWatch.baseline(), speedupWatch.rise(),
+                  (unsigned long)speedupWatch.sustainedMs(nowMs));
+    enterFault(FC_SUSTAINED_SPEEDUP, "sustained robust speed rise under power");
+    return false;
   }
 
   // 6. Fight watchdog: the wheel far below the *actual* field speed means
@@ -1924,62 +1969,50 @@ void serviceDecelTick(uint32_t nowMs) {
     prevTickMs = nowMs;
   }
 
-  if (stopRequested) return;  // FAS ignores speed updates while stopping
+  if (stopRequested) {
+    // The library now owns the smooth final ramp at planDecelRevS2.
+    cmdRevS = fminf(cmdRevS, fasWheelRevS());
+    if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
+    return;
+  }
 
   float remaining = remainingTargetDeg();
   int32_t toleranceCounts = countsForDegrees(OVERSHOOT_TOL_DEG);
 
-  // Overshoot: begin the taper at once.  (stopMove still queues its own
-  // ramp-down distance - small at these speeds with the raised FAS tracking
-  // accel - so this bounds the excursion, it cannot cancel it.)
-  if (takeoverDir * (encoderCountsMT - targetCountsMT) > toleranceCounts) {
-    stopRequested = true;
-    setCurrentStage(CS_TAPER);
-    stepper->stopMove();
-    return;
-  }
-
-  // Encoder-gated stop: begin the natural taper when the hardware ramp-down
-  // distance meets the remaining runway.
+  // Both overshoot and normal stop use the SAME planned acceleration.
+  // Keep braking current while pulses ramp down; do not weaken coupling
+  // at the instant the motor is asked to finish the stop.
   float stopLeadDeg = (float)stepper->stepsToStop() * 360.0f / WHEEL_USTEPS_PER_REV
                     + STOP_GATE_EXTRA_DEG;
-  if (remaining <= stopLeadDeg) {
+  if (takeoverDir * (encoderCountsMT - targetCountsMT) > toleranceCounts ||
+      remaining <= stopLeadDeg) {
     stopRequested = true;
-    setCurrentStage(CS_TAPER);
     stepper->stopMove();
+    Serial.printf("# RAMP_STOP a=%lu remain=%.1f lead=%.1f fas=%.3f\n",
+                  (unsigned long)stepper->getAcceleration(), remaining,
+                  stopLeadDeg, fasWheelRevS());
     return;
   }
 
-  // Monotonic command computation.  The command follows the sqrt PROFILE that
-  // consumes the remaining runway at planDecel; the wheel decays naturally
-  // onto the field once (the entry sits at 0.88x the trailing wheel speed),
-  // couples, and is then paced down in synchronization - silent load-angle
-  // braking.  The command must NOT continuously track a fraction of the
-  // wheel speed: doing so re-opens the slip gap every tick and turns the
-  // whole takeover into an audible pole-slip ratchet with ~5x the planned
-  // braking force (observed on hardware at both 450 and 300 mA).  The wheel
-  // can never be pulled: targets are capped below the natural stop, so a
-  // coupled wheel always pushes INTO the field, and the chase-down plus the
-  // speed-up detector guard the remaining pull paths.
+  // Position supplies a desired speed, while elapsed time bounds changes.
+  // The hardware uses the same acceleration limit, rather than an 8x ramp.
   float prevCmd = cmdRevS;
   float remRev = fmaxf(remaining, 0.0f) / 360.0f;
   float profile = sqrtf(2.0f * planDecelRevS2 * remRev);
   float newCmd = fminf(prevCmd, profile);
 
   float trailMin = trailingMinForwardRevS();  // telemetry / debug reference
-  // Capture-ramp surge fix (bench 2026-08-06, spins #16/#19/#27): cmd0 is
-  // computed at reservation and goes stale by naturalDecel x rampTime on
-  // urgent high-speed takeovers; the ramp tail then shoves the decayed wheel
-  // back up (rise 0.07-0.11 rev/s, user-visible). Zero coupling slack while
-  // in SPEED_MATCH_CAPTURE so the field can never lead the wheel; braking
-  // keeps the original 0.020 slack. Lowering-only - cannot ratchet.
+  // A slower encoder can lower the desired command, but cannot introduce
+  // an unbounded step. Existing reversal, speed-up and fight faults remain.
   float couplingSlack = (state == ST_SPEED_MATCH_CAPTURE) ? 0.0f : COUPLING_SLACK_REV_S;
   if (encoderVelocityValid && forward < newCmd - couplingSlack) {
-    // Wheel slower than the field: reduce toward the wheel so the motor can
-    // never lead it.  (Also naturally sheds braking authority when the wheel
-    // is dying early: the field settles to the wheel's own speed.)
+    // Request a lower field speed when the encoder is slower. The ramp
+    // limiter below bounds the response; the fault monitors remain active.
     newCmd = fminf(newCmd, fmaxf(forward, 0.0f));
   }
+
+  newCmd = pwLimitBrakeCommand(prevCmd, newCmd, planDecelRevS2,
+                               (float)dtMs * 0.001f);
 
   // Invariant: commanded motor speed never increases after capture.
   if (newCmd > prevCmd + 1.0e-4f) {
@@ -1993,7 +2026,6 @@ void serviceDecelTick(uint32_t nowMs) {
     // Below FastAccelStepper's practical floor.  Taper out here; landing
     // verification still requires safe-interior position AND stillness.
     stopRequested = true;
-    setCurrentStage(CS_TAPER);
     stepper->stopMove();
     cmdRevS = newCmd;
     if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
@@ -2003,14 +2035,8 @@ void serviceDecelTick(uint32_t nowMs) {
   cmdRevS = newCmd;
   if (cmdRevS < spin.cmdMinRevS) spin.cmdMinRevS = cmdRevS;
 
-  // Apply to the pulse generator only on meaningful change, and RESYNC the
-  // field to the command periodically.  FastAccelStepper re-derives its ramp
-  // position with log2 fixed-point rounding on every applySpeedAcceleration;
-  // a dense stream of applies compounds that rounding and the actual field
-  // speed can sag far below the command (observed ~45% low on hardware,
-  // over-braking the wheel into a long crawl).  Re-asserting the target
-  // recovers the sag; the field approaching the command from BELOW remains
-  // under 0.88x the trailing wheel speed, so it can never lead the wheel.
+  // Avoid unnecessary library ramp re-quantization. Actual acceleration
+  // stays bounded by aPlanSps2 even when a lower target is requested.
   uint32_t deltaHz = (hz > lastAppliedHz) ? hz - lastAppliedHz : lastAppliedHz - hz;
   bool applyNow = (float)deltaHz >= fmaxf(4.0f, 0.01f * (float)lastAppliedHz);
   if (state == ST_SPEED_MATCH_CAPTURE && hz < lastAppliedHz) applyNow = true;  // capture: track the wheel down immediately
@@ -2089,6 +2115,10 @@ void landingVerdict() {
   setCurrentStage(CS_HOLD1);
   state = ST_SOFT_HOLD;
   stateEnteredMs = millis();
+  holdReleaseSinceMs = 0;
+  holdReleaseDir = 0;
+  holdLastHealthMs = stateEnteredMs;
+  Serial.printf("# HOLD current=%u mA; retained until sustained spin motion\n", g_currentMa);
 }
 
 /* ========================================================================== */
@@ -2099,29 +2129,67 @@ void dumpDiagnostics() {
     Serial.println(F("# DIAG: no samples captured."));
     return;
   }
-  Serial.println(F("# DIAG columns: done_us,dt_good_us,raw,delta,counts,i2c_us,"
-                   "omega_mrev,window_mrev,cmd_mrev,fas_mrev,remain_ddeg,"
-                   "flags_hex,state,stage,current_ma"));
-  uint16_t first = (diagnosticHead + DIAG_CAPACITY - diagnosticCount) % DIAG_CAPACITY;
-  for (uint16_t i = 0; i < diagnosticCount; ++i) {
-    const DiagnosticSample& s = diagnosticBuffer[(first + i) % DIAG_CAPACITY];
-    Serial.printf("D,%lu,%u,%u,%d,%ld,%u,%d,%d,%d,%d,%d,%02X,%u,%u,%u\n",
-                  (unsigned long)s.doneUs, s.dtGoodUs, s.raw, s.delta,
-                  (long)s.counts, s.i2cUs, s.omegaMilliRevS, s.windowMilliRevS,
-                  s.cmdMilliRevS, s.fasMilliRevS, s.remainDeciDeg,
-                  s.flags, s.state, s.stage, (unsigned)s.curMa10 * 10);
+  diagnosticDumpFirst = (diagnosticHead + DIAG_CAPACITY - diagnosticCount) % DIAG_CAPACITY;
+  diagnosticDumpIndex = 0;
+  diagnosticDumpPhase = 0;
+  diagnosticDumpLength = diagnosticDumpOffset = 0;
+  diagnosticDumpActive = true;
+}
+
+// Drain the trace without blocking the 1 kHz controller or extending hold time.
+// Start only after safe settling; enqueue one complete line when UART has room.
+void serviceDiagnosticDump() {
+  if (!diagnosticDumpActive) return;
+  if (diagnosticDumpOffset == diagnosticDumpLength) {
+    if (diagnosticDumpPhase == 0) {
+      snprintf(diagnosticDumpLine, sizeof(diagnosticDumpLine),
+        "# DIAG columns: done_us,dt_good_us,raw,delta,counts,i2c_us,"
+        "omega_mrev,window_mrev,cmd_mrev,fas_mrev,remain_ddeg,"
+        "flags_hex,state,stage,current_ma,step_count,step_us,drv_status_hex,"
+        "tstep,driver_age_us,gstat_hex,pins_hex\n");
+      diagnosticDumpPhase = 1;
+    } else if (diagnosticDumpIndex < diagnosticCount) {
+      const DiagnosticSample& s = diagnosticBuffer[(diagnosticDumpFirst + diagnosticDumpIndex) % DIAG_CAPACITY];
+      snprintf(diagnosticDumpLine, sizeof(diagnosticDumpLine),
+        "D,%lu,%u,%u,%d,%ld,%u,%d,%d,%d,%d,%d,%02X,%u,%u,%u,%ld,%lu,%08lX,%lu,%u,%02X,%02X\n",
+        (unsigned long)s.doneUs, s.dtGoodUs, s.raw, s.delta,
+        (long)s.counts, s.i2cUs, s.omegaMilliRevS, s.windowMilliRevS,
+        s.cmdMilliRevS, s.fasMilliRevS, s.remainDeciDeg,
+        s.flags, s.state, s.stage, (unsigned)s.curMa10 * 10,
+        (long)s.stepCount, (unsigned long)s.stepUs, (unsigned long)s.drvStatus,
+        (unsigned long)s.tstep, s.driverAgeUs, s.gstat, s.pins);
+      ++diagnosticDumpIndex;
+    } else if (diagnosticDumpPhase == 1) {
+      snprintf(diagnosticDumpLine, sizeof(diagnosticDumpLine),
+        "# DIAG n=%u wrapped=%d frozen=%d\n", diagnosticCount, diagnosticWrapped, diagnosticFrozen);
+      diagnosticDumpPhase = 2;
+    } else {
+      diagnosticDumpActive = false;
+      return;
+    }
+    diagnosticDumpLength = strlen(diagnosticDumpLine);
+    diagnosticDumpOffset = 0;
   }
-  Serial.printf("# DIAG n=%u wrapped=%d\n", diagnosticCount, diagnosticWrapped);
+  int available = Serial.availableForWrite();
+  if (available <= 0) return;
+  size_t count = diagnosticDumpLength - diagnosticDumpOffset;
+  // Enqueue complete rows so event messages cannot split a CSV record.
+  if (count > (size_t)available) return;
+  diagnosticDumpOffset += Serial.write((const uint8_t*)diagnosticDumpLine + diagnosticDumpOffset, count);
 }
 
 void startDiagnosticCapture() {
+  if (!diagnosticBuffer) { Serial.println(F("# DIAG unavailable: PSRAM allocation failed")); return; }
+  if (diagnosticDumpActive) { Serial.println(F("# DIAG dump still in progress")); return; }
+  diagnosticDriverStage = 255;
   diagnosticHead = 0;
   diagnosticCount = 0;
   diagnosticWrapped = false;
+  diagnosticFrozen = false;
   diagnosticCapture = true;
   diagnosticSawMotion = false;
   diagnosticStillSinceUs = 0;
-  Serial.println(F("# DIAG armed: RAM-only 1 kHz capture; dumps after true stop or fault."));
+  Serial.println(F("# DIAG armed: 16384 PSRAM samples, PCNT + driver status; includes 5 seconds of hold."));
 }
 
 void serviceDiagnosticCapture() {
@@ -2139,8 +2207,15 @@ void serviceDiagnosticCapture() {
   if (diagnosticStillSinceUs == 0) {
     diagnosticStillSinceUs = nowUs;
   } else if (nowUs - diagnosticStillSinceUs >= 700000UL) {
-    diagnosticCapture = false;
-    dumpDiagnostics();
+    // Include five seconds of persistent hold before freezing this trace.
+    bool held = state == ST_SOFT_HOLD && currentStage == CS_HOLD1 &&
+                digitalRead(PIN_EN) == LOW;
+    if (held && millis() - stateEnteredMs < DIAG_HOLD_RECORD_MS) return;
+    diagnosticFrozen = true;
+    if (held || (currentStage == CS_FREEWHEEL && digitalRead(PIN_EN) == HIGH)) {
+      diagnosticCapture = false;
+      dumpDiagnostics();
+    }
   }
 }
 
@@ -2150,10 +2225,12 @@ void serviceDiagnosticCapture() {
 void help() {
   Serial.println(F(
     "\n=== PRIZE WHEEL (correctness redesign) ===\n"
+    "# build: v2-gentle6-20260918; TEST min6s cap320; brake2200; hold1650\n"
     " z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)\n"
     " p  attended two-leg direction probe (safe wedge center only)\n"
     " s  status\n"
     " d  arm high-rate RAM capture (dumps after true stop/fault)\n"
+    " D  dump current trace at rest with outputs disabled\n"
     " v  toggle live control logs\n"
     " e  toggle automatic takeover\n"
     " f  print friction model\n"
@@ -2180,6 +2257,9 @@ void printStatus() {
                 (unsigned long)ageUs, motorDirectionCalibrated ? 1 : 0,
                 motorPositiveEncoderSign, tmcOk ? 1 : 0, takeoverEnabled ? 1 : 0,
                 rawZero, (unsigned)currentStage, cmdRevS);
+  Serial.printf("# motor fas=%.4f current=%u EN=%d hold_ms=%lu\n", fasWheelRevS(),
+                g_currentMa, digitalRead(PIN_EN),
+                (unsigned long)(state == ST_SOFT_HOLD ? millis() - stateEnteredMs : 0));
 }
 
 // WIFI_TASK: one shared single-char parser for the serial console AND the
@@ -2209,8 +2289,23 @@ void handleCommandChar(char command) {
       break;
     case 'p': startDirectionProbe(); break;
     case 's':
-      if (diagnosticCapture) Serial.println(F("# DIAG active: status suppressed"));
+      if (diagnosticCapture && state != ST_IDLE_STOPPED &&
+          state != ST_SOFT_HOLD && state != ST_FAULT_LATCHED)
+        Serial.println(F("# DIAG active: moving status suppressed"));
       else printStatus();
+      break;
+    case 'D':
+      if (diagnosticDumpActive) break;
+      if ((state != ST_IDLE_STOPPED && state != ST_FAULT_LATCHED) ||
+          currentStage != CS_FREEWHEEL || digitalRead(PIN_EN) != HIGH ||
+          (stepper && stepper->isRunning()) || !encoderMotionReady() ||
+          fabsf(omega) > STILL_REV_S) {
+        Serial.println(F("# DIAG manual dump refused: wheel must be stopped with outputs disabled"));
+        break;
+      }
+      diagnosticFrozen = true;
+      diagnosticCapture = false;
+      dumpDiagnostics();
       break;
     case 'd':
       if (!diagnosticCapture) startDiagnosticCapture();
@@ -2296,9 +2391,14 @@ void handleCommandChar(char command) {
 /*                          SETUP / MAIN LOOP                                 */
 /* ========================================================================== */
 void setup() {
+  Serial.setTxBufferSize(1024);
   Serial.begin(115200);
   delay(300);
   randomSeed(esp_random());
+  diagnosticBuffer = (DiagnosticSample*)heap_caps_malloc(
+      sizeof(DiagnosticSample) * DIAG_CAPACITY, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+  Serial.printf("# DIAG PSRAM samples=%u bytes=%lu allocated=%d\n", DIAG_CAPACITY,
+                (unsigned long)(sizeof(DiagnosticSample) * DIAG_CAPACITY), diagnosticBuffer != nullptr);
 
   preferences.begin("prizewheel", false);
   rawZero = preferences.getUShort("rawZero", rawZero);  // label-true anchor
@@ -2350,7 +2450,7 @@ void setup() {
   }
 
   pinMode(PIN_EN, OUTPUT);
-  digitalWrite(PIN_EN, LOW);  // hold at boot; freewheel selected below
+  digitalWrite(PIN_EN, HIGH);  // keep outputs disabled during initialization
 
   driverConfig();   // TMC5160T Pro over SPI - no serial begin needed
 
@@ -2360,6 +2460,11 @@ void setup() {
     stepper->setDirectionPin(PIN_DIR, INVERT_DIR);
     stepper->setEnablePin(PIN_EN, true);
     stepper->setAutoEnable(false);
+    if (!pwFixStepperClock()) {
+      stepper->disableOutputs();
+      stepper = nullptr;  // reset cannot bypass an unsupported timer layout
+      enterFault(FC_STEPPER_API, "unsupported STEP clock layout");
+    }
   } else {
     Serial.println(F("# FATAL: stepperConnectToPin failed; control locked"));
   }
@@ -2713,8 +2818,8 @@ void loop() {
         setCurrentStage(CS_CAPTURE);
       }
       if (nowMs - captureStartMs >= PICKUP_COHERENCE_MS) {
-        // Never step the ladder back up if the stop taper already began.
-        if (!stopRequested) setCurrentStage(CS_BRAKE);
+        // A planned stop may already be running; keep full braking torque.
+        setCurrentStage(CS_BRAKE);
         state = ST_CONTROLLED_DECEL;
         stateEnteredMs = nowMs;
       }
@@ -2735,13 +2840,13 @@ void loop() {
     }
 
     case ST_LANDING_SETTLE: {
-      // Pulse train has tapered to zero; the wheel settles under taper
-      // current.  Landing requires BOTH interior position AND stillness.
+      // Pulse train has tapered to zero; retain braking torque during settle.
+      // Landing requires BOTH interior position AND stillness.
       if (!encoderPositionFresh()) {
         enterFault(FC_ENCODER_STALE, "stale during settle");
         break;
       }
-      setCurrentStage(CS_TAPER);  // idempotent; undoes any late CS_BRAKE write
+      setCurrentStage(CS_BRAKE);  // retain torque through settling and hold
       if (encoderMotionReady() &&
           fabsf(omega) > fmaxf(GUEST_OVERRIDE_REV_S, 0.3f)) {
         // Grabbed and re-spun before the summary: hand it back to detection.
@@ -2752,23 +2857,13 @@ void loop() {
         stateEnteredMs = nowMs;
         break;
       }
-      // Residual momentum may legitimately creep the wheel several degrees
-      // under the taper detent before it rests, so small pre-stillness travel
-      // belongs to the landing verdict, not to guest blame.  Travel no
-      // residual creep can plausibly produce (well over a wedge) means a hand
-      // is dragging the wheel: release and close honestly.
+      // Excess travel after pulses stop is a failed controlled landing.
+      // Motion alone does not prove guest contact; latch and preserve the
+      // trace instead of automatically capturing the same coast again.
       if (fabsf(degreesForCounts(encoderCountsMT - settleEntryCounts)) >
               LANDING_DRAG_ABORT_DEG &&
           encoderMotionReady() && fabsf(omega) > STILL_REV_S) {
-        Serial.printf("SPIN#%lu SETTLE-DRAG: guest moved the wheel during settle\n",
-                      (unsigned long)spin.number);
-        driverFreewheel();
-        closeSpin(RES_GUEST_STOPPED);
-        candidateStartCounts = encoderCountsMT;
-        spinArmMs = 0;
-        settleStillSinceMs = 0;
-        state = ST_MOTION_CANDIDATE;
-        stateEnteredMs = nowMs;
+        enterFault(FC_TRACKING_LOST, "excess travel after pulse stop");
         break;
       }
       if (encoderMotionReady() && fabsf(omega) <= STILL_REV_S) {
@@ -2798,26 +2893,42 @@ void loop() {
     }
 
     case ST_SOFT_HOLD: {
-      // Fade the hold torque so release is imperceptible, then float.
-      uint32_t age = nowMs - stateEnteredMs;
-      if (currentStage == CS_HOLD1 && age >= HOLD1_MS) setCurrentStage(CS_HOLD2);
-      else if (currentStage == CS_HOLD2 && age >= HOLD1_MS + HOLD2_MS) {
-        driverFreewheel();
-        // Between-spins driver health check (wheel at rest, timing harmless).
-        checkTmcUartOrFault();
-        if (state == ST_FAULT_LATCHED) break;
-        state = ST_IDLE_STOPPED;
-        stateEnteredMs = nowMs;
+      // Zero STEP pulses with continuous holding torque: no timed freewheel.
+      if (!encoderPositionFresh()) {
+        enterFault(FC_ENCODER_STALE, "encoder stale during persistent hold");
         break;
       }
-      // A new hand motion during the fade releases the wheel immediately.
+      if (nowMs - holdLastHealthMs >= HOLD_HEALTH_MS) {
+        holdLastHealthMs = nowMs;
+        uint32_t drv = driver.DRV_STATUS();
+        uint8_t gst = (uint8_t)driver.GSTAT();
+        // Temperature warning/shutdown, shorts, driver/charge-pump error.
+        // Open-load flags are unreliable at rest and are not used here.
+        if (drv == 0 || drv == 0xFFFFFFFFUL || (drv & 0x1E000000UL) || (gst & 0x07)) {
+          enterFault(FC_TMC_UART, "driver health fault during persistent hold");
+          break;
+        }
+      }
+      // A single noisy sample must not unlock the wheel. This detects motion,
+      // not human force: holding torque must first prevent imbalance drift.
       if (encoderMotionReady() && fabsf(omega) >= SPIN_DETECT_REV_S) {
-        driverFreewheel();
-        candidateStartCounts = encoderCountsMT;
-        spinArmMs = 0;
-        settleStillSinceMs = 0;   // never inherit the landing's stillness age
-        state = ST_MOTION_CANDIDATE;
-        stateEnteredMs = nowMs;
+        int8_t direction = omega >= 0.0f ? 1 : -1;
+        if (holdReleaseSinceMs == 0 || direction != holdReleaseDir) {
+          holdReleaseSinceMs = nowMs;
+          holdReleaseDir = direction;
+        } else if (nowMs - holdReleaseSinceMs >= HOLD_RELEASE_CONFIRM_MS) {
+          driverFreewheel();
+          Serial.printf("# HOLD released: sustained motion dir=%+d omega=%.3f\n", direction, omega);
+          candidateStartCounts = encoderCountsMT;
+          spinArmMs = 0;
+          settleStillSinceMs = 0;
+          holdReleaseSinceMs = 0;
+          state = ST_MOTION_CANDIDATE;
+          stateEnteredMs = nowMs;
+        }
+      } else {
+        holdReleaseSinceMs = 0;
+        holdReleaseDir = 0;
       }
       break;
     }
@@ -2859,6 +2970,7 @@ void loop() {
   }
 
   serviceDiagnosticCapture();
+  serviceDiagnosticDump();
 
   // Party additions run LAST, after all control work, and measure themselves
   // against the <=2 ms FX+WiFi budget ('t' prints the max-tracker).

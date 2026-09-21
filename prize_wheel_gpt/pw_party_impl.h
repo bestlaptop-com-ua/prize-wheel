@@ -564,7 +564,7 @@ void pwPartyBegin() {
   /* S1: a fault latched before power-off stays latched.  Only 'r' clears it
    * (and a passing attended probe for DIR_CAL, mirroring the RAM latch).     */
   uint8_t stored = preferences.getUChar(PW_S1_NVS_KEY, 0);
-  if (stored != 0 && stored <= (uint8_t)FC_LANDING_UNSAFE &&
+  if (stored != 0 && stored <= (uint8_t)FC_TRACKING_LOST &&
       state != ST_FAULT_LATCHED) {
     faultCode = (FaultCode)stored;
     state = ST_FAULT_LATCHED;

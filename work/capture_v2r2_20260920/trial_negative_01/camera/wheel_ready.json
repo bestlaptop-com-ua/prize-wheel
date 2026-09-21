@@ -1,0 +1,8 @@
+{
+  "event": "CAMERA_READY",
+  "host_utc": "2026-09-20T17:37:34.823061+00:00",
+  "host_monotonic_s": 1433642.14,
+  "frame_pts": 184500,
+  "frame_time_base": "1/90000",
+  "warmup_seconds": 0.9839999999385327
+}

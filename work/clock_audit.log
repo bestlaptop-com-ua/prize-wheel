@@ -1,0 +1,22 @@
+
+HOST 2026-09-18T13:27:08.537470 command=['t']
+CLOCK group0=4 timer0=4 group1=0 timer1=0 EN=1
+PULSE requested=500 reported=500.000 gpio_edges=100 dt_us=999998 actual=100.000 position_delta=100 EN=1
+PULSE requested=1000 reported=1000.000 gpio_edges=200 dt_us=999998 actual=200.000 position_delta=200 EN=1
+PULSE requested=2000 reported=2000.000 gpio_edges=400 dt_us=999998 actual=400.001 position_delta=400 EN=1
+AUDIT DONE: motor remains disabled. t=repeat, c=test timer prescaler zero.
+
+HOST 2026-09-18T13:27:26.332327 command=['c']
+TEST: group0 timer0 prescaler=0; library on disk unchanged
+CLOCK group0=4 timer0=0 group1=0 timer1=0 EN=1
+PULSE requested=500 reported=500.000 gpio_edges=500 dt_us=999998 actual=500.001 position_delta=500 EN=1
+PULSE requested=1000 reported=1000.000 gpio_edges=1000 dt_us=999998 actual=1000.002 position_delta=1000 EN=1
+PULSE requested=2000 reported=2000.000 gpio_edges=2000 dt_us=999998 actual=2000.004 position_delta=2000 EN=1
+AUDIT DONE: motor remains disabled. t=repeat, c=test timer prescaler zero.
+
+HOST 2026-09-18T13:30:28.828173 command=['t']
+CLOCK group0=4 timer0=0 group1=0 timer1=0 EN=1
+PULSE requested=500 reported=500.000 gpio_edges=500 dt_us=999997 actual=500.002 position_delta=500 EN=1
+PULSE requested=1000 reported=1000.000 gpio_edges=1000 dt_us=999997 actual=1000.003 position_delta=1000 EN=1
+PULSE requested=2000 reported=2000.000 gpio_edges=2000 dt_us=999997 actual=2000.006 position_delta=2000 EN=1
+AUDIT DONE: motor remains disabled. t=repeat, c=test timer prescaler zero.

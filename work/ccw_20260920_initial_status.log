@@ -1,0 +1,23 @@
+
+=== PRIZE WHEEL (correctness redesign) ===
+# build: v2-gentle6-20260918; TEST min6s cap320; brake2200; hold1650
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ D  dump current trace at rest with outputs disabled
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ x  clear stored direction calibration
+ r  fault reset (re-checks TMC UART)
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   l  LEDs on/off   w  network status
+ V<n>+Enter  DFPlayer volume 0-30 (e.g. V18)
+# state=SOFT_HOLD fault=NONE angle=244.25 wedge=8 omega=-0.0008 natStop=0.0 pos=FRESH vel=VALID age_us=739 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=88 stage=5 cmd=0.000
+# motor fas=0.0000 current=1650 EN=0 hold_ms=1576266
+# friction cw: c=0.5500 b=0.2800 fits=0 | ccw: c=0.5500 b=0.2800 fits=0

@@ -1,0 +1,1 @@
+Not deployable with existing friction seeds: no feasible target across 0.02..0.72rev/s at320sps2. Await measured free coast and planning correction. Main source restored to deployed brake2200. Candidate preserved separately.

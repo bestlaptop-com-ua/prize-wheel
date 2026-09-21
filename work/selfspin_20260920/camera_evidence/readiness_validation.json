@@ -1,0 +1,57 @@
+{
+  "start_utc": "2026-09-20T16:51:07.532112+00:00",
+  "requested_seconds": 5.0,
+  "camera": "192.168.0.182",
+  "av_version": "18.1.0",
+  "status": "captured",
+  "streams": [
+    {
+      "index": 0,
+      "type": "video",
+      "codec": "hevc",
+      "width": 2592,
+      "height": 1944,
+      "average_rate": "20"
+    },
+    {
+      "index": 1,
+      "type": "audio",
+      "codec": "aac",
+      "sample_rate": 16000
+    }
+  ],
+  "input_opened_utc": "2026-09-20T16:51:08.915703+00:00",
+  "ready": {
+    "event": "CAMERA_READY",
+    "host_utc": "2026-09-20T16:51:09.933283+00:00",
+    "host_monotonic_s": 1430857.25,
+    "frame_pts": 184500,
+    "frame_time_base": "1/90000",
+    "warmup_seconds": 1.0160000000614673
+  },
+  "elapsed_seconds": 6.047000000020489,
+  "post_ready_seconds": 5.030999999959022,
+  "packets": {
+    "0": 141,
+    "1": 113
+  },
+  "packet_bytes": 2840589,
+  "bytes": 2843273,
+  "sha256": "5505cb1e517590e5331cc3f24fee54d6f2567940afd86b07f7de8d76a4bd27b3",
+  "end_utc": "2026-09-20T16:51:14.971272+00:00",
+  "decode_check": {
+    "frames": {
+      "video": 102,
+      "audio": 113
+    },
+    "first_pts_seconds": {
+      "audio": 0.03,
+      "video": 2.05
+    },
+    "last_pts_seconds": {
+      "audio": 7.198,
+      "video": 7.146
+    },
+    "note": "Pre-roll before first keyframe is retained; frame times are media PTS, not synchronized exposure times."
+  }
+}

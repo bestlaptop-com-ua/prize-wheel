@@ -1,0 +1,31 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x1 (POWERON),boot:0x8 (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x10cc
+load:0x403c8700,len:0xc2c
+load:0x403cb700,len:0x30c0
+entry 0x403c88b8
+=== SPEEDUP REPLAY: EN HIGH, NO STEP GENERATOR ===
+TEST recorded_563_samples_no_false_fault PASS
+OLD_FILTER fault_ms=561 baseline=0.278 held_tail_speed=0.382
+TEST old_detector_reproduces_recorded_mechanism PASS
+TEST recorded_recovery_stays_clear_with_held_tail PASS
+TEST noisy_deceleration PASS
+TEST brief_negative_outlier PASS
+TEST brief_positive_outlier PASS
+STEP_RISE fault_ms=975
+TEST sustained_step_rise_detected PASS
+ACCELERATION fault_ms=1250
+TEST sustained_acceleration_detected PASS
+EARLY_ACCELERATION fault_ms=800
+TEST acceleration_from_capture_detected PASS
+SLOW_ACCELERATION fault_ms=2225
+TEST slow_sustained_rise_detected PASS
+TEST millis_wraparound PASS
+TEST sampling_gap_cancels_debounce PASS
+TEST invalid_velocity_clears_history PASS
+TEST new_spin_reset_and_steady_speed PASS
+TEST real_acceleration_after_recorded_transient PASS
+REPLAY PASS checks=15 failures=0 EN=1

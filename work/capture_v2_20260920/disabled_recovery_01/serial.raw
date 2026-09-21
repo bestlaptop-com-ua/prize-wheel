@@ -1,0 +1,32 @@
+
+=== PRIZE WHEEL (correctness redesign) ===
+# build: v2-capture-pulsefirst-20260920; based on gentle6
+ [ / ] one-shot encoder-dir -1 / +1; ! sticky abort; no automatic rearm
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ D  dump current trace at rest with outputs disabled
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ x  clear stored direction calibration
+ r  disabled build only: acknowledge preserved trace, recover known SELFSPIN_ABORT
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   l  LEDs on/off   w  network status
+ V<n>+Enter  DFPlayer volume 0-30 (e.g. V18)
+# selfspin motion_compiled=0 timer_ready=1 consumed=0 active=0 inhibit=1 phase=0 idle_ms=33649 diag_buffer=1 diag_armed=0 diag_frozen=0 dump_active=0 deadline_reason=0 coast_min_ms=300 capture_attempted=0 capture_energized=0
+# state=FAULT_LATCHED fault=SELFSPIN_ABORT angle=287.84 wedge=9 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=153 dirCal=1(sign -1) tmc=1 takeover=0 rawZero=88 stage=0 cmd=0.000
+# motor fas=0.0000 current=0 EN=1 hold_ms=0
+# selfspin motion_compiled=0 timer_ready=1 consumed=0 active=0 inhibit=1 phase=0 idle_ms=2026 diag_buffer=1 diag_armed=0 diag_frozen=0 dump_active=0 deadline_reason=0 coast_min_ms=300 capture_attempted=0 capture_energized=0
+# saved_fault_raw=15; unknown nonzero values stay locked
+# SELFSPIN refused: disabled build, consumed, or idle/health/recorder prerequisite
+# state=FAULT_LATCHED fault=SELFSPIN_ABORT angle=287.84 wedge=9 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=126 dirCal=1(sign -1) tmc=1 takeover=0 rawZero=88 stage=0 cmd=0.000
+# motor fas=0.0000 current=0 EN=1 hold_ms=0
+# selfspin motion_compiled=0 timer_ready=1 consumed=0 active=0 inhibit=1 phase=0 idle_ms=6260 diag_buffer=1 diag_armed=0 diag_frozen=0 dump_active=0 deadline_reason=0 coast_min_ms=300 capture_attempted=0 capture_energized=0
+# saved_fault_raw=15; unknown nonzero values stay locked
+# RECOVERY refused: health/config recheck; original fault retained

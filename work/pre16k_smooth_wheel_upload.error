@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Users\Mill\Desktop\prize-wheel\work\upload_verify_smooth.py", line 25, in <module>
+    assert 'state=IDLE_STOPPED fault=NONE' in status,'not idle; no fault reset attempted'
+AssertionError: not idle; no fault reset attempted

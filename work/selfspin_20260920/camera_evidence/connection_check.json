@@ -1,0 +1,10 @@
+{
+  "earlier_recording": {
+    "status": 400,
+    "body": "Error\r\nBad Request!\r\n"
+  },
+  "live": {
+    "status": 400,
+    "body": "Error\r\nBad Request!\r\n"
+  }
+}
