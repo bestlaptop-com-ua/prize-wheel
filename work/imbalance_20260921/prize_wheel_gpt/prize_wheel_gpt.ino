@@ -75,7 +75,7 @@
 #define MICROSTEPS      16
 #define GEAR_RATIO      1.0f
 const float WHEEL_USTEPS_PER_REV = MOTOR_FULLSTEPS * MICROSTEPS * GEAR_RATIO;
-#define NUM_WEDGES 12
+#define NUM_WEDGES 18   // 2026-09-21 wheel: 20 deg wedges, labels 0-17 clockwise
 const float WEDGE_DEG = 360.0f / NUM_WEDGES;
 
 /* ------------------------- ENUMS (all hoisted) ---------------------------- */
@@ -145,7 +145,7 @@ void enterFault(FaultCode code, const char* detail);  // used across sections
 float dareDistanceDeg(float angle);                   // used across sections
 
 /* --------------------------- DARE / SAFE --------------------------------- */
-uint16_t dare_mask = (1 << 1) | (1 << 5);  // wedges 1 and 5 are never targets
+uint32_t dare_mask = (1UL << 3) | (1UL << 8) | (1UL << 13) | (1UL << 16);  // never targets; 8 is the hard one
 inline bool isDare(int wedge) {
   wedge %= NUM_WEDGES;
   if (wedge < 0) wedge += NUM_WEDGES;
@@ -2332,7 +2332,7 @@ void help() {
   Serial.println(F("# build: imbalance-model-20260921; based on plywood-capture-review-20260920; takeover defaults OFF"));
   Serial.println(F(
     "\n=== PRIZE WHEEL (correctness redesign) ===\n"
-    " z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)\n"
+    " z  set current raw as wedge-0 anchor (wheel at rest, pointer on 17|0 line)\n"
     " p  attended two-leg direction probe (safe wedge center only)\n"
     " s  status\n"
     " d  arm high-rate RAM capture (dumps after true stop/fault)\n"
@@ -2531,7 +2531,7 @@ void handleCommandChar(char command) {
       } else Serial.println(F("# r: no latched fault"));
       break;
     case 'm':
-      Serial.printf("# dare_mask=0x%03X; dare wedges: 1 5\n", dare_mask);
+      Serial.printf("# dare_mask=0x%05lX; dare wedges: 3 8 13 16\n", (unsigned long)dare_mask);
       break;
     case '?': help(); break;
     default: break;

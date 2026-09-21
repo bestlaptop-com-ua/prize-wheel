@@ -232,6 +232,21 @@ edit('setup load',
      '  }\n'
      '  // rawZero/dir_ok/pos_sign are intentionally untouched: these legacy keys\n')
 
+edit('18 wedges',
+     '#define NUM_WEDGES 12\n',
+     '#define NUM_WEDGES 18   // 2026-09-21 wheel: 20 deg wedges, labels 0-17 clockwise\n')
+
+edit('dare mask',
+     'uint16_t dare_mask = (1 << 1) | (1 << 5);  // wedges 1 and 5 are never targets\n',
+     'uint32_t dare_mask = (1UL << 3) | (1UL << 8) | (1UL << 13) | (1UL << 16);  // never targets; 8 is the hard one\n')
+
+edit('dare print',
+     'Serial.printf("# dare_mask=0x%03X; dare wedges: 1 5\\n", dare_mask);\n',
+     'Serial.printf("# dare_mask=0x%05lX; dare wedges: 3 8 13 16\\n", (unsigned long)dare_mask);\n')
+
+edit('z help',
+     '" z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)\\n"\n',
+     '" z  set current raw as wedge-0 anchor (wheel at rest, pointer on 17|0 line)\\n"\n')
 
 def main():
     ino = SRC / 'prize_wheel_gpt.ino'

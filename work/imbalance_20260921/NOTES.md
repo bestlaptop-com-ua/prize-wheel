@@ -20,3 +20,10 @@ First-spin estimate (one ccw coast, 2026-09-21): G0.2509,101.93,-4.78,5.04,-15.6
 Check: predictor gives 901.2 deg from the start of that coast, actual 901.1; legacy closed form gives 952.6.
 
 Open items: more spins both directions before storing constants; INL should be re-derived from a slow powered full-rev calibration; nothing here has run on the wheel.
+
+## 2026-09-21 17:10 - flashed and configured (Claude)
+- Rebuilt with NUM_WEDGES 18, dare_mask 3/8/13/16 (owner: 8 is the hard one), z help text 17|0. Flashed to COM7 (upload exit 0), boots as imbalance-model-20260921.
+- Encoder magnet re-seated by owner after AGC hit 128 / ML=1 at 16:57; now AGC 34, MAGNITUDE ~2090, MD=1 ML=0 MH=0.
+- `z` with pointer on the 17|0 line: rawZero=2376 persisted.
+- `G0.574,171.8,0,0,0,0` persisted (phi converted from the rawZero=88 frame: 330.7 + (2376-88)*360/4096). Rest angle 351.8 deg = wedge 17 next to the 0 line; crest ~171.8 deg = wedge 8 (the hard dare) - a coast that dies within ~16 deg of the crest can balance on 8/9, otherwise it swings back to 17/0.
+- Fault latch SELFSPIN_ABORT (15) left in place; takeover OFF; no motor use (Loctite 648 curing until 2026-09-22).

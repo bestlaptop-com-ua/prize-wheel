@@ -234,5 +234,5 @@ C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/i
 C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::usr_mosi_highpart' [-Wmissing-field-initializers]
 C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::usr_dummy_idle' [-Wmissing-field-initializers]
 C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::usr_dummy' [-Wmissing-field-initializers]
-Sketch uses 915511 bytes (29%) of program storage space. Maximum is 3145728 bytes.
-Global variables use 117536 bytes (35%) of dynamic memory, leaving 210144 bytes for local variables. Maximum is 327680 bytes.
+Sketch uses 915583 bytes (29%) of program storage space. Maximum is 3145728 bytes.
+Global variables use 117552 bytes (35%) of dynamic memory, leaving 210128 bytes for local variables. Maximum is 327680 bytes.
