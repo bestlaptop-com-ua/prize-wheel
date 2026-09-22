@@ -1,0 +1,266 @@
+# state=IDLE_STOPPED fault=NONE angle=0.18 wedge=0 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=321 dirCal=1(sign -1) tmc=1 takeover=0 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+
+#HOST sent v at 1790026011.3025007
+# live control logging=1
+
+#HOST sent p at 1790026012.3006647
+# DIR PROBE refused: center the pointer in safe wedge 3 or 7-11 first
+
+#HOST sent e at 1790026055.1885772
+# takeoverEnabled=1
+
+#HOST sent f at 1790026056.1812406
+# friction cw: c=0.5500 b=0.2800 fits=0 | ccw: c=0.5500 b=0.2800 fits=0
+
+#HOST sent s at 1790026057.2347763
+# state=IDLE_STOPPED fault=NONE angle=0.18 wedge=0 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=204 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+SPIN#1 START dir=-1 omega=-0.252 wedge=17
+SPIN#1 RELEASE speed=0.897 peak=0.999 angle=231.2
+SPIN#1 FRICTION dir=-1 fitC=0.8727 fitB=0.0107 pairs=52 -> c=0.6629 b=0.1858 fits=1
+SPIN#1 RESERVE targetW=5 targetAngle=114.5 runway=51.8 natStop=53.8 speed=0.155 q=3 urgent=0
+# CAPTURE_ABANDON reason=capture arming prerequisites attempted=1 energized=0; no retry until fresh rest
+SPIN#1 SUMMARY dir=-1 peak=0.999 releaseMs=400 relAngle=231.2 relSpeed=0.897 targetW=5 targetAngle=114.5 runway=51.8 natStop=53.8 fricC=0.6629 fricB=0.1858 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=304.0 finalW=15 err=170.4 quality=3 result=GUEST_STOPPED fault=NONE fitRej=0 fitsCW=0 fitsCCW=1 captureAttempted=1 captureEnergized=0 captureAbandoned=1
+SPIN#2 START dir=+1 omega=0.138 wedge=15
+SPIN#2 RELEASE speed=0.134 peak=0.146 angle=354.8
+SPIN#2 SUMMARY dir=+1 peak=0.146 releaseMs=842 relAngle=354.8 relSpeed=0.134 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5500 fricB=0.2800 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=43.9 finalW=2 err=0.0 quality=0 result=NO_REACHABLE_SAFE fault=NONE fitRej=0 fitsCW=0 fitsCCW=1 captureAttempted=1 captureEnergized=0 captureAbandoned=1
+MANUAL-ADJUST travel=-58.2deg durMs=2921 wedge=17 (no spin, no motor)
+
+#HOST sent s at 1790026322.7936623
+# state=IDLE_STOPPED fault=NONE angle=351.83 wedge=17 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=107 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+SPIN#3 START dir=-1 omega=-0.279 wedge=17
+SPIN#3 RELEASE speed=1.017 peak=1.137 angle=204.5
+SPIN#3 FRICTION_REJECT bounds fitC=1.5734 fitB=-0.1289 pairs=53 reason=reserve
+SPIN#3 RESERVE targetW=6 targetAngle=124.5 runway=15.2 natStop=17.2 speed=0.075 q=3 urgent=0
+# CAPTURE_ABANDON reason=capture arming prerequisites attempted=1 energized=0; no retry until fresh rest
+SPIN#3 SUMMARY dir=-1 peak=1.137 releaseMs=400 relAngle=204.5 relSpeed=1.017 targetW=6 targetAngle=124.5 runway=15.2 natStop=17.2 fricC=0.6629 fricB=0.1858 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=26.8 finalW=1 err=97.7 quality=3 result=NO_REACHABLE_SAFE fault=NONE fitRej=1 fitsCW=0 fitsCCW=1 captureAttempted=1 captureEnergized=0 captureAbandoned=1
+MANUAL-ADJUST travel=-20.0deg durMs=1495 wedge=17 (no spin, no motor)
+
+#HOST sent s at 1790026397.0891685
+# state=IDLE_STOPPED fault=NONE angle=357.28 wedge=17 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=118 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+# state=IDLE_STOPPED fault=NONE angle=0.97 wedge=0 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=417 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+SPIN#1 START dir=-1 omega=-0.267 wedge=17
+SPIN#1 RELEASE speed=1.842 peak=2.003 angle=225.8
+SPIN#1 FRICTION_REJECT contact alpha=2.865 reason=reserve
+SPIN#1 RESERVE targetW=6 targetAngle=130.3 runway=34.8 natStop=36.8 speed=0.123 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=22879 pulses=9 hz=360.8 requested=374 current=2200 EN=0 DIR=1 targetW=6 remain=33.7 a=234 phase_unverified=1
+# RAMP_STOP a=234 remain=33.8 lead=35.8 fas=0.117
+SPIN#1 SUMMARY dir=-1 peak=2.003 releaseMs=783 relAngle=225.8 relSpeed=1.842 targetW=6 targetAngle=130.3 runway=34.8 natStop=36.8 fricC=0.5500 fricB=0.2800 tkSpeed=0.123 cmdMax=0.117 cmdMin=0.007 rise=0.021 maxDecel=2.425 final=129.3 finalW=6 err=1.0 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=1 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# MANUAL movement promoted to spin
+SPIN#2 START dir=-1 omega=-0.125 wedge=3
+SPIN#2 RELEASE speed=0.133 peak=0.145 angle=339.6
+SPIN#2 SUMMARY dir=-1 peak=0.145 releaseMs=1756 relAngle=339.6 relSpeed=0.133 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5500 fricB=0.2800 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=18.2 finalW=0 err=0.0 quality=0 result=NO_REACHABLE_SAFE fault=NONE fitRej=1 fitsCW=0 fitsCCW=0 captureAttempted=0 captureEnergized=0 captureAbandoned=0
+# state=IDLE_STOPPED fault=NONE angle=0.53 wedge=0 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=526 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+SPIN#1 START dir=-1 omega=-0.282 wedge=17
+SPIN#1 RELEASE speed=1.893 peak=2.059 angle=346.6
+SPIN#1 FRICTION_REJECT contact alpha=2.918 reason=reserve
+SPIN#1 RESERVE targetW=10 targetAngle=212.1 runway=383.3 natStop=385.3 speed=0.709 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24813 pulses=46 hz=2134.4 requested=2154 current=2200 EN=0 DIR=1 targetW=10 remain=376.5 a=694 phase_unverified=1
+# RAMP_STOP a=694 remain=369.0 lead=378.2 fas=0.673
+FAULT code=CONTROL_OVERSPEED detail=absolute speed above 0.30 rps in powered control state=SPEED_MATCH_CAPTURE angle=167.1 wedge=8 omega=-0.802 cmd=0.633
+SPIN#1 SUMMARY dir=-1 peak=2.059 releaseMs=615 relAngle=346.6 relSpeed=1.893 targetW=10 targetAngle=212.1 runway=383.3 natStop=385.3 fricC=0.5500 fricB=0.2800 tkSpeed=0.701 cmdMax=0.673 cmdMin=0.633 rise=0.000 maxDecel=2.048 final=240.1 finalW=12 err=-28.0 quality=3 result=FAULTED fault=CONTROL_OVERSPEED fitRej=1 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+SPIN#2 START dir=+1 omega=0.129 wedge=14
+SPIN#2 FAULT ACTIVE (CONTROL_OVERSPEED): spin will NOT be controlled
+SPIN#2 SUMMARY dir=+1 peak=0.129 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5500 fricB=0.2800 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=337.5 finalW=16 err=0.0 quality=0 result=CONTROL_LOCKED fault=CONTROL_OVERSPEED fitRej=1 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+SPIN#2 LANDED-DARE wedge=16 THIS IS A FAILURE result=CONTROL_LOCKED fault=CONTROL_OVERSPEED
+
+#HOST sent s at 1790027643.361239
+# state=FAULT_LATCHED fault=CONTROL_OVERSPEED angle=352.44 wedge=17 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=114 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=17
+# state=IDLE_STOPPED fault=NONE angle=354.90 wedge=17 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=224 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+SPIN#1 START dir=-1 omega=-0.273 wedge=17
+SPIN#1 RELEASE speed=1.162 peak=1.263 angle=25.4
+SPIN#1 FRICTION_REJECT bounds fitC=1.5472 fitB=-0.1400 pairs=60 reason=reserve
+SPIN#1 RESERVE targetW=10 targetAngle=216.1 runway=125.6 natStop=127.6 speed=0.288 q=3 urgent=0
+SPIN#1 FRICTION_REJECT bounds fitC=1.5472 fitB=-0.1400 pairs=60 reason=power
+# PULSEFIRST TORQUE_ON arm_us=23948 pulses=19 hz=857.1 requested=874 current=2800 EN=0 DIR=1 targetW=10 remain=121.8 a=353 phase_unverified=1
+# RAMP_STOP a=353 remain=119.5 lead=123.8 fas=0.273
+SPIN#1 SUMMARY dir=-1 peak=1.263 releaseMs=805 relAngle=25.4 relSpeed=1.162 targetW=10 targetAngle=216.1 runway=125.6 natStop=127.6 fricC=0.1700 fricB=0.0500 tkSpeed=0.287 cmdMax=0.273 cmdMin=0.000 rise=0.000 maxDecel=1.066 final=212.3 finalW=10 err=3.9 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=2 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+
+#HOST sent s at 1790028156.4819996
+# state=SOFT_HOLD fault=NONE angle=212.26 wedge=10 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=259 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=5 cmd=0.000 savedFaultRaw=0
+# HOLD released: pushed 1.58 deg off anchor after 108221 ms
+# MANUAL movement promoted to spin
+SPIN#2 START dir=+1 omega=0.129 wedge=13
+SPIN#2 RELEASE speed=0.164 peak=0.179 angle=355.4
+SPIN#2 RESERVE targetW=2 targetAngle=49.7 runway=47.9 natStop=49.9 speed=0.158 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=27227 pulses=11 hz=477.5 requested=480 current=2800 EN=0 DIR=0 targetW=2 remain=46.3 a=280 phase_unverified=1
+# RAMP_STOP a=280 remain=44.6 lead=48.2 fas=0.150
+SPIN#2 SUMMARY dir=+1 peak=0.179 releaseMs=1408 relAngle=355.4 relSpeed=0.164 targetW=2 targetAngle=49.7 runway=47.9 natStop=49.9 fricC=0.1700 fricB=0.0500 tkSpeed=0.157 cmdMax=0.150 cmdMin=0.000 rise=0.000 maxDecel=0.293 final=51.0 finalW=2 err=1.3 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=2 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 1.67 deg off anchor after 4771 ms
+SPIN#3 START dir=+1 omega=0.181 wedge=3
+SPIN#3 RELEASE speed=0.195 peak=0.223 angle=93.4
+SPIN#3 RESERVE targetW=6 targetAngle=135.5 runway=42.1 natStop=67.3 speed=0.195 q=1 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25273 pulses=13 hz=574.5 requested=586 current=2800 EN=0 DIR=0 targetW=6 remain=39.5 a=490 phase_unverified=1
+# RAMP_STOP a=490 remain=38.1 lead=41.5 fas=0.183
+SPIN#3 SUMMARY dir=+1 peak=0.223 releaseMs=400 relAngle=93.4 relSpeed=0.195 targetW=6 targetAngle=135.5 runway=42.1 natStop=67.3 fricC=0.1700 fricB=0.0500 tkSpeed=0.191 cmdMax=0.183 cmdMin=0.010 rise=0.000 maxDecel=0.887 final=139.3 finalW=6 err=3.8 quality=1 result=EDGE_SAFE fault=NONE fitRej=2 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 1.93 deg off anchor after 2087 ms
+SPIN#4 START dir=+1 omega=0.187 wedge=7
+SPIN#4 RELEASE speed=0.438 peak=0.477 angle=2.0
+SPIN#4 RESERVE targetW=5 targetAngle=115.5 runway=113.6 natStop=435.8 speed=0.355 q=1 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23973 pulses=24 hz=1075.7 requested=1079 current=2800 EN=0 DIR=0 targetW=5 remain=110.5 a=593 phase_unverified=1
+# RAMP_STOP a=593 remain=107.1 lead=112.6 fas=0.337
+SPIN#4 SUMMARY dir=+1 peak=0.477 releaseMs=1421 relAngle=2.0 relSpeed=0.438 targetW=5 targetAngle=115.5 runway=113.6 natStop=435.8 fricC=0.1700 fricB=0.0500 tkSpeed=0.353 cmdMax=0.337 cmdMin=0.000 rise=0.000 maxDecel=0.372 final=120.5 finalW=6 err=5.0 quality=1 result=EDGE_SAFE fault=NONE fitRej=2 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 1.41 deg off anchor after 212234 ms
+SPIN#5 START dir=+1 omega=0.278 wedge=6
+SPIN#5 RELEASE speed=1.917 peak=2.086 angle=226.8
+SPIN#5 FRICTION_REJECT contact alpha=2.578 reason=reserve
+SPIN#5 RESERVE targetW=5 targetAngle=115.5 runway=113.6 natStop=438.7 speed=0.360 q=1 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25947 pulses=24 hz=1075.5 requested=1093 current=2800 EN=0 DIR=0 targetW=5 remain=110.2 a=610 phase_unverified=1
+# RAMP_STOP a=610 remain=106.1 lead=112.5 fas=0.342
+FAULT code=LANDING_UNSAFE detail=settled on dare after control state=LANDING_SETTLE angle=175.6 wedge=8 omega=-0.003 cmd=0.011
+SPIN#5 SUMMARY dir=+1 peak=2.086 releaseMs=719 relAngle=226.8 relSpeed=1.917 targetW=5 targetAngle=115.5 runway=113.6 natStop=438.7 fricC=0.1700 fricB=0.0500 tkSpeed=0.357 cmdMax=0.342 cmdMin=0.011 rise=0.001 maxDecel=3.538 final=175.2 finalW=8 err=59.7 quality=1 result=FAULTED fault=LANDING_UNSAFE fitRej=3 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+SPIN#5 LANDED-DARE wedge=8 THIS IS A FAILURE result=FAULTED fault=LANDING_UNSAFE
+SPIN#6 START dir=-1 omega=-0.251 wedge=7
+SPIN#6 FAULT ACTIVE (LANDING_UNSAFE): spin will NOT be controlled
+
+#HOST sent s at 1790028564.300705
+# state=FAULT_LATCHED fault=LANDING_UNSAFE angle=273.96 wedge=13 omega=-0.4067 natStop=715.4 pos=FRESH vel=VALID age_us=199 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=13
+SPIN#6 SUMMARY dir=-1 peak=0.251 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.1700 fricB=0.0500 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=222.8 finalW=11 err=0.0 quality=0 result=CONTROL_LOCKED fault=LANDING_UNSAFE fitRej=3 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+SPIN#7 START dir=+1 omega=0.130 wedge=13
+SPIN#7 FAULT ACTIVE (LANDING_UNSAFE): spin will NOT be controlled
+SPIN#7 SUMMARY dir=+1 peak=0.130 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.1700 fricB=0.0500 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=332.9 finalW=16 err=0.0 quality=0 result=CONTROL_LOCKED fault=LANDING_UNSAFE fitRej=3 fitsCW=0 fitsCCW=0 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+SPIN#7 LANDED-DARE wedge=16 THIS IS A FAILURE result=CONTROL_LOCKED fault=LANDING_UNSAFE
+# state=IDLE_STOPPED fault=NONE angle=358.86 wedge=17 omega=-0.0001 natStop=0.0 pos=FRESH vel=VALID age_us=96 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+SPIN#1 START dir=-1 omega=-0.267 wedge=17
+SPIN#1 RELEASE speed=1.413 peak=1.536 angle=19.1
+SPIN#1 FRICTION dir=-1 fitC=0.4257 fitB=0.0249 pairs=59 -> c=0.2595 b=0.0412 fits=1
+SPIN#1 RESERVE targetW=12 targetAngle=246.0 runway=95.7 natStop=97.7 speed=0.263 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24674 pulses=18 hz=811.8 requested=825 current=2800 EN=0 DIR=1 targetW=12 remain=93.2 a=411 phase_unverified=1
+# RAMP_STOP a=411 remain=90.8 lead=95.5 fas=0.258
+SPIN#1 SUMMARY dir=-1 peak=1.536 releaseMs=698 relAngle=19.1 relSpeed=1.413 targetW=12 targetAngle=246.0 runway=95.7 natStop=97.7 fricC=0.2595 fricB=0.0412 tkSpeed=0.263 cmdMax=0.258 cmdMin=0.000 rise=0.000 maxDecel=0.267 final=241.1 finalW=12 err=4.9 quality=3 result=EDGE_SAFE fault=NONE fitRej=0 fitsCW=0 fitsCCW=1 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.20 deg off anchor after 4406 ms
+SPIN#2 START dir=+1 omega=0.226 wedge=12
+SPIN#2 RELEASE speed=0.645 peak=0.701 angle=20.7
+SPIN#2 FRICTION dir=+1 fitC=0.4014 fitB=0.0816 pairs=33 -> c=0.2510 b=0.0611 fits=1
+SPIN#2 RESERVE targetW=6 targetAngle=127.0 runway=125.1 natStop=127.1 speed=0.307 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23203 pulses=21 hz=955.4 requested=961 current=2800 EN=0 DIR=0 targetW=6 remain=122.4 a=425 phase_unverified=1
+# RAMP_STOP a=425 remain=119.1 lead=124.6 fas=0.300
+SPIN#2 SUMMARY dir=+1 peak=0.701 releaseMs=580 relAngle=20.7 relSpeed=0.645 targetW=6 targetAngle=127.0 runway=125.1 natStop=127.1 fricC=0.2510 fricB=0.0611 tkSpeed=0.305 cmdMax=0.300 cmdMin=0.000 rise=0.001 maxDecel=0.623 final=132.0 finalW=6 err=5.0 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=0 fitsCW=1 fitsCCW=1 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 1.85 deg off anchor after 3946 ms
+SPIN#3 START dir=-1 omega=-0.202 wedge=6
+SPIN#3 RELEASE speed=0.282 peak=0.307 angle=299.6
+SPIN#3 RESERVE targetW=9 targetAngle=195.2 runway=104.2 natStop=106.2 speed=0.282 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23771 pulses=19 hz=859.9 requested=883 current=2800 EN=0 DIR=1 targetW=9 remain=101.8 a=431 phase_unverified=1
+# RAMP_STOP a=431 remain=98.2 lead=103.9 fas=0.276
+SPIN#3 SUMMARY dir=-1 peak=0.307 releaseMs=1736 relAngle=299.6 relSpeed=0.282 targetW=9 targetAngle=195.2 runway=104.2 natStop=106.2 fricC=0.2595 fricB=0.0412 tkSpeed=0.278 cmdMax=0.276 cmdMin=0.000 rise=0.000 maxDecel=1.099 final=192.1 finalW=9 err=3.1 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=0 fitsCW=1 fitsCCW=1 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.29 deg off anchor after 3762 ms
+SPIN#4 START dir=+1 omega=0.224 wedge=10
+SPIN#4 RELEASE speed=0.845 peak=0.918 angle=27.2
+SPIN#4 FRICTION dir=+1 fitC=0.7941 fitB=0.0190 pairs=47 -> c=0.4411 b=0.0463 fits=2
+SPIN#4 SUMMARY dir=+1 peak=0.918 releaseMs=664 relAngle=27.2 relSpeed=0.845 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.2510 fricB=0.0611 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=39.0 finalW=1 err=0.0 quality=0 result=GUEST_STOPPED fault=NONE fitRej=0 fitsCW=2 fitsCCW=1 captureAttempted=0 captureEnergized=0 captureAbandoned=0
+SPIN#5 START dir=-1 omega=-0.133 wedge=1
+SPIN#5 RELEASE speed=0.130 peak=0.141 angle=345.1
+SPIN#5 RESERVE targetW=15 targetAngle=312.3 runway=29.5 natStop=31.5 speed=0.127 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=27599 pulses=9 hz=381.7 requested=397 current=2800 EN=0 DIR=1 targetW=15 remain=28.1 a=316 phase_unverified=1
+# RAMP_STOP a=316 remain=27.3 lead=30.1 fas=0.124
+SPIN#5 SUMMARY dir=-1 peak=0.141 releaseMs=928 relAngle=345.1 relSpeed=0.130 targetW=15 targetAngle=312.3 runway=29.5 natStop=31.5 fricC=0.2595 fricB=0.0412 tkSpeed=0.125 cmdMax=0.124 cmdMin=0.000 rise=0.000 maxDecel=0.677 final=309.4 finalW=15 err=2.9 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=0 fitsCW=2 fitsCCW=1 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+
+#HOST sent s at 1790081927.8732195
+# state=SOFT_HOLD fault=NONE angle=309.55 wedge=15 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=93 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=5 cmd=0.000 savedFaultRaw=0
+# HOLD released: pushed 1.93 deg off anchor after 108842 ms
+SPIN#6 START dir=-1 omega=-0.242 wedge=14
+SPIN#6 RELEASE speed=0.493 peak=0.537 angle=228.3
+SPIN#6 FRICTION_REJECT bounds fitC=0.0191 fitB=0.1843 pairs=42 reason=reserve
+SPIN#6 FRICTION dir=-1 fitC=0.0978 fitB=0.1568 pairs=43 -> c=0.2029 b=0.0817 fits=2
+SPIN#6 RESERVE targetW=11 targetAngle=236.7 runway=105.0 natStop=107.0 speed=0.276 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23761 pulses=19 hz=859.9 requested=864 current=2800 EN=0 DIR=1 targetW=11 remain=102.5 a=410 phase_unverified=1
+# RAMP_STOP a=410 remain=99.2 lead=104.6 fas=0.270
+SPIN#6 SUMMARY dir=-1 peak=0.537 releaseMs=400 relAngle=228.3 relSpeed=0.493 targetW=11 targetAngle=236.7 runway=105.0 natStop=107.0 fricC=0.2029 fricB=0.0817 tkSpeed=0.276 cmdMax=0.270 cmdMin=0.000 rise=0.000 maxDecel=0.584 final=231.0 finalW=11 err=5.7 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=1 fitsCW=2 fitsCCW=2 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 1.85 deg off anchor after 5079 ms
+SPIN#7 START dir=-1 omega=-0.213 wedge=11
+SPIN#7 RELEASE speed=0.796 peak=0.879 angle=258.8
+SPIN#7 FRICTION dir=-1 fitC=0.1973 fitB=0.1430 pairs=54 -> c=0.2009 b=0.1031 fits=3
+SPIN#7 RESERVE targetW=11 targetAngle=229.2 runway=112.6 natStop=114.6 speed=0.291 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=22989 pulses=20 hz=907.7 requested=915 current=2800 EN=0 DIR=1 targetW=11 remain=110.0 a=429 phase_unverified=1
+# RAMP_STOP a=429 remain=106.3 lead=112.2 fas=0.286
+SPIN#7 SUMMARY dir=-1 peak=0.879 releaseMs=1135 relAngle=258.8 relSpeed=0.796 targetW=11 targetAngle=229.2 runway=112.6 natStop=114.6 fricC=0.2009 fricB=0.1031 tkSpeed=0.292 cmdMax=0.286 cmdMin=0.000 rise=0.002 maxDecel=1.052 final=222.5 finalW=11 err=6.6 quality=3 result=EDGE_SAFE fault=NONE fitRej=1 fitsCW=2 fitsCCW=3 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.20 deg off anchor after 4634 ms
+SPIN#8 START dir=-1 omega=-0.235 wedge=10
+SPIN#8 RELEASE speed=0.775 peak=0.859 angle=258.5
+SPIN#8 FRICTION dir=-1 fitC=0.3449 fitB=0.1065 pairs=51 -> c=0.2513 b=0.1043 fits=4
+SPIN#8 SUMMARY dir=-1 peak=0.859 releaseMs=1113 relAngle=258.5 relSpeed=0.775 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.2009 fricB=0.1031 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=239.7 finalW=11 err=0.0 quality=0 result=NO_REACHABLE_SAFE fault=NONE fitRej=1 fitsCW=2 fitsCCW=4 captureAttempted=0 captureEnergized=0 captureAbandoned=0
+# MANUAL movement promoted to spin
+SPIN#9 START dir=+1 omega=0.129 wedge=14
+SPIN#9 RELEASE speed=0.156 peak=0.169 angle=358.7
+# DARE_RECOVERY (free coast) attempt=1 from wedge 16 angle=333.4 -> wedge 17 dir=+1 16.6 deg
+# DARE_RECOVERY settled angle=354.2 wedge=17
+SPIN#9 SUMMARY dir=+1 peak=0.169 releaseMs=1276 relAngle=358.7 relSpeed=0.156 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.4411 fricB=0.0463 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=354.2 finalW=17 err=0.0 quality=0 result=OFF_TARGET_SAFE fault=NONE fitRej=1 fitsCW=2 fitsCCW=4 captureAttempted=0 captureEnergized=0 captureAbandoned=0
+
+#HOST sent s at 1790082106.9125338
+# state=SOFT_HOLD fault=NONE angle=353.85 wedge=17 omega=0.0006 natStop=0.0 pos=FRESH vel=VALID age_us=205 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=5 cmd=0.000 savedFaultRaw=0
+# state=IDLE_STOPPED fault=NONE angle=353.85 wedge=17 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=371 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+# MANUAL movement promoted to spin
+SPIN#1 START dir=-1 omega=-0.415 wedge=0
+SPIN#1 RELEASE speed=1.910 peak=2.077 angle=241.3
+SPIN#1 RESERVE targetW=9 targetAngle=194.3 runway=147.4 natStop=149.4 speed=0.344 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=22014 pulses=24 hz=1043.9 requested=1077 current=2800 EN=0 DIR=1 targetW=9 remain=144.5 a=452 phase_unverified=1
+# RAMP_STOP a=452 remain=140.4 lead=146.2 fas=0.337
+SPIN#1 SUMMARY dir=-1 peak=2.077 releaseMs=713 relAngle=241.3 relSpeed=1.910 targetW=9 targetAngle=194.3 runway=147.4 natStop=149.4 fricC=0.2513 fricB=0.1043 tkSpeed=0.344 cmdMax=0.337 cmdMin=0.000 rise=0.000 maxDecel=0.860 final=188.8 finalW=9 err=5.5 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=0 fitsCW=2 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 1.93 deg off anchor after 10723 ms
+SPIN#2 START dir=+1 omega=0.226 wedge=9
+SPIN#2 RELEASE speed=0.938 peak=1.020 angle=26.7
+SPIN#2 FRICTION dir=+1 fitC=0.7839 fitB=0.0234 pairs=49 -> c=0.5611 b=0.0383 fits=3
+SPIN#2 RESERVE targetW=6 targetAngle=122.2 runway=120.4 natStop=122.4 speed=0.353 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25534 pulses=24 hz=1098.0 requested=1105 current=2800 EN=0 DIR=0 targetW=6 remain=117.0 a=588 phase_unverified=1
+# RAMP_STOP a=588 remain=114.7 lead=118.8 fas=0.345
+SPIN#2 SUMMARY dir=+1 peak=1.020 releaseMs=620 relAngle=26.7 relSpeed=0.938 targetW=6 targetAngle=122.2 runway=120.4 natStop=122.4 fricC=0.5611 fricB=0.0383 tkSpeed=0.351 cmdMax=0.345 cmdMin=0.000 rise=0.011 maxDecel=2.474 final=123.0 finalW=6 err=0.8 quality=3 result=EDGE_SAFE fault=NONE fitRej=0 fitsCW=3 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 1.93 deg off anchor after 3913 ms
+SPIN#3 START dir=-1 omega=-0.206 wedge=5
+SPIN#3 RELEASE speed=0.365 peak=0.397 angle=289.4
+SPIN#3 RESERVE targetW=11 targetAngle=233.6 runway=108.1 natStop=110.1 speed=0.295 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23152 pulses=20 hz=904.7 requested=925 current=2800 EN=0 DIR=1 targetW=11 remain=105.5 a=457 phase_unverified=1
+# RAMP_STOP a=457 remain=102.7 lead=107.4 fas=0.289
+SPIN#3 SUMMARY dir=-1 peak=0.397 releaseMs=1362 relAngle=289.4 relSpeed=0.365 targetW=11 targetAngle=233.6 runway=108.1 natStop=110.1 fricC=0.2513 fricB=0.1043 tkSpeed=0.296 cmdMax=0.289 cmdMin=0.000 rise=0.000 maxDecel=0.338 final=229.2 finalW=11 err=4.4 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=0 fitsCW=3 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.55 deg off anchor after 3073 ms
+SPIN#4 START dir=+1 omega=0.209 wedge=11
+SPIN#4 RELEASE speed=0.286 peak=0.311 angle=7.2
+SPIN#4 RESERVE targetW=4 targetAngle=87.1 runway=78.8 natStop=80.8 speed=0.285 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=22689 pulses=19 hz=855.1 requested=894 current=2800 EN=0 DIR=0 targetW=4 remain=76.5 a=588 phase_unverified=1
+# RAMP_STOP a=588 remain=74.6 lead=78.6 fas=0.279
+SPIN#4 SUMMARY dir=+1 peak=0.311 releaseMs=1260 relAngle=7.2 relSpeed=0.286 targetW=4 targetAngle=87.1 runway=78.8 natStop=80.8 fricC=0.5611 fricB=0.0383 tkSpeed=0.284 cmdMax=0.279 cmdMin=0.000 rise=0.010 maxDecel=1.308 final=86.4 finalW=4 err=-0.7 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=0 fitsCW=3 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.11 deg off anchor after 3495 ms
+SPIN#5 START dir=+1 omega=0.298 wedge=4
+SPIN#5 RELEASE speed=0.913 peak=1.012 angle=229.9
+SPIN#5 FRICTION dir=+1 fitC=0.6836 fitB=0.0391 pairs=49 -> c=0.6039 b=0.0386 fits=4
+SPIN#5 RESERVE targetW=5 targetAngle=118.9 runway=117.1 natStop=119.1 speed=0.356 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=26137 pulses=24 hz=1099.2 requested=1115 current=2800 EN=0 DIR=0 targetW=5 remain=113.6 a=616 phase_unverified=1
+# RAMP_STOP a=616 remain=110.7 lead=115.6 fas=0.348
+SPIN#5 SUMMARY dir=+1 peak=1.012 releaseMs=400 relAngle=229.9 relSpeed=0.913 targetW=5 targetAngle=118.9 runway=117.1 natStop=119.1 fricC=0.6039 fricB=0.0386 tkSpeed=0.354 cmdMax=0.348 cmdMin=0.000 rise=0.000 maxDecel=0.862 final=122.3 finalW=6 err=3.4 quality=3 result=EDGE_SAFE fault=NONE fitRej=0 fitsCW=4 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.11 deg off anchor after 5664 ms
+SPIN#6 START dir=-1 omega=-0.232 wedge=5
+SPIN#6 RELEASE speed=1.216 peak=1.370 angle=225.8
+SPIN#6 FRICTION_REJECT bounds fitC=1.2690 fitB=-0.0913 pairs=58 reason=reserve
+SPIN#6 RESERVE targetW=9 targetAngle=189.9 runway=151.8 natStop=174.2 speed=0.358 q=1 urgent=0
+SPIN#6 FRICTION_REJECT bounds fitC=1.2690 fitB=-0.0913 pairs=58 reason=power
+# PULSEFIRST TORQUE_ON arm_us=23018 pulses=24 hz=1093.8 requested=1121 current=2800 EN=0 DIR=1 targetW=9 remain=147.0 a=482 phase_unverified=1
+# RAMP_STOP a=482 remain=144.0 lead=148.8 fas=0.350
+SPIN#6 SUMMARY dir=-1 peak=1.370 releaseMs=657 relAngle=225.8 relSpeed=1.216 targetW=9 targetAngle=189.9 runway=151.8 natStop=174.2 fricC=0.2513 fricB=0.1043 tkSpeed=0.359 cmdMax=0.350 cmdMin=0.000 rise=0.000 maxDecel=0.721 final=186.4 finalW=9 err=3.5 quality=1 result=CONTROLLED_SAFE fault=NONE fitRej=2 fitsCW=4 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.37 deg off anchor after 4531 ms
+SPIN#7 START dir=+1 omega=0.273 wedge=9
+SPIN#7 RELEASE speed=0.705 peak=0.766 angle=21.9
+SPIN#7 FRICTION_REJECT bounds fitC=-0.1513 fitB=0.2332 pairs=44 reason=reserve
+SPIN#7 FRICTION_REJECT bounds fitC=-0.1027 fitB=0.2202 pairs=45 reason=reserve
+SPIN#7 FRICTION_REJECT bounds fitC=0.0178 fitB=0.1878 pairs=46 reason=reserve
+SPIN#7 FRICTION dir=+1 fitC=0.1589 fitB=0.1498 pairs=47 -> c=0.4482 b=0.0775 fits=5
+SPIN#7 RESERVE targetW=5 targetAngle=115.6 runway=113.7 natStop=115.7 speed=0.333 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23305 pulses=23 hz=1050.3 requested=1045 current=2800 EN=0 DIR=0 targetW=5 remain=110.8 a=555 phase_unverified=1
+# RAMP_STOP a=555 remain=106.8 lead=112.8 fas=0.327
+SPIN#7 SUMMARY dir=+1 peak=0.766 releaseMs=735 relAngle=21.9 relSpeed=0.705 targetW=5 targetAngle=115.6 runway=113.7 natStop=115.7 fricC=0.4482 fricB=0.0775 tkSpeed=0.331 cmdMax=0.327 cmdMin=0.000 rise=0.008 maxDecel=1.084 final=122.5 finalW=6 err=7.0 quality=3 result=EDGE_SAFE fault=NONE fitRej=5 fitsCW=5 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.81 deg off anchor after 8246 ms
+SPIN#8 START dir=-1 omega=-0.210 wedge=5
+SPIN#8 RELEASE speed=0.371 peak=0.404 angle=288.4
+SPIN#8 RESERVE targetW=11 targetAngle=226.9 runway=114.8 natStop=116.8 speed=0.305 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=26090 pulses=21 hz=955.4 requested=956 current=2800 EN=0 DIR=1 targetW=11 remain=111.8 a=460 phase_unverified=1
+# RAMP_STOP a=460 remain=108.4 lead=113.7 fas=0.299
+SPIN#8 SUMMARY dir=-1 peak=0.404 releaseMs=1330 relAngle=288.4 relSpeed=0.371 targetW=11 targetAngle=226.9 runway=114.8 natStop=116.8 fricC=0.2513 fricB=0.1043 tkSpeed=0.305 cmdMax=0.299 cmdMin=0.000 rise=0.000 maxDecel=0.482 final=221.7 finalW=11 err=5.2 quality=3 result=EDGE_SAFE fault=NONE fitRej=5 fitsCW=5 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+# HOLD released: pushed 2.55 deg off anchor after 16167 ms
+SPIN#9 START dir=-1 omega=-0.303 wedge=10
+SPIN#9 RELEASE speed=1.097 peak=1.251 angle=236.9
+SPIN#9 FRICTION_REJECT bounds fitC=2.0533 fitB=-0.2174 pairs=59 reason=reserve
+SPIN#9 RESERVE targetW=11 targetAngle=226.6 runway=115.2 natStop=117.2 speed=0.306 q=3 urgent=0
+SPIN#9 FRICTION_REJECT bounds fitC=2.0533 fitB=-0.2174 pairs=59 reason=power
+# PULSEFIRST TORQUE_ON arm_us=24894 pulses=21 hz=952.2 requested=958 current=2800 EN=0 DIR=1 targetW=11 remain=110.9 a=466 phase_unverified=1
+# RAMP_STOP a=466 remain=107.1 lead=112.9 fas=0.299
+SPIN#9 SUMMARY dir=-1 peak=1.251 releaseMs=820 relAngle=236.9 relSpeed=1.097 targetW=11 targetAngle=226.6 runway=115.2 natStop=117.2 fricC=0.2513 fricB=0.1043 tkSpeed=0.306 cmdMax=0.299 cmdMin=0.000 rise=0.010 maxDecel=0.816 final=219.1 finalW=10 err=7.5 quality=3 result=EDGE_SAFE fault=NONE fitRej=7 fitsCW=5 fitsCCW=4 captureAttempted=1 captureEnergized=1 captureAbandoned=0
+
+#HOST sent s at 1790082720.7764466
+# state=SOFT_HOLD fault=NONE angle=219.29 wedge=10 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=128 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=5 cmd=0.000 savedFaultRaw=0

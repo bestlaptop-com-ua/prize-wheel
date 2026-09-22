@@ -1,0 +1,15 @@
+2026-09-21T17:37:29
+# drv DRV_STATUS=E01D0039 GSTAT=01 IOIN=30000052 version=30 usteps=16 healthy=0
+# drv DRV_STATUS=E01D0039 GSTAT=01 IOIN=30000052 version=30 usteps=16 healthy=0
+# state=IDLE_STOPPED fault=NONE angle=0.79 wedge=0 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=688 dirCal=1(sign -1) tmc=1 takeover=0 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+# imbalance stored=1 g=0.5740 rad/s2 phi=171.80 deg rest=351.8 deg | inl a1=0.00 b1=0.00 a2=0.00 b2=0.00 counts | raw=2367 inl_now=0.00
+
+2026-09-21T17:41:38 after GSTAT clear build
+# drv DRV_STATUS=E01D0033 GSTAT=00 IOIN=30000052 version=30 usteps=16 healthy=1
+# drv DRV_STATUS=E01D0033 GSTAT=00 IOIN=30000052 version=30 usteps=16 healthy=1
+# r: no latched fault
+# drv DRV_STATUS=E01D0033 GSTAT=00 IOIN=30000052 version=30 usteps=16 healthy=1
+# takeoverEnabled=1
+# live control logging=1
+# state=IDLE_STOPPED fault=NONE angle=0.97 wedge=0 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=207 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+

@@ -1,0 +1,5 @@
+2026-09-21T17:26:39 r
+# S2: driver config re-applied and verified
+# fault cleared; tmc=1 dirCal=1
+# state=IDLE_STOPPED fault=NONE angle=0.18 wedge=0 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=119 dirCal=1(sign -1) tmc=1 takeover=0 rawZero=2376 stage=0 cmd=0.000 savedFaultRaw=0
+
