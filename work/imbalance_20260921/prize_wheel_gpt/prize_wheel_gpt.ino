@@ -146,7 +146,9 @@ void enterFault(FaultCode code, const char* detail);  // used across sections
 float dareDistanceDeg(float angle);                   // used across sections
 
 /* --------------------------- DARE / SAFE --------------------------------- */
-uint32_t dare_mask = (1UL << 3) | (1UL << 8) | (1UL << 13) | (1UL << 16);  // never targets; 8 is the hard one
+// Wheel labels are 1-18; firmware indices are label-1 (index 0 = label 1, at the 18|1 line).
+// Owner dares by LABEL: 3, 8, 13, 16 (8 is the hard one) -> indices 2, 7, 12, 15.
+uint32_t dare_mask = (1UL << 2) | (1UL << 7) | (1UL << 12) | (1UL << 15);
 inline bool isDare(int wedge) {
   wedge %= NUM_WEDGES;
   if (wedge < 0) wedge += NUM_WEDGES;
@@ -280,7 +282,7 @@ const uint16_t HOLD2_MS               = 1200;
 // set by the commanded profile.  (600/450 only over-braked under the old
 // continuously-trailing law, which forced multi-pole slip at any current.)
 const uint16_t CUR_PRECHARGE_MA = 350;  // legacy stage retained for the explicit direction probe
-const uint16_t CUR_CAPTURE_MA   = 2800; // 2026-09-21: owner asked for more torque margin (motor 3 A rated)
+const uint16_t CUR_CAPTURE_MA   = 2800; // 2026-09-22: 2240 proved 20% headroom; party runs at 2800
 const uint16_t CUR_BRAKE_MA     = 2800; // retain capture torque through braking/settling
 const uint16_t CUR_TAPER_MA     = 1100;  // final taper / settle watch
 const uint16_t CUR_HOLD1_MA     = 1650; // continuous hold: gravity (0.57 rad/s2) beats friction 3:1
@@ -1269,7 +1271,7 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
         dareDistanceDeg(settleAng) >= DARE_PROXIMITY_FAULT_DEG + 3.0f) {
       out.found = true;
       out.wedge = wedgeAtAngle(settleAng);
-      out.runwayDeg = naturalDeg - 2.0f;
+      out.runwayDeg = naturalDeg - 6.0f;   // 2026-09-22: 2 deg was inside prediction noise (plan refused)
       out.decelCapSps2 = SHADOW_DECEL_MAX_SPS2;
       out.quality = 3;
     }
@@ -1947,7 +1949,7 @@ bool prepareCapturePlan(uint32_t hz, float forward) {
   // Preserve production's brake-reachable policy even if the inherited model
   // is pessimistic. Do not use the diagnostic's distant gentle-test target.
   const float naturalRemaining = naturalStopDistanceDeg(forward, takeoverDir);
-  if (!isfinite(naturalRemaining) || remaining > naturalRemaining) return false;
+  if (!isfinite(naturalRemaining) || remaining > naturalRemaining * 1.03f + 3.0f) return false;
   const PwBrakePlan plan = pwPlanBrake(hz, remaining, WHEEL_USTEPS_PER_REV, planDecelCapSps2);
   if (!plan.feasible || (spin.targetQuality == 0 &&
       plan.decelRevS2 > naturalDecelRevS2(forward, takeoverDir))) return false;
@@ -2417,7 +2419,7 @@ void serviceDiagnosticCapture() {
 /*                             SERIAL UI                                      */
 /* ========================================================================== */
 void help() {
-  Serial.println(F("# build: imbalance-model-20260921; based on plywood-capture-review-20260920; takeover defaults OFF"));
+  Serial.println(F("# build: imbalance-model-20260921 PARTY; based on plywood-capture-review-20260920; takeover defaults OFF"));
   Serial.println(F(
     "\n=== PRIZE WHEEL (correctness redesign) ===\n"
     " z  set current raw as wedge-0 anchor (wheel at rest, pointer on 17|0 line)\n"
@@ -2543,7 +2545,8 @@ void handleCommandChar(char command) {
       break;
     case 'e':
       takeoverEnabled = !takeoverEnabled;
-      Serial.printf("# takeoverEnabled=%d\n", takeoverEnabled ? 1 : 0);
+      if (preferencesAvailable) preferences.putBool("takeover", takeoverEnabled);
+      Serial.printf("# takeoverEnabled=%d (persisted)\n", takeoverEnabled ? 1 : 0);
       break;
     case 'f':
       Serial.printf("# friction cw: c=%.4f b=%.4f fits=%u | ccw: c=%.4f b=%.4f fits=%u\n",
@@ -2635,7 +2638,7 @@ void handleCommandChar(char command) {
       } else Serial.println(F("# r: no latched fault"));
       break;
     case 'm':
-      Serial.printf("# dare_mask=0x%05lX; dare wedges: 3 8 13 16\n", (unsigned long)dare_mask);
+      Serial.printf("# dare_mask=0x%05lX; dare indices 2 7 12 15 = labels 3 8 13 16 (label = index+1)\n", (unsigned long)dare_mask);
       break;
     case '?': help(); break;
     default: break;
@@ -2666,6 +2669,9 @@ void setup() {
         (unsigned)PW_FRICTION_VERSION, model.migrated, model.resetCw, model.resetCcw, model.saved);
   }
   if (preferencesAvailable) {
+    // Party 2026-09-22: a power blip must not silently disarm the wheel.
+    takeoverEnabled = preferences.getBool("takeover", false);
+    Serial.printf("# takeoverEnabled=%d (from NVS)\n", takeoverEnabled ? 1 : 0);
     PwImbalanceConfig imbalance = pwLoadImbalance(preferences, &imbalanceLoaded);
     encoderInl.set(imbalance.inl);
     wheelGravity.set(imbalance.gravity);

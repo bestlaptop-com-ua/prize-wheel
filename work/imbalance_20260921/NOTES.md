@@ -27,3 +27,13 @@ Open items: more spins both directions before storing constants; INL should be r
 - `z` with pointer on the 17|0 line: rawZero=2376 persisted.
 - `G0.574,171.8,0,0,0,0` persisted (phi converted from the rawZero=88 frame: 330.7 + (2376-88)*360/4096). Rest angle 351.8 deg = wedge 17 next to the 0 line; crest ~171.8 deg = wedge 8 (the hard dare) - a coast that dies within ~16 deg of the crest can balance on 8/9, otherwise it swings back to 17/0.
 - Fault latch SELFSPIN_ABORT (15) left in place; takeover OFF; no motor use (Loctite 648 curing until 2026-09-22).
+
+## 2026-09-22 morning (Claude) - party day
+- 09:03 build: recovery nudge + shadow caps -> 9/9 controlled. Frozen as work/PARTY_CANDIDATE_20260922 (still had the WRONG dare mask, see below).
+- 09:17 headroom test at 2240 mA: 14/14 controlled, no slip -> >=20 % torque margin. Party runs at 2800.
+- 09:57 wheel labels are 1-18 (photo); firmware indices = label-1. Owner dares by label 3/8/13/16 -> indices 2/7/12/15 (was wrongly 3/8/13/16). Fixed. Monitor prints "labels".
+- ~10:10 owner counterweighted the wheel (weight on label 18, opposite the heavy spot at label 9). Rest positions now scatter (210/229/337/359 deg) => residual G < static friction. Gravity model CLEARED (G0,0,0,0,0,0); uphill gate therefore inactive; firmware runs the plain policy.
+- takeoverEnabled now persisted in NVS (key "takeover").
+- 11:50 shadow-mode margin: runway natural-6 (was -2), plan check remaining <= 1.03*natural+3 (weak spins were refused as "plan infeasible").
+- Serial monitor for shared use: work/monitor/monitor.py (console window on MILL-PC; Claude sends via cmd.txt; log monitor.log).
+- Open: rough stops (decel spikes 1.4-3.2 rev/s^2 in summaries) and target clustering (17/18, 3/4) on same-strength spins from the same rest. 1 kHz stop trace being captured.

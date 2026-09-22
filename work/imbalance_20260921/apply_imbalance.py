@@ -15,7 +15,7 @@ def edit(name, old, new):
 
 edit('build string',
      '# build: plywood-capture-review-20260920; takeover defaults OFF',
-     '# build: imbalance-model-20260921; based on plywood-capture-review-20260920; takeover defaults OFF')
+     '# build: imbalance-model-20260921 PARTY; based on plywood-capture-review-20260920; takeover defaults OFF')
 
 edit('include',
      '#include "pw_friction_store.h"\n',
@@ -225,6 +225,9 @@ edit('command helpers',
 edit('setup load',
      '  // rawZero/dir_ok/pos_sign are intentionally untouched: these legacy keys\n',
      '  if (preferencesAvailable) {\n'
+     '    // Party 2026-09-22: a power blip must not silently disarm the wheel.\n'
+     '    takeoverEnabled = preferences.getBool("takeover", false);\n'
+     '    Serial.printf("# takeoverEnabled=%d (from NVS)\\n", takeoverEnabled ? 1 : 0);\n'
      '    PwImbalanceConfig imbalance = pwLoadImbalance(preferences, &imbalanceLoaded);\n'
      '    encoderInl.set(imbalance.inl);\n'
      '    wheelGravity.set(imbalance.gravity);\n'
@@ -238,11 +241,13 @@ edit('18 wedges',
 
 edit('dare mask',
      'uint16_t dare_mask = (1 << 1) | (1 << 5);  // wedges 1 and 5 are never targets\n',
-     'uint32_t dare_mask = (1UL << 3) | (1UL << 8) | (1UL << 13) | (1UL << 16);  // never targets; 8 is the hard one\n')
+     '// Wheel labels are 1-18; firmware indices are label-1 (index 0 = label 1, at the 18|1 line).\n'
+     '// Owner dares by LABEL: 3, 8, 13, 16 (8 is the hard one) -> indices 2, 7, 12, 15.\n'
+     'uint32_t dare_mask = (1UL << 2) | (1UL << 7) | (1UL << 12) | (1UL << 15);\n')
 
 edit('dare print',
      'Serial.printf("# dare_mask=0x%03X; dare wedges: 1 5\\n", dare_mask);\n',
-     'Serial.printf("# dare_mask=0x%05lX; dare wedges: 3 8 13 16\\n", (unsigned long)dare_mask);\n')
+     'Serial.printf("# dare_mask=0x%05lX; dare indices 2 7 12 15 = labels 3 8 13 16 (label = index+1)\\n", (unsigned long)dare_mask);\n')
 
 edit('z help',
      '" z  set current raw as wedge-0 anchor (wheel at rest, pointer on 11|0 line)\\n"\n',
@@ -413,7 +418,7 @@ edit('friction seeds from 2026-09-21 coasts',
 edit('capture/brake current 2800',
      'const uint16_t CUR_CAPTURE_MA   = 2200;\n'
      'const uint16_t CUR_BRAKE_MA     = 2200; // retain capture torque through braking/settling\n',
-     'const uint16_t CUR_CAPTURE_MA   = 2800; // 2026-09-21: owner asked for more torque margin (motor 3 A rated)\n'
+     'const uint16_t CUR_CAPTURE_MA   = 2800; // 2026-09-22: 2240 proved 20% headroom; party runs at 2800\n'
      'const uint16_t CUR_BRAKE_MA     = 2800; // retain capture torque through braking/settling\n')
 
 
@@ -584,9 +589,23 @@ edit('shadow pass cap',
      '      out.runwayDeg = naturalDeg - 2.0f;\n'
      '      out.decelCapSps2 = ASSIST_DECEL_MAX_SPS2;\n'
      '      out.quality = 3;\n',
-     '      out.runwayDeg = naturalDeg - 2.0f;\n'
+     '      out.runwayDeg = naturalDeg - 6.0f;   // 2026-09-22: 2 deg was inside prediction noise (plan refused)\n'
      '      out.decelCapSps2 = SHADOW_DECEL_MAX_SPS2;\n'
      '      out.quality = 3;\n')
+
+
+edit('persist takeover toggle',
+     "    case 'e':\n"
+     '      takeoverEnabled = !takeoverEnabled;\n'
+     '      Serial.printf("# takeoverEnabled=%d\\n", takeoverEnabled ? 1 : 0);\n',
+     "    case 'e':\n"
+     '      takeoverEnabled = !takeoverEnabled;\n'
+     '      if (preferencesAvailable) preferences.putBool("takeover", takeoverEnabled);\n'
+     '      Serial.printf("# takeoverEnabled=%d (persisted)\\n", takeoverEnabled ? 1 : 0);\n')
+
+edit('plan natural tolerance',
+     '  if (!isfinite(naturalRemaining) || remaining > naturalRemaining) return false;\n',
+     '  if (!isfinite(naturalRemaining) || remaining > naturalRemaining * 1.03f + 3.0f) return false;\n')
 
 
 def main():
