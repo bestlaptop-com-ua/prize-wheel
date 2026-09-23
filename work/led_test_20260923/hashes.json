@@ -1,0 +1,6 @@
+{
+  "led_test_20260923.ino.bin": "71c08b84f1468edc8c6f1edac5f8f76e5a626f44b01a5bf4c92c0b03775a5251",
+  "led_test_20260923.ino.bootloader.bin": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b",
+  "led_test_20260923.ino.merged.bin": "814454708640314e83cb0ca9b3e94f421e28cf2d463e6efef51f6b6d677c9a3f",
+  "led_test_20260923.ino.partitions.bin": "ace02503447d0f470692e65fa76002f2d77a92dc81cd3813d8aa66718d716da9"
+}
