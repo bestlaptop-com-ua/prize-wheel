@@ -9,6 +9,26 @@ driven through a jaw coupling and an 8 mm adapter. Evidence: monitor.log 9/22-9/
 Every spin ends at rest on a safe wedge (labels 1, 2, 4-7, 9-12, 14, 15, 17, 18). Once the motor has the
 wheel it never lets go until the wheel is at rest on a safe wedge. The slowdown still has to look natural.
 
+## Status - 2026-09-23 13:35
+
+| Build | On the wheel | What it adds | Result |
+|---|---|---|---|
+| stage 1a (work/failop_20260923) | 11:28-12:38 | P1 no release while moving, P3 capture retries, no persisted faults, P8 amber when unarmed, P9 basics | 109 spins: every capture on the first try, no faults or anomalies in normal spins, no spin ended on a dare (4 needed a recovery nudge after stopping). Pole slips (syncErr > 7.5) in 11 spins (10 %); 1 release of a moving wheel left (spin 70, SETTLE-DRAG) |
+| flash 2 (work/party_20260923) | since 12:38 | decisions 2 and 3: hand-stop alarm + red strobe (motor-off coast only), gentle carry (q=4, before pass 3), re-push release and recapture | Timur's test 12:50-12:53: alarm fired on a hand stop (wheel left where the hand put it), carry took a weak spin off dare 8 into 7, re-push released and recaptured, no false alarms |
+| flash 3 (work/party3_20260923) | not yet | 2.7 A capture/brake current (+23 % torque), SETTLE-DRAG holds instead of releasing, gentle settle re-spins handed back, SLIP log lines | reviewed by a separate agent: no blockers; waiting for Timur's go |
+
+Findings today:
+- Timur: "CW turns are smooth, CCW are not". His CCW is the firmware's dir=+1. The rough moments are pole
+  slips of 1-3 electrical cycles (7.2 deg each) that land the wheel past the target. CCW slips about twice
+  as often (4 of the last 19 CCW spins vs 1-2 of the last 20 CW).
+- The CCW free-coast friction fit doubled during the session (c 0.3 -> 0.6 rad/s2) while CW stayed ~0.35:
+  a rub that acts only CCW is suspected (flapper, rim, coupling, bearing collar). Mechanical check asked.
+- Flash-2 spin 1 trace: in the final approach the rotor ran 1.5-2.3 deg ahead of the field, about the
+  motor's torque peak (1.8 deg load angle), hence the current increase in flash 3.
+- D2 confirmed: the stop is planned at torque-on and committed about 25 ms later, so every stop ends
+  3-6 deg past its target (most landings EDGE_SAFE); a slip on top can reach the next wedge.
+- The imbalance model is off (g=0); the wheel was balanced on 9/22.
+
 ## Where the firmware stands
 
 Three design choices make the requirement impossible today:
@@ -137,12 +157,13 @@ Each of 1a, 1b, 1c is its own flash and test session. Stage 1 is about 1-2 days 
   mid-stop, push weakly onto a dare, reset the ESP mid-spin, boot before 24 V.
 - Map check: the pointer on the 18|1 line reads 0 +/- 1 deg after the 100 spins.
 
-## Decisions for Timur
+## Decisions (Timur, 2026-09-23 10:32)
 
-1. Party date: it sets how far to go before it.
-2. A guest stops the wheel on a dare by hand: move it off (it looks like magic) or leave it (their choice)?
-3. Weak spins that would die inside a dare: OK for the motor to carry the wheel gently into the next wedge?
-4. Hall sensor: do you have one (A3144, DRV5023 or SS49E) and a small magnet?
+1. Party: tonight.
+2. A guest stops the wheel by hand and we are sure of it: alarm sound and bright red strobe, the wheel stays.
+3. Weak spins that would die inside a dare: the motor carries the wheel gently into the next safe wedge.
+4. Hall sensor: available, but not tonight (weigh against complexity); paint a witness mark on the coupling
+   and check the map instead.
 
 ## Appendix - release points in the live firmware
 
