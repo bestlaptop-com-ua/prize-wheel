@@ -1,0 +1,13 @@
+[
+  "C:\\Users\\Mill\\AppData\\Local\\Programs\\arduino-ide\\resources\\app\\lib\\backend\\resources\\arduino-cli.exe",
+  "compile",
+  "--fqbn",
+  "esp32:esp32:esp32s3:CDCOnBoot=default,FlashSize=16M,PSRAM=opi,PartitionScheme=app3M_fat9M_16MB,UploadSpeed=921600",
+  "--warnings",
+  "all",
+  "--build-path",
+  "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\party3_20260923\\build",
+  "--output-dir",
+  "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\party3_20260923\\firmware",
+  "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\party3_20260923\\prize_wheel_gpt"
+]

@@ -10109,3 +10109,452 @@ SPIN#9 RESERVE targetW=5 targetAngle=104.3 runway=394.7 natStop=400.7 speed=0.40
 # PULSEFIRST TORQUE_ON arm_us=22447 pulses=26 hz=1199.7 requested=1216 current=2200 EN=0 DIR=1 targetW=5 remain=391.2 a=213 phase_unverified=1
 # RAMP_STOP a=213 remain=388.0 lead=393.7 fas=0.380
 SPIN#9 SUMMARY dir=-1 peak=0.479 releaseMs=548 relAngle=188.3 relSpeed=0.441 targetW=5 targetAngle=104.3 runway=394.7 natStop=400.7 fricC=0.3529 fricB=0.0605 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.037 maxDecel=2.460 final=84.3 finalW=4 err=20.0 quality=3 result=EDGE_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=12.3 frozen=0
+# HOLD released: pushed 1.93 deg off anchor after 441614 ms
+SPIN#10 START dir=+1 omega=0.234 wedge=4
+SPIN#10 RELEASE speed=0.535 peak=0.582 angle=276.2
+SPIN#10 RESERVE targetW=3 targetAngle=68.1 runway=287.4 natStop=293.4 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24701 pulses=27 hz=1226.3 requested=1216 current=2200 EN=0 DIR=0 targetW=3 remain=283.6 a=294 phase_unverified=1
+# RAMP_STOP a=294 remain=280.5 lead=285.7 fas=0.380
+SPIN#10 SUMMARY dir=+1 peak=0.582 releaseMs=949 relAngle=276.2 relSpeed=0.535 targetW=3 targetAngle=68.1 runway=287.4 natStop=293.4 fricC=0.5589 fricB=0.0347 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.026 maxDecel=1.164 final=73.7 finalW=3 err=5.6 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=3.3 frozen=0
+# HOLD released: pushed 2.02 deg off anchor after 274957 ms
+SPIN#11 START dir=+1 omega=0.208 wedge=4
+SPIN#11 RELEASE speed=0.480 peak=0.522 angle=274.5
+SPIN#11 RESERVE targetW=4 targetAngle=87.2 runway=287.5 natStop=293.5 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23945 pulses=26 hz=1198.6 requested=1216 current=2200 EN=0 DIR=0 targetW=4 remain=283.9 a=293 phase_unverified=1
+# RAMP_STOP a=293 remain=281.2 lead=287.1 fas=0.380
+SPIN#11 SUMMARY dir=+1 peak=0.522 releaseMs=1119 relAngle=274.5 relSpeed=0.480 targetW=4 targetAngle=87.2 runway=287.5 natStop=293.5 fricC=0.5589 fricB=0.0347 tkSpeed=0.399 cmdMax=0.380 cmdMin=0.000 rise=0.020 maxDecel=1.962 final=94.8 finalW=4 err=7.6 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.5 frozen=0
+# HOLD released: pushed 1.49 deg off anchor after 2211404 ms
+MANUAL-ADJUST travel=-9.5deg durMs=472 wedge=4 (no spin, no motor)
+MANUAL-ADJUST travel=-10.7deg durMs=622 wedge=3 (no spin, no motor)
+MANUAL-ADJUST travel=-107.4deg durMs=3738 wedge=15 (no spin, no motor)
+SPIN#12 START dir=-1 omega=-0.136 wedge=14
+SPIN#12 RELEASE speed=0.246 peak=0.268 angle=142.8
+SPIN#12 RESERVE targetW=17 targetAngle=343.3 runway=159.5 natStop=165.5 speed=0.246 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25796 pulses=17 hz=768.3 requested=771 current=2200 EN=0 DIR=1 targetW=17 remain=157.0 a=214 phase_unverified=1
+# RAMP_STOP a=214 remain=155.8 lead=158.5 fas=0.241
+SPIN#12 SUMMARY dir=-1 peak=0.268 releaseMs=1786 relAngle=142.8 relSpeed=0.246 targetW=17 targetAngle=343.3 runway=159.5 natStop=165.5 fricC=0.3529 fricB=0.0605 tkSpeed=0.249 cmdMax=0.241 cmdMin=0.006 rise=0.043 maxDecel=2.244 final=342.1 finalW=17 err=1.3 quality=3 result=EDGE_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=5.1 frozen=0
+# HOLD released: pushed 1.85 deg off anchor after 493 ms
+SPIN#13 START dir=-1 omega=-0.175 wedge=16
+SPIN#13 RELEASE speed=0.536 peak=0.583 angle=180.8
+SPIN#13 RESERVE targetW=6 targetAngle=130.0 runway=411.6 natStop=400.6 speed=0.400 q=4 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=26417 pulses=26 hz=1192.2 requested=1216 current=2200 EN=0 DIR=1 targetW=6 remain=407.6 a=205 phase_unverified=1
+# RAMP_STOP a=205 remain=405.2 lead=408.8 fas=0.380
+SPIN#13 SUMMARY dir=-1 peak=0.583 releaseMs=971 relAngle=180.8 relSpeed=0.536 targetW=6 targetAngle=130.0 runway=411.6 natStop=400.6 fricC=0.3529 fricB=0.0605 tkSpeed=0.394 cmdMax=0.380 cmdMin=0.000 rise=0.039 maxDecel=2.455 final=129.0 finalW=6 err=1.0 quality=4 result=CONTROLLED_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=6.2 frozen=0
+# HOLD released: pushed 1.76 deg off anchor after 1132 ms
+SPIN#14 START dir=-1 omega=-0.195 wedge=5
+SPIN#14 RELEASE speed=0.363 peak=0.395 angle=1.1
+SPIN#14 RESERVE targetW=1 targetAngle=30.3 runway=330.8 natStop=336.8 speed=0.363 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23298 pulses=25 hz=1123.4 requested=1137 current=2200 EN=0 DIR=1 targetW=1 remain=327.7 a=222 phase_unverified=1
+# RAMP_STOP a=222 remain=323.5 lead=329.1 fas=0.355
+ANOMALY code=MOTOR_FIGHT detail=wheel far below field speed: field frozen, wheel held state=CONTROLLED_DECEL angle=316.9 wedge=15 omega=-0.108 cmd=0.315 (motor keeps control)
+# DARE_RECOVERY (after control) attempt=1 from wedge 15 angle=318.2 -> wedge 14 dir=-1 28.2 deg
+# DARE_RECOVERY settled angle=291.8 wedge=14
+SPIN#14 SUMMARY dir=-1 peak=0.395 releaseMs=894 relAngle=1.1 relSpeed=0.363 targetW=1 targetAngle=30.3 runway=330.8 natStop=336.8 fricC=0.3529 fricB=0.0605 tkSpeed=0.354 cmdMax=0.355 cmdMin=0.000 rise=0.000 maxDecel=4.736 final=291.8 finalW=14 err=98.5 quality=3 result=OFF_TARGET_SAFE fault=MOTOR_FIGHT fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=1 syncErr=40.7 frozen=1
+# HOLD released: pushed 1.49 deg off anchor after 119747 ms
+MANUAL-ADJUST travel=+4.8deg durMs=72 wedge=14 (no spin, no motor)
+SPIN#15 START dir=-1 omega=-0.213 wedge=13
+SPIN#15 RELEASE speed=0.392 peak=0.426 angle=191.1
+SPIN#15 RESERVE targetW=6 targetAngle=129.1 runway=421.8 natStop=386.8 speed=0.392 q=4 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=26425 pulses=27 hz=1227.3 requested=1216 current=2200 EN=0 DIR=1 targetW=6 remain=418.0 a=199 phase_unverified=1
+# RAMP_STOP a=199 remain=413.5 lead=421.2 fas=0.380
+SPIN#15 SUMMARY dir=-1 peak=0.426 releaseMs=594 relAngle=191.1 relSpeed=0.392 targetW=6 targetAngle=129.1 runway=421.8 natStop=386.8 fricC=0.3529 fricB=0.0605 tkSpeed=0.386 cmdMax=0.380 cmdMin=0.000 rise=0.019 maxDecel=0.976 final=122.4 finalW=6 err=6.6 quality=4 result=EDGE_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.3 frozen=0
+ANOMALY code=TMC_UART detail=powered SPI driver health/config/status failed state=SOFT_HOLD angle=122.6 wedge=6 omega=0.005 cmd=0.000 (motor keeps control)
+# driver unhealthy for 1 s while powered: next spins wait for it
+# HOLD released: pushed 1.41 deg off anchor after 14111 ms
+MANUAL-ADJUST travel=+5.5deg durMs=140 wedge=6 (no spin, no motor)
+# driver not answering (24 V off?); steering waits for it
+# S2: driver config re-applied and verified
+# driver answered: configuration applied and verified; steering available
+SPIN#16 START dir=-1 omega=-0.194 wedge=6
+SPIN#16 RELEASE speed=0.228 peak=0.248 angle=65.2
+SPIN#16 RESERVE targetW=14 targetAngle=287.4 runway=137.7 natStop=143.7 speed=0.228 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24571 pulses=16 hz=716.9 requested=715 current=2200 EN=0 DIR=1 targetW=14 remain=135.6 a=213 phase_unverified=1
+# RAMP_STOP a=213 remain=132.6 lead=137.1 fas=0.223
+SPIN#16 SUMMARY dir=-1 peak=0.248 releaseMs=648 relAngle=65.2 relSpeed=0.228 targetW=14 targetAngle=287.4 runway=137.7 natStop=143.7 fricC=0.3529 fricB=0.0605 tkSpeed=0.226 cmdMax=0.223 cmdMin=0.000 rise=0.022 maxDecel=0.497 final=283.5 finalW=14 err=3.8 quality=3 result=EDGE_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=4.2 frozen=0
+ANOMALY code=TMC_UART detail=powered SPI driver health/config/status failed state=SOFT_HOLD angle=283.6 wedge=14 omega=-0.000 cmd=0.000 (motor keeps control)
+# driver unhealthy for 1 s while powered: next spins wait for it
+ANOMALY code=TMC_UART detail=powered SPI driver health/config/status failed state=SOFT_HOLD angle=283.6 wedge=14 omega=-0.000 cmd=0.000 (motor keeps control)
+# driver reset flag seen (GSTAT=05 EN=ON): config re-applied (#1)
+# hold: driver config re-applied; re-judging the landing
+# driver healthy again; steering available
+# LEDTEST step WHITE
+
+>> [Claude] ?
+# LEDTEST mode=a step=WHITE bright=64 frames/s=264 reset=1 heap=332248
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST mode=a step=CHASE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST mode=a step=BLUE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST mode=a step=RED bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST mode=a step=CHASE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST mode=a step=BLUE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST mode=a step=RED bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST mode=a step=CHASE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST mode=a step=BLUE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST mode=a step=RED bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST mode=a step=CHASE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST mode=a step=BLUE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST mode=a step=RED bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST mode=a step=CHASE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST mode=a step=BLUE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST mode=a step=RED bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST mode=a step=CHASE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST mode=a step=BLUE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+
+>> [Claude] s
+# state=IDLE_STOPPED fault=NONE angle=148.97 wedge=7 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=536 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1947 stage=0 cmd=0.000 savedFaultRaw=0
+SPIN#1 START dir=-1 omega=-0.260 wedge=6
+SPIN#1 RELEASE speed=1.097 peak=1.248 angle=147.3
+SPIN#1 FRICTION dir=-1 fitC=0.7040 fitB=0.0090 pairs=54 -> c=0.4758 b=0.0424 fits=37
+SPIN#1 RESERVE targetW=0 targetAngle=5.1 runway=325.2 natStop=331.2 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23805 pulses=26 hz=1198.1 requested=1216 current=2200 EN=0 DIR=1 targetW=0 remain=321.3 a=259 phase_unverified=1
+# RAMP_STOP a=259 remain=317.6 lead=324.4 fas=0.380
+SPIN#1 SUMMARY dir=-1 peak=1.248 releaseMs=893 relAngle=147.3 relSpeed=1.097 targetW=0 targetAngle=5.1 runway=325.2 natStop=331.2 fricC=0.4758 fricB=0.0424 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.024 maxDecel=0.369 final=356.7 finalW=17 err=8.5 quality=3 result=EDGE_SAFE fault=NONE fitRej=0 fitsCW=21 fitsCCW=37 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.9 frozen=0
+# HOLD released: pushed 1.23 deg off anchor after 198753 ms
+MANUAL-ADJUST travel=-1.1deg durMs=152 wedge=17 (no spin, no motor)
+MANUAL-ADJUST travel=-0.1deg durMs=44 wedge=17 (no spin, no motor)
+MANUAL-ADJUST travel=-0.7deg durMs=366 wedge=17 (no spin, no motor)
+MANUAL-ADJUST travel=+0.1deg durMs=1362 wedge=17 (no spin, no motor)
+MANUAL-ADJUST travel=-0.6deg durMs=48 wedge=17 (no spin, no motor)
+MANUAL-ADJUST travel=-1.1deg durMs=242 wedge=17 (no spin, no motor)
+# MANUAL movement promoted to spin
+SPIN#2 START dir=-1 omega=-0.464 wedge=16
+SPIN#2 RELEASE speed=0.115 peak=0.464 angle=335.6
+SPIN#2 RESERVE targetW=14 targetAngle=289.8 runway=45.8 natStop=27.8 speed=0.110 q=4 urgent=0
+# CAPTURE_ABANDON reason=pulse-first observation rejected attempts=1 abandons=1; retry in 60 ms
+# PULSEFIRST reject=8 hz=322.6 requested=323
+SPIN#2 RESERVE targetW=14 targetAngle=290.0 runway=48.1 natStop=13.1 speed=0.075 q=4 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=35266 pulses=9 hz=238.4 requested=243 current=2200 EN=0 DIR=1 targetW=14 remain=46.8 a=71 phase_unverified=1
+# RAMP_STOP a=71 remain=45.3 lead=48.8 fas=0.076
+ANOMALY code=UNEXPECTED_REVERSAL detail=sustained opposite motion: field frozen, wheel held state=SPEED_MATCH_CAPTURE angle=343.9 wedge=17 omega=0.241 cmd=0.072 (motor keeps control)
+SPIN#2 SUMMARY dir=-1 peak=0.464 releaseMs=400 relAngle=335.6 relSpeed=0.115 targetW=14 targetAngle=290.0 runway=48.1 natStop=13.1 fricC=0.4758 fricB=0.0424 tkSpeed=0.084 cmdMax=0.076 cmdMin=0.000 rise=0.000 maxDecel=13.072 final=317.4 finalW=15 err=-27.4 quality=4 result=GUEST_RESPUN fault=UNEXPECTED_REVERSAL fitRej=0 fitsCW=21 fitsCCW=37 captureAttempted=1 captureEnergized=1 captureAbandoned=1 attempts=2 anomalies=1 syncErr=13.4 frozen=1
+SPIN#2 LANDED-DARE wedge=15 THIS IS A FAILURE result=GUEST_RESPUN fault=UNEXPECTED_REVERSAL
+SPIN#3 START dir=-1 omega=-0.805 wedge=15
+SPIN#3 redirected; restarting detection
+SPIN#3 SUMMARY dir=-1 peak=1.768 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.4758 fricB=0.0424 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=291.2 finalW=14 err=0.0 quality=0 result=GUEST_STOPPED fault=NONE fitRej=0 fitsCW=21 fitsCCW=37 captureAttempted=0 captureEnergized=0 captureAbandoned=0 attempts=0 anomalies=0 syncErr=0.0 frozen=0
+SPIN#4 START dir=+1 omega=0.268 wedge=14
+SPIN#4 redirected; restarting detection
+SPIN#4 SUMMARY dir=+1 peak=0.726 releaseMs=0 relAngle=0.0 relSpeed=0.000 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.5589 fricB=0.0347 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=309.9 finalW=15 err=0.0 quality=0 result=GUEST_STOPPED fault=NONE fitRej=0 fitsCW=21 fitsCCW=37 captureAttempted=0 captureEnergized=0 captureAbandoned=0 attempts=0 anomalies=0 syncErr=0.0 frozen=0
+SPIN#4 LANDED-DARE wedge=15 THIS IS A FAILURE result=GUEST_STOPPED fault=NONE
+SPIN#5 START dir=-1 omega=-0.822 wedge=14
+SPIN#5 RELEASE speed=0.194 peak=1.268 angle=348.0
+SPIN#5 SUMMARY dir=-1 peak=1.268 releaseMs=427 relAngle=348.0 relSpeed=0.194 targetW=-1 targetAngle=0.0 runway=0.0 natStop=0.0 fricC=0.4758 fricB=0.0424 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=171.1 finalW=8 err=0.0 quality=0 result=NO_REACHABLE_SAFE fault=NONE fitRej=0 fitsCW=21 fitsCCW=37 captureAttempted=0 captureEnergized=0 captureAbandoned=0 attempts=0 anomalies=0 syncErr=0.0 frozen=0
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=30 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST mode=a step=RED bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST mode=a step=CHASE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST mode=a step=BLUE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST mode=a step=RED bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST mode=a step=CHASE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST mode=a step=GREEN bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST mode=a step=BLUE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step WHITE
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST mode=a step=ENDS (first red, middle green, last blue) bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step RED
+# LEDTEST step GREEN
+# LEDTEST step BLUE
+# LEDTEST step WHITE
+# LEDTEST mode=a step=WHITE bright=64 frames/s=32 reset=1 heap=332248
+# LEDTEST step CHASE
+# LEDTEST step ENDS (first red, middle green, last blue)
+# LEDTEST step RED
+
+>> [Claude] s
+# state=IDLE_STOPPED fault=NONE angle=171.12 wedge=8 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=109 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1947 stage=0 cmd=0.000 savedFaultRaw=0
+
+>> [Claude] ?
+# build: party3-20260923 (flash 3: 2.7 A braking, holds through settle drags, SLIP log) on party-20260923 (flash 2: hand-stop alarm, carry, re-push) on failop-20260923 (stage 1a) PARTY; takeover defaults OFF
+
+=== PRIZE WHEEL (correctness redesign) ===
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 17|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ D  print driver registers (read-only)
+ g  print imbalance + encoder INL model
+ G<g>,<phiDeg>,<a1>,<b1>,<a2>,<b2>+Enter  set it (at rest; all zero clears)
+ x  clear stored direction calibration
+ r  fault reset (re-checks TMC UART)
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   P  play fanfare (speaker test)   l  LEDs on/off   w  network status
+ V<n>+Enter  audio volume 0-30 (e.g. V18)
+
+>> [Claude] s
+# state=IDLE_STOPPED fault=NONE angle=171.12 wedge=8 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=627 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1947 stage=0 cmd=0.000 savedFaultRaw=0
