@@ -7427,3 +7427,2685 @@ SPIN#78 FRICTION_REJECT bounds fitC=-0.1364 fitB=0.2038 pairs=56 reason=power
 # PULSEFIRST TORQUE_ON arm_us=22422 pulses=26 hz=1197.7 requested=1216 current=2200 EN=0 DIR=1 targetW=0 remain=390.2 a=214 phase_unverified=1
 # RAMP_STOP a=214 remain=387.6 lead=391.7 fas=0.380
 SPIN#78 SUMMARY dir=-1 peak=0.813 releaseMs=1817 relAngle=315.8 relSpeed=0.748 targetW=0 targetAngle=14.3 runway=393.9 natStop=399.9 fricC=0.3182 fricB=0.0835 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.036 maxDecel=2.372 final=10.1 finalW=0 err=4.1 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=70 fitsCW=9 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=5.0 frozen=0
+# HOLD released: pushed 1.49 deg off anchor after 33968 ms
+SPIN#79 START dir=+1 omega=0.195 wedge=1
+SPIN#79 RELEASE speed=0.894 peak=0.997 angle=292.0
+SPIN#79 FRICTION dir=+1 fitC=0.4618 fitB=0.0592 pairs=51 -> c=0.3609 b=0.0741 fits=10
+SPIN#79 RESERVE targetW=8 targetAngle=173.1 runway=370.3 natStop=376.3 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24437 pulses=26 hz=1199.7 requested=1216 current=2200 EN=0 DIR=0 targetW=8 remain=366.5 a=227 phase_unverified=1
+# RAMP_STOP a=227 remain=362.7 lead=369.6 fas=0.380
+SPIN#79 SUMMARY dir=+1 peak=0.997 releaseMs=1036 relAngle=292.0 relSpeed=0.894 targetW=8 targetAngle=173.1 runway=370.3 natStop=376.3 fricC=0.3609 fricB=0.0741 tkSpeed=0.399 cmdMax=0.380 cmdMin=0.000 rise=0.048 maxDecel=3.763 final=198.3 finalW=9 err=25.2 quality=3 result=EDGE_SAFE fault=NONE fitRej=70 fitsCW=10 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=21.6 frozen=0
+# HOLD released: pushed 1.41 deg off anchor after 1408 ms
+SPIN#80 START dir=+1 omega=0.157 wedge=10
+SPIN#80 RELEASE speed=0.963 peak=1.047 angle=163.5
+SPIN#80 RELEASE speed=0.963 peak=1.081 angle=299.7
+SPIN#80 FRICTION dir=+1 fitC=0.0544 fitB=0.1256 pairs=55 -> c=0.2536 b=0.0921 fits=11
+SPIN#80 RESERVE targetW=0 targetAngle=10.9 runway=445.8 natStop=451.8 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25827 pulses=26 hz=1200.3 requested=1216 current=2200 EN=0 DIR=0 targetW=0 remain=441.8 a=189 phase_unverified=1
+# RAMP_STOP a=189 remain=437.8 lead=443.2 fas=0.380
+SPIN#80 SUMMARY dir=+1 peak=1.081 releaseMs=1684 relAngle=299.7 relSpeed=0.963 targetW=0 targetAngle=10.9 runway=445.8 natStop=451.8 fricC=0.2536 fricB=0.0921 tkSpeed=0.395 cmdMax=0.380 cmdMin=0.000 rise=0.021 maxDecel=0.693 final=16.4 finalW=0 err=5.5 quality=3 result=EDGE_SAFE fault=NONE fitRej=70 fitsCW=11 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.7 frozen=0
+# HOLD released: pushed 1.41 deg off anchor after 12156 ms
+SPIN#81 START dir=+1 omega=0.196 wedge=1
+SPIN#81 RELEASE speed=0.985 peak=1.101 angle=300.4
+SPIN#81 FRICTION dir=+1 fitC=0.2371 fitB=0.0919 pairs=52 -> c=0.2478 b=0.0920 fits=12
+SPIN#81 RESERVE targetW=9 targetAngle=188.8 runway=391.5 natStop=459.4 speed=0.400 q=0 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25657 pulses=26 hz=1194.2 requested=1216 current=2200 EN=0 DIR=0 targetW=9 remain=387.3 a=215 phase_unverified=1
+# RAMP_STOP a=215 remain=383.2 lead=390.1 fas=0.380
+SPIN#81 SUMMARY dir=+1 peak=1.101 releaseMs=1078 relAngle=300.4 relSpeed=0.985 targetW=9 targetAngle=188.8 runway=391.5 natStop=459.4 fricC=0.2478 fricB=0.0920 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.026 maxDecel=0.780 final=196.1 finalW=9 err=7.3 quality=0 result=EDGE_SAFE fault=NONE fitRej=70 fitsCW=12 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=4.4 frozen=0
+# HOLD released: pushed 1.49 deg off anchor after 18839 ms
+SPIN#82 START dir=+1 omega=0.180 wedge=10
+SPIN#82 RELEASE speed=0.823 peak=0.895 angle=161.0
+SPIN#82 RELEASE speed=0.835 peak=0.922 angle=288.2
+SPIN#82 FRICTION dir=+1 fitC=0.1356 fitB=0.1245 pairs=53 -> c=0.2086 b=0.1034 fits=13
+SPIN#82 RESERVE targetW=5 targetAngle=111.9 runway=430.7 natStop=488.2 speed=0.400 q=0 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25659 pulses=26 hz=1199.8 requested=1216 current=2200 EN=0 DIR=0 targetW=5 remain=426.7 a=195 phase_unverified=1
+# RAMP_STOP a=195 remain=423.6 lead=429.7 fas=0.380
+SPIN#82 SUMMARY dir=+1 peak=0.922 releaseMs=1742 relAngle=288.2 relSpeed=0.835 targetW=5 targetAngle=111.9 runway=430.7 natStop=488.2 fricC=0.2086 fricB=0.1034 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.053 maxDecel=1.136 final=117.6 finalW=5 err=5.7 quality=0 result=EDGE_SAFE fault=NONE fitRej=70 fitsCW=13 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=5.8 frozen=0
+# HOLD released: pushed 1.41 deg off anchor after 3665 ms
+SPIN#83 START dir=+1 omega=0.181 wedge=6
+SPIN#83 RELEASE speed=0.938 peak=1.020 angle=162.4
+SPIN#83 RELEASE speed=0.940 peak=1.054 angle=298.1
+SPIN#83 FRICTION dir=+1 fitC=0.4433 fitB=0.0593 pairs=51 -> c=0.2907 b=0.0880 fits=14
+SPIN#83 RESERVE targetW=5 targetAngle=99.4 runway=413.0 natStop=419.0 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23780 pulses=26 hz=1199.2 requested=1216 current=2200 EN=0 DIR=0 targetW=5 remain=409.2 a=204 phase_unverified=1
+# RAMP_STOP a=204 remain=405.5 lead=410.6 fas=0.380
+SPIN#83 SUMMARY dir=+1 peak=1.054 releaseMs=1869 relAngle=298.1 relSpeed=0.940 targetW=5 targetAngle=99.4 runway=413.0 natStop=419.0 fricC=0.2907 fricB=0.0880 tkSpeed=0.399 cmdMax=0.380 cmdMin=0.000 rise=0.041 maxDecel=1.862 final=124.9 finalW=6 err=25.5 quality=3 result=EDGE_SAFE fault=NONE fitRej=70 fitsCW=14 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=21.1 frozen=0
+# HOLD released: pushed 1.67 deg off anchor after 15084 ms
+SPIN#84 START dir=+1 omega=0.190 wedge=6
+SPIN#84 RELEASE speed=0.961 peak=1.045 angle=162.9
+SPIN#84 RELEASE speed=0.959 peak=1.080 angle=302.6
+SPIN#84 FRICTION dir=+1 fitC=0.1984 fitB=0.0957 pairs=56 -> c=0.2584 b=0.0907 fits=15
+SPIN#84 RESERVE targetW=0 targetAngle=8.2 runway=443.3 natStop=449.3 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25629 pulses=26 hz=1196.2 requested=1216 current=2200 EN=0 DIR=0 targetW=0 remain=439.2 a=190 phase_unverified=1
+# RAMP_STOP a=190 remain=436.8 lead=441.0 fas=0.380
+SPIN#84 SUMMARY dir=+1 peak=1.080 releaseMs=1764 relAngle=302.6 relSpeed=0.959 targetW=0 targetAngle=8.2 runway=443.3 natStop=449.3 fricC=0.2584 fricB=0.0907 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.055 maxDecel=2.591 final=9.8 finalW=0 err=1.6 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=70 fitsCW=15 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=6.2 frozen=0
+# HOLD released: pushed 1.67 deg off anchor after 12198 ms
+SPIN#85 START dir=+1 omega=0.201 wedge=1
+SPIN#85 RELEASE speed=0.860 peak=0.965 angle=295.2
+SPIN#85 FRICTION dir=+1 fitC=0.5295 fitB=0.0335 pairs=53 -> c=0.3533 b=0.0707 fits=16
+SPIN#85 RESERVE targetW=10 targetAngle=210.5 runway=180.0 natStop=386.9 speed=0.400 q=1 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24609 pulses=26 hz=1199.6 requested=1216 current=2200 EN=0 DIR=0 targetW=10 remain=176.0 a=473 phase_unverified=1
+# RAMP_STOP a=473 remain=172.6 lead=178.5 fas=0.380
+SPIN#85 SUMMARY dir=+1 peak=0.965 releaseMs=1097 relAngle=295.2 relSpeed=0.860 targetW=10 targetAngle=210.5 runway=180.0 natStop=386.9 fricC=0.3533 fricB=0.0707 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.000 maxDecel=0.304 final=216.4 finalW=10 err=5.9 quality=1 result=EDGE_SAFE fault=NONE fitRej=70 fitsCW=16 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=1.6 frozen=0
+# HOLD released: pushed 1.32 deg off anchor after 17212 ms
+SPIN#86 START dir=+1 omega=0.146 wedge=11
+SPIN#86 RELEASE speed=0.936 peak=1.017 angle=166.6
+SPIN#86 RELEASE speed=0.941 peak=1.055 angle=298.4
+SPIN#86 FRICTION dir=+1 fitC=0.4374 fitB=0.0540 pairs=53 -> c=0.3827 b=0.0648 fits=17
+SPIN#86 RESERVE targetW=5 targetAngle=112.4 runway=364.7 natStop=370.7 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23532 pulses=26 hz=1187.0 requested=1216 current=2200 EN=0 DIR=0 targetW=5 remain=361.1 a=231 phase_unverified=1
+# RAMP_STOP a=231 remain=356.6 lead=363.1 fas=0.380
+SPIN#86 SUMMARY dir=+1 peak=1.055 releaseMs=1766 relAngle=298.4 relSpeed=0.941 targetW=5 targetAngle=112.4 runway=364.7 natStop=370.7 fricC=0.3827 fricB=0.0648 tkSpeed=0.400 cmdMax=0.380 cmdMin=0.000 rise=0.041 maxDecel=0.791 final=120.8 finalW=6 err=8.4 quality=3 result=EDGE_SAFE fault=NONE fitRej=70 fitsCW=17 fitsCCW=28 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=3.9 frozen=0
+# HOLD released: pushed 1.32 deg off anchor after 5201 ms
+SPIN#87 START dir=-1 omega=-0.167 wedge=5
+SPIN#87 RELEASE speed=0.885 peak=0.992 angle=165.1
+SPIN#87 FRICTION dir=-1 fitC=0.3787 fitB=0.0768 pairs=53 -> c=0.3394 b=0.0812 fits=29
+SPIN#87 RESERVE targetW=9 targetAngle=188.1 runway=339.9 natStop=384.8 speed=0.400 q=0 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23583 pulses=26 hz=1194.9 requested=1216 current=2200 EN=0 DIR=1 targetW=9 remain=336.3 a=248 phase_unverified=1
+# RAMP_STOP a=248 remain=333.7 lead=338.1 fas=0.380
+SPIN#87 SUMMARY dir=-1 peak=0.992 releaseMs=1469 relAngle=165.1 relSpeed=0.885 targetW=9 targetAngle=188.1 runway=339.9 natStop=384.8 fricC=0.3394 fricB=0.0812 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.044 maxDecel=2.482 final=183.2 finalW=9 err=5.0 quality=0 result=EDGE_SAFE fault=NONE fitRej=70 fitsCW=17 fitsCCW=29 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=5.5 frozen=0
+# HOLD released: pushed 1.58 deg off anchor after 3092 ms
+SPIN#88 START dir=-1 omega=-0.181 wedge=8
+SPIN#88 RELEASE speed=0.998 peak=1.129 angle=155.7
+SPIN#88 FRICTION dir=-1 fitC=0.6466 fitB=0.0135 pairs=54 -> c=0.4469 b=0.0575 fits=30
+SPIN#88 RESERVE targetW=17 targetAngle=357.4 runway=328.5 natStop=334.5 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25957 pulses=26 hz=1198.7 requested=1216 current=2200 EN=0 DIR=1 targetW=17 remain=324.4 a=257 phase_unverified=1
+# RAMP_STOP a=257 remain=319.8 lead=326.5 fas=0.380
+SPIN#88 SUMMARY dir=-1 peak=1.129 releaseMs=1247 relAngle=155.7 relSpeed=0.998 targetW=17 targetAngle=357.4 runway=328.5 natStop=334.5 fricC=0.4469 fricB=0.0575 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.021 maxDecel=0.786 final=347.6 finalW=17 err=9.8 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=70 fitsCW=17 fitsCCW=30 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=5.8 frozen=0
+# HOLD released: pushed 1.58 deg off anchor after 1502 ms
+SPIN#89 START dir=+1 omega=0.201 wedge=0
+SPIN#89 RELEASE speed=0.892 peak=1.000 angle=294.9
+SPIN#89 FRICTION dir=+1 fitC=0.6322 fitB=0.0237 pairs=52 -> c=0.4700 b=0.0504 fits=18
+SPIN#89 RESERVE targetW=5 targetAngle=110.5 runway=183.7 natStop=327.3 speed=0.400 q=1 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24190 pulses=26 hz=1185.2 requested=1216 current=2200 EN=0 DIR=0 targetW=5 remain=179.9 a=463 phase_unverified=1
+# RAMP_STOP a=463 remain=177.5 lead=182.3 fas=0.380
+SPIN#89 SUMMARY dir=+1 peak=1.000 releaseMs=1120 relAngle=294.9 relSpeed=0.892 targetW=5 targetAngle=110.5 runway=183.7 natStop=327.3 fricC=0.4700 fricB=0.0504 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.027 maxDecel=2.317 final=114.1 finalW=5 err=3.6 quality=1 result=CONTROLLED_SAFE fault=NONE fitRej=70 fitsCW=18 fitsCCW=30 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=6.4 frozen=0
+# HOLD released: pushed 1.67 deg off anchor after 2245 ms
+SPIN#90 START dir=+1 omega=0.197 wedge=6
+SPIN#90 RELEASE speed=0.828 peak=0.928 angle=294.9
+SPIN#90 FRICTION_REJECT bounds fitC=-0.2470 fitB=0.2130 pairs=53 reason=reserve
+SPIN#90 RESERVE targetW=4 targetAngle=80.3 runway=321.1 natStop=327.1 speed=0.400 q=3 urgent=0
+SPIN#90 FRICTION_REJECT bounds fitC=-0.2470 fitB=0.2130 pairs=53 reason=power
+# PULSEFIRST TORQUE_ON arm_us=24969 pulses=27 hz=1230.4 requested=1216 current=2200 EN=0 DIR=0 targetW=4 remain=317.2 a=263 phase_unverified=1
+# RAMP_STOP a=263 remain=313.5 lead=319.0 fas=0.380
+SPIN#90 SUMMARY dir=+1 peak=0.928 releaseMs=730 relAngle=294.9 relSpeed=0.828 targetW=4 targetAngle=80.3 runway=321.1 natStop=327.1 fricC=0.4700 fricB=0.0504 tkSpeed=0.394 cmdMax=0.380 cmdMin=0.000 rise=0.020 maxDecel=0.370 final=86.7 finalW=4 err=6.3 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=72 fitsCW=18 fitsCCW=30 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.4 frozen=0
+# HOLD released: pushed 1.58 deg off anchor after 3766 ms
+SPIN#91 START dir=-1 omega=-0.188 wedge=3
+SPIN#91 RELEASE speed=1.381 peak=1.554 angle=133.6
+SPIN#91 FRICTION_REJECT bounds fitC=-0.5383 fitB=0.1613 pairs=59 reason=reserve
+SPIN#91 RESERVE targetW=17 targetAngle=356.2 runway=328.4 natStop=334.4 speed=0.400 q=3 urgent=0
+SPIN#91 FRICTION_REJECT bounds fitC=-0.5383 fitB=0.1613 pairs=59 reason=power
+# PULSEFIRST TORQUE_ON arm_us=25606 pulses=26 hz=1195.7 requested=1216 current=2200 EN=0 DIR=1 targetW=17 remain=324.2 a=257 phase_unverified=1
+# RAMP_STOP a=257 remain=321.2 lead=326.5 fas=0.380
+SPIN#91 SUMMARY dir=-1 peak=1.554 releaseMs=1900 relAngle=133.6 relSpeed=1.381 targetW=17 targetAngle=356.2 runway=328.4 natStop=334.4 fricC=0.4469 fricB=0.0575 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.035 maxDecel=1.038 final=349.9 finalW=17 err=6.3 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=74 fitsCW=18 fitsCCW=30 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=3.3 frozen=0
+# HOLD released: pushed 1.93 deg off anchor after 5561 ms
+SPIN#92 START dir=+1 omega=0.201 wedge=0
+SPIN#92 RELEASE speed=1.574 peak=1.749 angle=342.6
+SPIN#92 FRICTION_REJECT bounds fitC=-1.0633 fitB=0.2211 pairs=55 reason=reserve
+SPIN#92 RESERVE targetW=5 targetAngle=110.9 runway=176.3 natStop=327.2 speed=0.400 q=1 urgent=0
+SPIN#92 FRICTION_REJECT bounds fitC=-1.0633 fitB=0.2211 pairs=55 reason=power
+# PULSEFIRST TORQUE_ON arm_us=22730 pulses=26 hz=1196.9 requested=1216 current=2200 EN=0 DIR=0 targetW=5 remain=172.5 a=483 phase_unverified=1
+# RAMP_STOP a=483 remain=169.9 lead=174.7 fas=0.380
+SPIN#92 SUMMARY dir=+1 peak=1.749 releaseMs=1780 relAngle=342.6 relSpeed=1.574 targetW=5 targetAngle=110.9 runway=176.3 natStop=327.2 fricC=0.4700 fricB=0.0504 tkSpeed=0.399 cmdMax=0.380 cmdMin=0.010 rise=0.008 maxDecel=2.232 final=115.6 finalW=5 err=4.7 quality=1 result=EDGE_SAFE fault=NONE fitRej=76 fitsCW=18 fitsCCW=30 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=4.2 frozen=0
+# HOLD released: pushed 1.93 deg off anchor after 4203 ms
+SPIN#93 START dir=-1 omega=-0.167 wedge=5
+SPIN#93 RELEASE speed=1.688 peak=1.878 angle=114.7
+SPIN#93 FRICTION_REJECT bounds fitC=-2.1849 fitB=0.3304 pairs=58 reason=reserve
+SPIN#93 RESERVE targetW=10 targetAngle=210.8 runway=328.2 natStop=334.2 speed=0.400 q=3 urgent=0
+SPIN#93 FRICTION_REJECT bounds fitC=-2.1849 fitB=0.3304 pairs=58 reason=power
+# PULSEFIRST TORQUE_ON arm_us=25576 pulses=26 hz=1193.7 requested=1216 current=2200 EN=0 DIR=1 targetW=10 remain=324.1 a=257 phase_unverified=1
+# RAMP_STOP a=257 remain=321.0 lead=326.5 fas=0.380
+SPIN#93 SUMMARY dir=-1 peak=1.878 releaseMs=1800 relAngle=114.7 relSpeed=1.688 targetW=10 targetAngle=210.8 runway=328.2 natStop=334.2 fricC=0.4469 fricB=0.0575 tkSpeed=0.394 cmdMax=0.380 cmdMin=0.000 rise=0.016 maxDecel=0.583 final=203.9 finalW=10 err=6.9 quality=3 result=EDGE_SAFE fault=NONE fitRej=78 fitsCW=18 fitsCCW=30 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=3.8 frozen=0
+# HOLD released: pushed 2.02 deg off anchor after 421 ms
+SPIN#94 START dir=+1 omega=0.150 wedge=10
+SPIN#94 RELEASE speed=1.585 peak=1.724 angle=149.6
+SPIN#94 FRICTION_REJECT bounds fitC=-0.9850 fitB=0.2129 pairs=55 reason=reserve
+SPIN#94 RESERVE targetW=4 targetAngle=83.4 runway=321.2 natStop=327.2 speed=0.400 q=3 urgent=0
+SPIN#94 FRICTION_REJECT bounds fitC=-0.9850 fitB=0.2129 pairs=55 reason=power
+# PULSEFIRST TORQUE_ON arm_us=22501 pulses=26 hz=1199.7 requested=1216 current=2200 EN=0 DIR=0 targetW=4 remain=317.5 a=262 phase_unverified=1
+# RAMP_STOP a=262 remain=315.2 lead=320.4 fas=0.380
+SPIN#94 SUMMARY dir=+1 peak=1.724 releaseMs=2062 relAngle=149.6 relSpeed=1.585 targetW=4 targetAngle=83.4 runway=321.2 natStop=327.2 fricC=0.4700 fricB=0.0504 tkSpeed=0.395 cmdMax=0.380 cmdMin=0.007 rise=0.050 maxDecel=2.349 final=87.3 finalW=4 err=3.8 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=80 fitsCW=18 fitsCCW=30 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=6.9 frozen=0
+# HOLD released: pushed 1.85 deg off anchor after 2206 ms
+SPIN#95 START dir=+1 omega=0.183 wedge=4
+SPIN#95 RELEASE speed=1.646 peak=1.824 angle=345.9
+SPIN#95 FRICTION_REJECT bounds fitC=-1.3353 fitB=0.2472 pairs=57 reason=reserve
+SPIN#95 RESERVE targetW=3 targetAngle=75.7 runway=321.0 natStop=327.0 speed=0.400 q=3 urgent=0
+SPIN#95 FRICTION_REJECT bounds fitC=-1.3353 fitB=0.2472 pairs=57 reason=power
+# PULSEFIRST TORQUE_ON arm_us=24797 pulses=26 hz=1200.4 requested=1216 current=2200 EN=0 DIR=0 targetW=3 remain=317.0 a=263 phase_unverified=1
+# RAMP_STOP a=263 remain=313.4 lead=319.0 fas=0.380
+SPIN#95 SUMMARY dir=+1 peak=1.824 releaseMs=1715 relAngle=345.9 relSpeed=1.646 targetW=3 targetAngle=75.7 runway=321.0 natStop=327.0 fricC=0.4700 fricB=0.0504 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.021 maxDecel=0.356 final=82.0 finalW=4 err=6.3 quality=3 result=EDGE_SAFE fault=NONE fitRej=82 fitsCW=18 fitsCCW=30 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.6 frozen=0
+# HOLD released: pushed 1.67 deg off anchor after 3837 ms
+SPIN#96 START dir=-1 omega=-0.221 wedge=3
+SPIN#96 RELEASE speed=1.255 peak=1.419 angle=141.9
+SPIN#96 FRICTION dir=-1 fitC=0.1683 fitB=0.0770 pairs=59 -> c=0.3494 b=0.0643 fits=31
+SPIN#96 RESERVE targetW=0 targetAngle=14.0 runway=392.7 natStop=398.7 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23753 pulses=26 hz=1200.1 requested=1216 current=2200 EN=0 DIR=1 targetW=0 remain=389.0 a=214 phase_unverified=1
+# RAMP_STOP a=214 remain=385.3 lead=391.7 fas=0.380
+SPIN#96 SUMMARY dir=-1 peak=1.419 releaseMs=764 relAngle=141.9 relSpeed=1.255 targetW=0 targetAngle=14.0 runway=392.7 natStop=398.7 fricC=0.3494 fricB=0.0643 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.009 maxDecel=0.245 final=6.4 finalW=0 err=7.5 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=82 fitsCW=18 fitsCCW=31 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.3 frozen=0
+# HOLD released: pushed 2.11 deg off anchor after 1952 ms
+SPIN#97 START dir=-1 omega=-0.217 wedge=17
+SPIN#97 RELEASE speed=1.082 peak=1.228 angle=152.0
+SPIN#97 FRICTION_REJECT bounds fitC=0.7537 fitB=-0.0077 pairs=55 reason=reserve
+SPIN#97 RESERVE targetW=6 targetAngle=132.8 runway=392.4 natStop=398.4 speed=0.400 q=3 urgent=0
+SPIN#97 FRICTION_REJECT bounds fitC=0.7537 fitB=-0.0077 pairs=55 reason=power
+# PULSEFIRST TORQUE_ON arm_us=26076 pulses=26 hz=1197.6 requested=1216 current=2200 EN=0 DIR=1 targetW=6 remain=388.4 a=215 phase_unverified=1
+# RAMP_STOP a=215 remain=385.3 lead=390.1 fas=0.380
+SPIN#97 SUMMARY dir=-1 peak=1.228 releaseMs=640 relAngle=152.0 relSpeed=1.082 targetW=6 targetAngle=132.8 runway=392.4 natStop=398.4 fricC=0.3494 fricB=0.0643 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.025 maxDecel=1.159 final=128.9 finalW=6 err=3.9 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=84 fitsCW=18 fitsCCW=31 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=3.2 frozen=0
+# HOLD released: pushed 1.93 deg off anchor after 5313 ms
+SPIN#98 START dir=+1 omega=0.213 wedge=7
+SPIN#98 RELEASE speed=1.217 peak=1.368 angle=316.7
+SPIN#98 FRICTION_REJECT bounds fitC=-0.6148 fitB=0.2129 pairs=51 reason=reserve
+SPIN#98 RESERVE targetW=4 targetAngle=88.3 runway=321.1 natStop=327.1 speed=0.400 q=3 urgent=0
+SPIN#98 FRICTION_REJECT bounds fitC=-0.6148 fitB=0.2129 pairs=51 reason=power
+# PULSEFIRST TORQUE_ON arm_us=23038 pulses=26 hz=1197.8 requested=1216 current=2200 EN=0 DIR=0 targetW=4 remain=317.4 a=263 phase_unverified=1
+# RAMP_STOP a=263 remain=313.7 lead=319.0 fas=0.380
+SPIN#98 SUMMARY dir=+1 peak=1.368 releaseMs=1354 relAngle=316.7 relSpeed=1.217 targetW=4 targetAngle=88.3 runway=321.1 natStop=327.1 fricC=0.4700 fricB=0.0504 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.022 maxDecel=0.372 final=94.8 finalW=4 err=6.6 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=86 fitsCW=18 fitsCCW=31 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.5 frozen=0
+# HOLD released: pushed 1.85 deg off anchor after 1550 ms
+SPIN#99 START dir=-1 omega=-0.205 wedge=4
+SPIN#99 RELEASE speed=1.066 peak=1.210 angle=155.4
+SPIN#99 FRICTION_REJECT bounds fitC=0.6936 fitB=0.0037 pairs=54 reason=reserve
+SPIN#99 RESERVE targetW=8 targetAngle=168.0 runway=171.5 natStop=398.7 speed=0.400 q=1 urgent=0
+SPIN#99 FRICTION_REJECT bounds fitC=0.6936 fitB=0.0037 pairs=54 reason=power
+# PULSEFIRST TORQUE_ON arm_us=23458 pulses=26 hz=1198.1 requested=1216 current=2200 EN=0 DIR=1 targetW=8 remain=167.7 a=496 phase_unverified=1
+# RAMP_STOP a=496 remain=164.3 lead=170.3 fas=0.380
+# DARE_RECOVERY (after control) attempt=1 from wedge 8 angle=161.1 -> wedge 8 dir=+1 8.9 deg
+# DARE_RECOVERY settled angle=169.9 wedge=8
+SPIN#99 SUMMARY dir=-1 peak=1.210 releaseMs=873 relAngle=155.4 relSpeed=1.066 targetW=8 targetAngle=168.0 runway=171.5 natStop=398.7 fricC=0.3494 fricB=0.0643 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.001 maxDecel=0.454 final=169.9 finalW=8 err=-1.9 quality=1 result=CONTROLLED_SAFE fault=NONE fitRej=88 fitsCW=18 fitsCCW=31 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.8 frozen=0
+# HOLD released: pushed 2.02 deg off anchor after 16298 ms
+SPIN#100 START dir=-1 omega=-0.218 wedge=7
+SPIN#100 RELEASE speed=1.135 peak=1.283 angle=149.2
+SPIN#100 FRICTION dir=-1 fitC=0.3864 fitB=0.0434 pairs=58 -> c=0.3623 b=0.0570 fits=32
+SPIN#100 RESERVE targetW=13 targetAngle=275.7 runway=391.4 natStop=397.4 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=22525 pulses=26 hz=1195.5 requested=1216 current=2200 EN=0 DIR=1 targetW=13 remain=387.9 a=215 phase_unverified=1
+# RAMP_STOP a=215 remain=385.0 lead=390.1 fas=0.380
+SPIN#100 SUMMARY dir=-1 peak=1.283 releaseMs=1017 relAngle=149.2 relSpeed=1.135 targetW=13 targetAngle=275.7 runway=391.4 natStop=397.4 fricC=0.3623 fricB=0.0570 tkSpeed=0.400 cmdMax=0.380 cmdMin=0.000 rise=0.045 maxDecel=1.877 final=272.5 finalW=13 err=3.3 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=88 fitsCW=18 fitsCCW=32 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=3.5 frozen=0
+# HOLD released: pushed 1.76 deg off anchor after 3314 ms
+SPIN#101 START dir=-1 omega=-0.186 wedge=13
+SPIN#101 RELEASE speed=1.086 peak=1.180 angle=294.3
+SPIN#101 RELEASE speed=1.066 peak=1.208 angle=150.7
+SPIN#101 FRICTION dir=-1 fitC=0.4288 fitB=0.0520 pairs=52 -> c=0.3856 b=0.0552 fits=33
+SPIN#101 RESERVE targetW=6 targetAngle=126.0 runway=189.4 natStop=380.2 speed=0.400 q=1 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24775 pulses=26 hz=1198.4 requested=1216 current=2200 EN=0 DIR=1 targetW=6 remain=185.4 a=449 phase_unverified=1
+# RAMP_STOP a=449 remain=181.8 lead=187.9 fas=0.380
+SPIN#101 SUMMARY dir=-1 peak=1.208 releaseMs=1358 relAngle=150.7 relSpeed=1.066 targetW=6 targetAngle=126.0 runway=189.4 natStop=380.2 fricC=0.3856 fricB=0.0552 tkSpeed=0.400 cmdMax=0.380 cmdMin=0.000 rise=0.000 maxDecel=0.425 final=119.5 finalW=5 err=6.5 quality=1 result=EDGE_SAFE fault=NONE fitRej=88 fitsCW=18 fitsCCW=33 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=3.6 frozen=0
+# HOLD released: pushed 1.76 deg off anchor after 2410 ms
+SPIN#102 START dir=+1 omega=0.194 wedge=6
+SPIN#102 RELEASE speed=0.585 peak=0.636 angle=277.5
+SPIN#102 RESERVE targetW=4 targetAngle=84.1 runway=321.1 natStop=327.1 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=25494 pulses=26 hz=1198.6 requested=1216 current=2200 EN=0 DIR=0 targetW=4 remain=317.3 a=263 phase_unverified=1
+# RAMP_STOP a=263 remain=312.7 lead=319.0 fas=0.380
+SPIN#102 SUMMARY dir=+1 peak=0.636 releaseMs=782 relAngle=277.5 relSpeed=0.585 targetW=4 targetAngle=84.1 runway=321.1 natStop=327.1 fricC=0.4700 fricB=0.0504 tkSpeed=0.397 cmdMax=0.380 cmdMin=0.000 rise=0.034 maxDecel=0.937 final=92.3 finalW=4 err=8.2 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=88 fitsCW=18 fitsCCW=33 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=4.9 frozen=0
+# HOLD released: pushed 1.49 deg off anchor after 6809 ms
+SPIN#103 START dir=-1 omega=-0.154 wedge=3
+SPIN#103 RELEASE speed=0.201 peak=0.219 angle=338.6
+SPIN#103 RESERVE targetW=14 targetAngle=284.5 runway=54.1 natStop=105.9 speed=0.201 q=1 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=26600 pulses=14 hz=624.1 requested=629 current=2200 EN=0 DIR=1 targetW=14 remain=51.9 a=429 phase_unverified=1
+# RAMP_STOP a=429 remain=49.6 lead=54.0 fas=0.197
+SPIN#103 SUMMARY dir=-1 peak=0.219 releaseMs=1305 relAngle=338.6 relSpeed=0.201 targetW=14 targetAngle=284.5 runway=54.1 natStop=105.9 fricC=0.3856 fricB=0.0552 tkSpeed=0.200 cmdMax=0.197 cmdMin=0.000 rise=0.001 maxDecel=0.400 final=281.9 finalW=14 err=2.6 quality=1 result=EDGE_SAFE fault=NONE fitRej=88 fitsCW=18 fitsCCW=33 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.4 frozen=0
+# HOLD released: pushed 1.85 deg off anchor after 2316 ms
+SPIN#104 START dir=-1 omega=-0.190 wedge=13
+SPIN#104 RELEASE speed=1.100 peak=1.196 angle=291.7
+SPIN#104 RELEASE speed=1.090 peak=1.227 angle=154.4
+SPIN#104 FRICTION_REJECT bounds fitC=0.9119 fitB=-0.0320 pairs=54 reason=reserve
+SPIN#104 RESERVE targetW=17 targetAngle=344.5 runway=173.7 natStop=380.2 speed=0.400 q=1 urgent=0
+SPIN#104 FRICTION_REJECT bounds fitC=0.9119 fitB=-0.0320 pairs=54 reason=power
+# PULSEFIRST TORQUE_ON arm_us=23913 pulses=26 hz=1198.1 requested=1216 current=2200 EN=0 DIR=1 targetW=17 remain=169.8 a=490 phase_unverified=1
+# RAMP_STOP a=490 remain=166.5 lead=172.3 fas=0.380
+SPIN#104 SUMMARY dir=-1 peak=1.227 releaseMs=1325 relAngle=154.4 relSpeed=1.090 targetW=17 targetAngle=344.5 runway=173.7 natStop=380.2 fricC=0.3856 fricB=0.0552 tkSpeed=0.399 cmdMax=0.380 cmdMin=0.000 rise=0.000 maxDecel=0.629 final=337.6 finalW=16 err=6.9 quality=1 result=EDGE_SAFE fault=NONE fitRej=90 fitsCW=18 fitsCCW=33 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=1.6 frozen=0
+# HOLD released: pushed 1.49 deg off anchor after 2091 ms
+SPIN#105 START dir=-1 omega=-0.177 wedge=16
+SPIN#105 RELEASE speed=1.180 peak=1.328 angle=147.0
+SPIN#105 FRICTION dir=-1 fitC=0.2715 fitB=0.0607 pairs=57 -> c=0.3457 b=0.0572 fits=34
+SPIN#105 RESERVE targetW=4 targetAngle=89.1 runway=406.3 natStop=412.3 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23654 pulses=26 hz=1194.7 requested=1216 current=2200 EN=0 DIR=1 targetW=4 remain=402.5 a=207 phase_unverified=1
+# RAMP_STOP a=207 remain=399.4 lead=405.2 fas=0.380
+SPIN#105 SUMMARY dir=-1 peak=1.328 releaseMs=1809 relAngle=147.0 relSpeed=1.180 targetW=4 targetAngle=89.1 runway=406.3 natStop=412.3 fricC=0.3457 fricB=0.0572 tkSpeed=0.401 cmdMax=0.380 cmdMin=0.000 rise=0.042 maxDecel=1.417 final=77.3 finalW=3 err=11.8 quality=3 result=EDGE_SAFE fault=NONE fitRej=90 fitsCW=18 fitsCCW=34 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=7.8 frozen=0
+# HOLD released: pushed 1.93 deg off anchor after 2722 ms
+SPIN#106 START dir=+1 omega=0.186 wedge=4
+SPIN#106 RELEASE speed=0.985 peak=1.071 angle=164.1
+SPIN#106 RELEASE speed=0.985 peak=1.107 angle=302.1
+SPIN#106 FRICTION_REJECT bounds fitC=-0.0345 fitB=0.1480 pairs=51 reason=reserve
+SPIN#106 RESERVE targetW=4 targetAngle=92.1 runway=321.1 natStop=327.1 speed=0.400 q=3 urgent=0
+SPIN#106 FRICTION_REJECT bounds fitC=-0.0345 fitB=0.1480 pairs=51 reason=power
+# PULSEFIRST TORQUE_ON arm_us=22451 pulses=26 hz=1197.1 requested=1216 current=2200 EN=0 DIR=0 targetW=4 remain=317.5 a=262 phase_unverified=1
+# RAMP_STOP a=262 remain=312.7 lead=320.4 fas=0.380
+SPIN#106 SUMMARY dir=+1 peak=1.107 releaseMs=1992 relAngle=302.1 relSpeed=0.985 targetW=4 targetAngle=92.1 runway=321.1 natStop=327.1 fricC=0.4700 fricB=0.0504 tkSpeed=0.395 cmdMax=0.380 cmdMin=0.000 rise=0.045 maxDecel=3.362 final=117.4 finalW=5 err=25.4 quality=3 result=EDGE_SAFE fault=NONE fitRej=92 fitsCW=18 fitsCCW=34 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=21.4 frozen=0
+# HOLD released: pushed 1.41 deg off anchor after 3481 ms
+SPIN#107 START dir=-1 omega=-0.173 wedge=5
+SPIN#107 RELEASE speed=1.203 peak=1.327 angle=135.0
+SPIN#107 FRICTION dir=-1 fitC=0.3326 fitB=0.0585 pairs=55 -> c=0.3411 b=0.0576 fits=35
+SPIN#107 RESERVE targetW=6 targetAngle=131.0 runway=409.9 natStop=415.9 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=24802 pulses=26 hz=1199.0 requested=1216 current=2200 EN=0 DIR=1 targetW=6 remain=406.1 a=205 phase_unverified=1
+# RAMP_STOP a=205 remain=402.7 lead=408.8 fas=0.380
+SPIN#107 SUMMARY dir=-1 peak=1.327 releaseMs=1299 relAngle=135.0 relSpeed=1.203 targetW=6 targetAngle=131.0 runway=409.9 natStop=415.9 fricC=0.3411 fricB=0.0576 tkSpeed=0.394 cmdMax=0.380 cmdMin=0.000 rise=0.020 maxDecel=0.562 final=126.4 finalW=6 err=4.7 quality=3 result=CONTROLLED_SAFE fault=NONE fitRej=92 fitsCW=18 fitsCCW=35 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=3.7 frozen=0
+# HOLD released: pushed 1.58 deg off anchor after 2290 ms
+SPIN#108 START dir=-1 omega=-0.203 wedge=5
+SPIN#108 RELEASE speed=0.830 peak=0.930 angle=167.3
+SPIN#108 FRICTION dir=-1 fitC=0.3749 fitB=0.0658 pairs=56 -> c=0.3529 b=0.0605 fits=36
+SPIN#108 RESERVE targetW=0 targetAngle=6.3 runway=176.3 natStop=400.9 speed=0.400 q=1 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23926 pulses=26 hz=1197.8 requested=1216 current=2200 EN=0 DIR=1 targetW=0 remain=172.7 a=482 phase_unverified=1
+# RAMP_STOP a=482 remain=169.2 lead=175.1 fas=0.380
+SPIN#108 SUMMARY dir=-1 peak=0.930 releaseMs=1201 relAngle=167.3 relSpeed=0.830 targetW=0 targetAngle=6.3 runway=176.3 natStop=400.9 fricC=0.3529 fricB=0.0605 tkSpeed=0.394 cmdMax=0.380 cmdMin=0.000 rise=0.000 maxDecel=0.359 final=0.2 finalW=0 err=6.1 quality=1 result=EDGE_SAFE fault=NONE fitRej=92 fitsCW=18 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.7 frozen=0
+# HOLD released: pushed 1.58 deg off anchor after 1913 ms
+SPIN#109 START dir=+1 omega=0.207 wedge=0
+SPIN#109 RELEASE speed=0.951 peak=1.034 angle=140.6
+SPIN#109 FRICTION dir=+1 fitC=0.4939 fitB=0.0467 pairs=54 -> c=0.4784 b=0.0491 fits=19
+SPIN#109 RESERVE targetW=13 targetAngle=271.8 runway=317.3 natStop=323.3 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23131 pulses=27 hz=1203.6 requested=1216 current=2200 EN=0 DIR=0 targetW=13 remain=313.7 a=266 phase_unverified=1
+# RAMP_STOP a=266 remain=309.3 lead=315.6 fas=0.380
+SPIN#109 SUMMARY dir=+1 peak=1.034 releaseMs=1684 relAngle=140.6 relSpeed=0.951 targetW=13 targetAngle=271.8 runway=317.3 natStop=323.3 fricC=0.4784 fricB=0.0491 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.034 maxDecel=0.722 final=282.1 finalW=14 err=10.3 quality=3 result=EDGE_SAFE fault=NONE fitRej=92 fitsCW=19 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=5.1 frozen=0
+
+>> [Claude] ?
+# build: failop-20260923 (stage 1a: never releases a moving wheel, capture retries, no persisted faults) on forcestop-guard-20260922 PARTY; takeover defaults OFF
+
+=== PRIZE WHEEL (correctness redesign) ===
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 17|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ D  print driver registers (read-only)
+ g  print imbalance + encoder INL model
+ G<g>,<phiDeg>,<a1>,<b1>,<a2>,<b2>+Enter  set it (at rest; all zero clears)
+ x  clear stored direction calibration
+ r  fault reset (re-checks TMC UART)
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   P  play fanfare (speaker test)   l  LEDs on/off   w  network status
+ V<n>+Enter  audio volume 0-30 (e.g. V18)
+
+>> [Claude] s
+# state=IDLE_STOPPED fault=NONE angle=281.87 wedge=14 omega=-0.0009 natStop=0.0 pos=FRESH vel=VALID age_us=792 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1947 stage=0 cmd=0.000 savedFaultRaw=0
+
+>> [Claude] d
+# DIAG armed: RAM-only 1 kHz capture; dumps after true stop or fault.
+
+>> [Claude] g
+# imbalance stored=0 g=0.0000 rad/s2 phi=0.00 deg rest=0.0 deg | inl a1=0.00 b1=0.00 a2=0.00 b2=0.00 counts | raw=2838 inl_now=0.00
+SPIN#1 START dir=+1 omega=0.245 wedge=14
+SPIN#1 RELEASE speed=1.014 peak=1.102 angle=165.1
+SPIN#1 RELEASE speed=1.009 peak=1.142 angle=302.7
+SPIN#1 FRICTION dir=+1 fitC=0.5947 fitB=0.0281 pairs=53 -> c=0.5191 b=0.0418 fits=20
+SPIN#1 RESERVE targetW=3 targetAngle=70.4 runway=318.5 natStop=307.5 speed=0.400 q=4 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=21926 pulses=26 hz=1198.4 requested=1216 current=2200 EN=0 DIR=0 targetW=3 remain=315.1 a=264 phase_unverified=1
+# RAMP_STOP a=264 remain=310.3 lead=318.4 fas=0.380
+SPIN#1 SUMMARY dir=+1 peak=1.142 releaseMs=1031 relAngle=302.7 relSpeed=1.009 targetW=3 targetAngle=70.4 runway=318.5 natStop=307.5 fricC=0.5191 fricB=0.0418 tkSpeed=0.395 cmdMax=0.380 cmdMin=0.000 rise=0.034 maxDecel=2.048 final=87.8 finalW=4 err=17.4 quality=4 result=OFF_TARGET_SAFE fault=NONE fitRej=0 fitsCW=20 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=13.4 frozen=0
+# DIAG columns: done_us,dt_good_us,raw,delta,counts,i2c_us,omega_mrev,window_mrev,cmd_mrev,fas_mrev,remain_ddeg,flags_hex,state,stage,current_ma
+D,623322823,1010,1171,0,66312,305,88,87,94,92,22,01,7,2,2200
+D,623323822,999,1170,-1,66313,308,88,89,94,92,21,01,7,2,2200
+D,623324848,1026,1170,0,66313,327,88,81,94,92,21,01,7,2,2200
+D,623325807,959,1170,0,66313,287,87,81,94,92,21,01,7,2,2200
+D,623326824,1017,1169,-1,66314,302,87,86,94,92,20,01,7,2,2200
+D,623327801,977,1169,0,66314,288,87,87,94,92,20,01,7,2,2200
+D,623328867,1066,1168,-1,66315,347,88,95,94,92,19,01,7,2,2200
+D,623329788,921,1168,0,66315,270,88,87,94,92,19,01,7,2,2200
+D,623330776,988,1168,0,66315,264,88,87,94,92,19,01,7,2,2200
+D,623331788,1012,1167,-1,66316,274,88,95,92,92,18,01,7,2,2200
+D,623332839,1051,1167,0,66316,313,88,89,92,92,18,01,7,2,2200
+D,623333784,945,1167,0,66316,268,88,87,92,91,18,01,7,2,2200
+D,623334798,1014,1166,-1,66317,277,88,87,92,91,18,01,7,2,2200
+D,623335776,978,1166,0,66317,265,88,87,92,91,18,01,7,2,2200
+D,623336911,1135,1166,0,66317,364,88,81,92,91,18,01,7,2,2200
+D,623337878,967,1165,-1,66318,357,88,89,92,91,17,01,7,2,2200
+D,623338916,1038,1165,0,66318,392,87,81,92,91,17,01,7,2,2200
+D,623339812,896,1164,-1,66319,299,87,89,92,91,16,01,7,2,2200
+D,623340836,1024,1164,0,66319,324,88,89,92,91,16,01,7,2,2200
+D,623341802,966,1163,-1,66320,292,88,89,92,91,15,01,7,2,2200
+D,623342819,1017,1163,0,66320,308,88,87,92,91,15,01,7,2,2200
+D,623343809,990,1163,0,66320,297,88,89,92,90,15,01,7,2,2200
+D,623344869,1060,1162,-1,66321,352,88,89,92,90,14,01,7,2,2200
+D,623345814,945,1162,0,66321,289,88,89,92,90,14,01,7,2,2200
+D,623346816,1002,1161,-1,66322,298,88,94,92,90,13,01,7,2,2200
+D,623347819,1003,1161,0,66322,301,88,95,92,90,13,01,7,2,2200
+D,623348876,1057,1161,0,66322,340,89,95,92,90,13,01,7,2,2200
+D,623349790,914,1161,0,66322,271,88,87,92,90,13,01,7,2,2200
+D,623350783,993,1160,-1,66323,265,89,95,92,90,12,01,7,2,2200
+D,623351788,1005,1160,0,66323,263,89,87,92,90,12,01,7,2,2200
+D,623352831,1043,1159,-1,66324,311,89,98,92,90,11,01,7,2,2200
+D,623353777,946,1159,0,66324,265,89,95,92,90,11,01,7,2,2200
+D,623354786,1009,1159,0,66324,263,89,87,92,90,11,01,7,2,2200
+D,623355792,1006,1158,-1,66325,268,89,95,92,90,11,01,7,2,2200
+D,623356937,1145,1158,0,66325,368,89,89,90,90,11,01,7,2,2200
+D,623357881,944,1158,0,66325,353,89,89,90,89,11,01,7,2,2200
+D,623358940,1059,1157,-1,66326,419,89,89,90,89,10,01,7,2,2200
+D,623359796,856,1157,0,66326,287,89,89,90,89,10,01,7,2,2200
+D,623360852,1056,1156,-1,66327,326,90,97,90,89,9,01,7,2,2200
+D,623361800,948,1156,0,66327,285,90,89,90,89,9,01,7,2,2200
+D,623362832,1032,1156,0,66327,306,90,87,90,89,9,01,7,2,2200
+D,623363809,977,1155,-1,66328,295,90,98,90,89,8,01,7,2,2200
+D,623364855,1046,1155,0,66328,329,90,89,90,89,8,01,7,2,2200
+D,623365800,945,1154,-1,66329,289,90,98,90,89,7,01,7,2,2200
+D,623366830,1030,1154,0,66329,307,90,94,90,89,7,01,7,2,2200
+D,623367814,984,1154,0,66329,294,90,95,90,88,7,01,7,2,2200
+D,623368878,1064,1153,-1,66330,351,91,95,90,88,6,01,7,2,2200
+D,623369791,913,1153,0,66330,273,91,95,90,88,6,01,7,2,2200
+D,623370776,985,1153,0,66330,263,91,87,90,88,6,01,7,2,2200
+D,623371785,1009,1152,-1,66331,262,91,95,90,88,5,01,7,2,2200
+D,623372826,1041,1152,0,66331,308,91,89,90,88,5,01,7,2,2200
+D,623373781,955,1151,-1,66332,264,91,95,90,88,4,01,7,2,2200
+D,623374774,993,1151,0,66332,264,91,95,90,88,4,01,7,2,2200
+D,623375780,1006,1151,0,66332,262,91,87,90,88,4,01,7,2,2200
+D,623376959,1179,1151,0,66332,367,90,81,90,88,4,01,7,2,2200
+D,623377869,910,1150,-1,66333,353,90,89,90,88,4,01,7,2,2200
+D,623378953,1084,1150,0,66333,427,90,89,90,88,4,01,7,2,2200
+D,623379810,857,1149,-1,66334,299,91,98,90,88,3,01,7,2,2200
+D,623380838,1028,1149,0,66334,324,91,89,90,88,3,01,7,2,2200
+D,623382339,1501,1148,-1,66335,349,91,96,88,87,2,01,7,2,2200
+D,623382890,551,1148,0,66335,269,91,89,88,87,2,01,7,2,2200
+D,623383830,940,1148,0,66335,312,91,89,88,87,2,01,7,2,2200
+D,623384847,1017,1147,-1,66336,331,91,97,88,87,1,01,7,2,2200
+D,623385816,969,1147,0,66336,289,91,89,88,87,1,01,7,2,2200
+D,623386823,1007,1147,0,66336,309,91,87,88,87,1,01,7,2,2200
+D,623387800,977,1146,-1,66337,280,91,95,88,87,0,01,7,2,2200
+D,623388936,1136,1146,0,66337,389,91,94,88,87,0,01,7,2,2200
+D,623389786,850,1146,0,66337,267,91,87,88,87,0,01,7,2,2200
+D,623390769,983,1145,-1,66338,262,91,95,88,87,-1,01,7,2,2200
+D,623391773,1004,1145,0,66338,262,91,87,88,87,-1,01,7,2,2200
+D,623392827,1054,1144,-1,66339,308,91,94,88,86,-2,01,7,2,2200
+D,623393776,949,1144,0,66339,265,91,95,88,86,-2,01,7,2,2200
+D,623394784,1008,1143,-1,66340,265,91,95,88,86,-3,01,7,2,2200
+D,623395792,1008,1143,0,66340,264,91,95,88,86,-3,01,7,2,2200
+D,623396962,1170,1143,0,66340,370,91,89,88,86,-3,01,7,2,2200
+D,623397877,915,1142,-1,66341,350,92,97,88,86,-4,01,7,2,2200
+D,623398924,1047,1142,0,66341,405,91,89,88,86,-4,01,7,2,2200
+D,623399809,885,1142,0,66341,297,91,89,88,86,-4,01,7,2,2200
+D,623400865,1056,1141,-1,66342,332,92,97,88,86,-4,01,7,2,2200
+D,623401810,945,1140,-1,66343,289,92,98,88,86,-5,01,7,2,2200
+D,623402824,1014,1140,0,66343,311,92,94,88,86,-5,01,7,2,2200
+D,623403808,984,1140,0,66343,297,92,89,88,85,-5,01,7,2,2200
+D,623404839,1031,1139,-1,66344,332,92,97,88,85,-6,01,7,2,2200
+D,623405809,970,1139,0,66344,288,92,98,88,85,-6,01,7,2,2200
+D,623406824,1015,1139,0,66344,308,92,94,85,85,-6,01,7,2,2200
+D,623407826,1002,1138,-1,66345,301,93,103,85,85,-7,01,7,2,2200
+D,623408886,1060,1138,0,66345,342,93,94,85,85,-7,01,7,2,2200
+D,623409784,898,1137,-1,66346,268,93,103,85,85,-8,01,7,2,2200
+D,623410776,992,1137,0,66346,265,93,95,85,85,-8,01,7,2,2200
+D,623411775,999,1137,0,66346,263,93,95,85,85,-8,01,7,2,2200
+D,623412839,1064,1136,-1,66347,318,93,96,85,85,-9,01,7,2,2200
+D,623413784,945,1136,0,66347,267,94,95,85,85,-9,01,7,2,2200
+D,623414773,989,1136,0,66347,265,94,95,85,85,-9,01,7,2,2200
+D,623415781,1008,1135,-1,66348,264,94,95,85,85,-10,01,7,2,2200
+D,623416966,1185,1135,0,66348,365,94,97,85,85,-10,01,7,2,2200
+D,623417870,904,1134,-1,66349,346,94,97,85,85,-11,01,7,2,2200
+D,623418934,1064,1134,0,66349,424,94,94,85,84,-11,01,7,2,2200
+D,623419797,863,1134,0,66349,287,94,98,85,84,-11,01,7,2,2200
+D,623420832,1035,1133,-1,66350,324,94,97,85,84,-11,01,7,2,2200
+D,623421834,1002,1133,0,66350,317,94,97,85,84,-11,01,7,2,2200
+D,623422817,983,1133,0,66350,303,94,94,85,84,-11,01,7,2,2200
+D,623423821,1004,1132,-1,66351,302,94,98,85,84,-12,01,7,2,2200
+D,623424841,1020,1132,0,66351,321,94,89,85,84,-12,01,7,2,2200
+D,623425809,968,1131,-1,66352,294,94,98,85,84,-13,01,7,2,2200
+D,623426820,1011,1131,0,66352,300,94,94,85,84,-13,01,7,2,2200
+D,623427793,973,1131,0,66352,280,94,95,85,84,-13,01,7,2,2200
+D,623428912,1119,1131,0,66352,342,94,87,85,84,-13,01,7,2,2200
+D,623429793,881,1130,-1,66353,267,94,95,85,83,-14,01,7,2,2200
+D,623430778,985,1130,0,66353,264,94,95,85,83,-14,01,7,2,2200
+D,623431801,1023,1129,-1,66354,289,94,95,83,83,-15,01,7,2,2200
+D,623432844,1043,1129,0,66354,331,94,89,83,83,-15,01,7,2,2200
+D,623433775,931,1129,0,66354,264,94,87,83,83,-15,01,7,2,2200
+D,623434782,1007,1128,-1,66355,265,94,95,83,83,-16,01,7,2,2200
+D,623435771,989,1128,0,66355,264,93,87,83,83,-16,01,7,2,2200
+D,623436912,1141,1127,-1,66356,358,94,97,83,83,-17,01,7,2,2200
+D,623437882,970,1127,0,66356,357,93,89,83,83,-17,01,7,2,2200
+D,623438913,1031,1126,-1,66357,389,94,98,83,83,-18,01,7,2,2200
+D,623439807,894,1126,0,66357,297,93,89,83,83,-18,01,7,2,2200
+D,623440839,1032,1126,0,66357,328,93,89,83,82,-18,01,7,2,2200
+D,623441806,967,1125,-1,66358,292,93,98,83,82,-18,01,7,2,2200
+D,623442825,1019,1125,0,66358,308,93,94,83,82,-18,01,7,2,2200
+D,623443815,990,1124,-1,66359,302,94,98,83,82,-19,01,7,2,2200
+D,623444835,1020,1124,0,66359,327,94,97,83,82,-19,01,7,2,2200
+D,623445803,968,1124,0,66359,284,94,89,83,82,-19,01,7,2,2200
+D,623446820,1017,1124,0,66359,305,93,87,83,82,-19,01,7,2,2200
+D,623447818,998,1123,-1,66360,307,93,95,83,82,-20,01,7,2,2200
+D,623448864,1046,1123,0,66360,340,93,87,83,82,-20,01,7,2,2200
+D,623449786,922,1122,-1,66361,268,93,95,83,82,-21,01,7,2,2200
+D,623450774,988,1122,0,66361,262,93,95,83,82,-21,01,7,2,2200
+D,623451779,1005,1122,0,66361,264,93,87,83,82,-21,01,7,2,2200
+D,623452830,1051,1121,-1,66362,311,93,98,83,82,-22,01,7,2,2200
+D,623453793,963,1120,-1,66363,263,94,102,83,82,-23,01,7,2,2200
+D,623454774,981,1120,0,66363,264,94,95,83,82,-23,01,7,2,2200
+D,623455781,1007,1120,0,66363,266,94,95,83,81,-23,01,7,2,2200
+D,623456913,1132,1119,-1,66364,362,94,97,81,81,-24,01,7,2,2200
+D,623457875,962,1119,0,66364,360,94,97,81,81,-24,01,7,2,2200
+D,623458946,1071,1119,0,66364,403,94,98,81,81,-24,01,7,2,2200
+D,623459804,858,1118,-1,66365,283,94,98,81,81,-25,01,7,2,2200
+D,623460834,1030,1118,0,66365,324,94,97,81,81,-25,01,7,2,2200
+D,623461806,972,1117,-1,66366,282,94,98,81,81,-25,01,7,2,2200
+D,623462819,1013,1117,0,66366,305,94,94,81,81,-25,01,7,2,2200
+D,623463815,996,1116,-1,66367,292,95,106,81,81,-26,01,7,2,2200
+D,623464861,1046,1116,0,66367,332,95,97,81,81,-26,01,7,2,2200
+D,623465808,947,1116,0,66367,289,95,98,81,81,-26,01,7,2,2200
+D,623466810,1002,1116,0,66367,299,95,94,81,81,-26,01,7,2,2200
+D,623467815,1005,1115,-1,66368,297,95,95,81,80,-27,01,7,2,2200
+D,623468901,1086,1115,0,66368,342,95,94,81,80,-27,01,7,2,2200
+D,623469777,876,1115,0,66368,270,95,87,81,80,-27,01,7,2,2200
+D,623470783,1006,1114,-1,66369,264,95,95,81,80,-28,01,7,2,2200
+D,623471776,993,1113,-1,66370,263,95,103,81,80,-29,01,7,2,2200
+D,623472830,1054,1113,0,66370,310,95,98,81,80,-29,01,7,2,2200
+D,623473778,948,1113,0,66370,264,95,95,81,80,-29,01,7,2,2200
+D,623474770,992,1112,-1,66371,263,95,95,81,80,-30,01,7,2,2200
+D,623475784,1014,1112,0,66371,267,95,95,81,80,-30,01,7,2,2200
+D,623476912,1128,1112,0,66371,364,95,97,81,80,-30,01,7,2,2200
+D,623477876,964,1111,-1,66372,354,95,97,81,80,-31,01,7,2,2200
+D,623478931,1055,1111,0,66372,365,95,97,81,79,-31,01,7,2,2200
+D,623479813,882,1110,-1,66373,300,95,98,81,79,-32,01,7,2,2200
+D,623480850,1037,1110,0,66373,325,96,97,81,79,-32,01,7,2,2200
+D,623482394,1544,1109,-1,66374,339,96,104,79,79,-33,01,7,2,2200
+D,623482916,522,1109,0,66374,251,96,97,79,79,-33,01,7,2,2200
+D,623483825,909,1109,0,66374,313,96,89,79,79,-33,01,7,2,2200
+D,623484836,1011,1109,0,66374,314,96,89,79,79,-33,01,7,2,2200
+D,623485818,982,1108,-1,66375,290,96,98,79,79,-33,01,7,2,2200
+D,623486832,1014,1108,0,66375,309,96,94,79,79,-33,01,7,2,2200
+D,623487833,1001,1108,0,66375,307,95,87,79,79,-33,01,7,2,2200
+D,623488861,1028,1107,-1,66376,344,95,95,79,79,-34,01,7,2,2200
+D,623489784,923,1107,0,66376,265,95,95,79,79,-34,01,7,2,2200
+D,623490776,992,1106,-1,66377,263,95,95,79,79,-35,01,7,2,2200
+D,623491789,1013,1106,0,66377,264,95,95,79,78,-35,01,7,2,2200
+D,623492830,1041,1106,0,66377,309,95,89,79,78,-35,01,7,2,2200
+D,623493778,948,1105,-1,66378,263,95,95,79,78,-36,01,7,2,2200
+D,623494771,993,1105,0,66378,264,95,87,79,78,-36,01,7,2,2200
+D,623495779,1008,1104,-1,66379,263,95,95,79,78,-37,01,7,2,2200
+D,623496952,1173,1104,0,66379,368,95,97,79,78,-37,01,7,2,2200
+D,623497865,913,1103,-1,66380,358,95,97,79,78,-38,01,7,2,2200
+D,623498918,1053,1103,0,66380,407,95,98,79,78,-38,01,7,2,2200
+D,623499827,909,1103,0,66380,304,95,97,79,78,-38,01,7,2,2200
+D,623500849,1022,1103,0,66380,323,95,89,79,78,-38,01,7,2,2200
+D,623501817,968,1102,-1,66381,304,95,89,79,78,-39,01,7,2,2200
+D,623502827,1010,1102,0,66381,308,94,86,79,77,-39,01,7,2,2200
+D,623503824,997,1101,-1,66382,303,94,98,79,77,-40,01,7,2,2200
+D,623504835,1011,1101,0,66382,325,94,89,79,77,-40,01,7,2,2200
+D,623505825,990,1101,0,66382,309,94,89,79,77,-40,01,7,2,2200
+D,623506827,1002,1100,-1,66383,315,94,94,77,77,-40,01,7,2,2200
+D,623507826,999,1100,0,66383,311,94,95,77,77,-40,01,7,2,2200
+D,623508909,1083,1100,0,66383,384,94,87,77,77,-40,01,7,2,2200
+D,623509789,880,1099,-1,66384,271,94,95,77,77,-41,01,7,2,2200
+D,623510791,1002,1099,0,66384,262,93,87,77,77,-41,01,7,2,2200
+D,623511774,983,1098,-1,66385,262,94,95,77,77,-42,01,7,2,2200
+D,623512830,1056,1098,0,66385,309,93,88,77,77,-42,01,7,2,2200
+D,623513778,948,1097,-1,66386,265,93,95,77,77,-43,01,7,2,2200
+D,623514786,1008,1097,0,66386,265,93,95,77,77,-43,01,7,2,2200
+D,623515776,990,1097,0,66386,264,93,95,77,75,-43,01,7,2,2200
+D,623516903,1127,1096,-1,66387,369,94,97,77,75,-44,01,7,2,2200
+D,623517905,1002,1096,0,66387,378,94,97,77,75,-44,01,7,2,2200
+D,623518899,994,1095,-1,66388,369,94,98,77,75,-45,01,7,2,2200
+D,623519819,920,1095,0,66388,310,94,98,77,75,-45,01,7,2,2200
+D,623520836,1017,1095,0,66388,315,94,89,77,75,-45,01,7,2,2200
+D,623521804,968,1095,0,66388,290,94,89,77,75,-45,01,7,2,2200
+D,623522824,1020,1094,-1,66389,305,94,94,77,75,-46,01,7,2,2200
+D,623523807,983,1094,0,66389,292,94,89,77,75,-46,01,7,2,2200
+D,623524853,1046,1093,-1,66390,323,94,97,77,74,-47,01,7,2,2200
+D,623525812,959,1093,0,66390,287,94,89,77,74,-47,01,7,2,2200
+D,623526827,1015,1093,0,66390,302,93,86,77,74,-47,01,7,2,2200
+D,623527808,981,1092,-1,66391,295,93,95,77,74,-47,01,7,2,2200
+D,623528847,1039,1092,0,66391,340,93,87,77,74,-47,01,7,2,2200
+D,623529809,962,1092,0,66391,290,93,87,77,74,-47,01,7,2,2200
+D,623530794,985,1091,-1,66392,266,93,95,77,74,-48,01,7,2,2200
+D,623531792,998,1091,0,66392,275,93,95,74,74,-48,01,7,2,2200
+D,623532848,1056,1090,-1,66393,329,93,98,74,73,-49,01,7,2,2200
+D,623533783,935,1090,0,66393,264,93,95,74,73,-49,01,7,2,2200
+D,623534777,994,1090,0,66393,265,93,87,74,73,-49,01,7,2,2200
+D,623535790,1013,1089,-1,66394,263,93,95,74,73,-50,01,7,2,2200
+D,623536887,1097,1089,0,66394,365,93,89,74,73,-50,01,7,2,2200
+D,623537885,998,1088,-1,66395,361,93,97,74,73,-51,01,7,2,2200
+D,623538924,1039,1088,0,66395,376,93,98,74,73,-51,01,7,2,2200
+D,623539806,882,1088,0,66395,296,93,89,74,73,-51,01,7,2,2200
+D,623540843,1037,1088,0,66395,320,93,89,74,73,-51,01,7,2,2200
+D,623541818,975,1087,-1,66396,297,93,89,74,73,-52,01,7,2,2200
+D,623542833,1015,1087,0,66396,304,93,90,74,73,-52,01,7,2,2200
+D,623543811,978,1086,-1,66397,301,93,89,74,73,-53,01,7,2,2200
+D,623544834,1023,1086,0,66397,324,92,89,74,72,-53,01,7,2,2200
+D,623545796,962,1086,0,66397,286,92,89,74,72,-53,01,7,2,2200
+D,623546820,1024,1085,-1,66398,307,92,94,74,72,-54,01,7,2,2200
+D,623547818,998,1085,0,66398,300,92,87,74,72,-54,01,7,2,2200
+D,623548852,1034,1084,-1,66399,341,92,95,74,72,-54,01,7,2,2200
+D,623549790,938,1084,0,66399,272,92,87,74,72,-54,01,7,2,2200
+D,623550786,996,1084,0,66399,265,92,87,74,72,-54,01,7,2,2200
+D,623551775,989,1083,-1,66400,263,92,95,74,72,-55,01,7,2,2200
+D,623552834,1059,1083,0,66400,320,92,89,74,72,-55,01,7,2,2200
+D,623553783,949,1083,0,66400,268,92,87,74,72,-55,01,7,2,2200
+D,623554778,995,1082,-1,66401,264,92,95,74,72,-56,01,7,2,2200
+D,623555773,995,1082,0,66401,265,92,87,74,72,-56,01,7,2,2200
+D,623556887,1114,1082,0,66401,364,92,89,72,71,-56,01,7,2,2200
+D,623557902,1015,1081,-1,66402,373,91,89,72,71,-57,01,7,2,2200
+D,623558933,1031,1081,0,66402,371,91,89,72,71,-57,01,7,2,2200
+D,623559813,880,1080,-1,66403,293,92,98,72,71,-58,01,7,2,2200
+D,623560832,1019,1080,0,66403,324,91,89,72,71,-58,01,7,2,2200
+D,623561802,970,1080,0,66403,293,91,89,72,71,-58,01,7,2,2200
+D,623562837,1035,1080,0,66403,308,91,87,72,71,-58,01,7,2,2200
+D,623563827,990,1079,-1,66404,315,91,89,72,71,-59,01,7,2,2200
+D,623564853,1026,1079,0,66404,325,91,89,72,71,-59,01,7,2,2200
+D,623565806,953,1078,-1,66405,284,91,89,72,71,-60,01,7,2,2200
+D,623566814,1008,1078,0,66405,300,91,87,72,71,-60,01,7,2,2200
+D,623567812,998,1078,0,66405,297,91,87,72,71,-60,01,7,2,2200
+D,623568879,1067,1077,-1,66406,338,90,87,72,70,-61,01,7,2,2200
+D,623569783,904,1077,0,66406,272,90,87,72,70,-61,01,7,2,2200
+D,623570777,994,1076,-1,66407,264,91,95,72,70,-62,01,7,2,2200
+D,623571787,1010,1076,0,66407,268,91,95,72,70,-62,01,7,2,2200
+D,623572835,1048,1076,0,66407,308,91,90,72,70,-62,01,7,2,2200
+D,623573792,957,1075,-1,66408,271,91,95,72,70,-62,01,7,2,2200
+D,623574776,984,1075,0,66408,262,91,87,72,70,-62,01,7,2,2200
+D,623575791,1015,1075,0,66408,264,90,87,72,70,-62,01,7,2,2200
+D,623576930,1139,1075,0,66408,366,90,81,72,70,-62,01,7,2,2200
+D,623577876,946,1074,-1,66409,354,90,89,72,70,-63,01,7,2,2200
+D,623578934,1058,1074,0,66409,358,90,81,72,70,-63,01,7,2,2200
+D,623579803,869,1074,0,66409,289,89,81,72,70,-63,01,7,2,2200
+D,623580841,1038,1073,-1,66410,325,89,89,72,70,-64,01,7,2,2200
+D,623582401,1560,1072,-1,66411,341,89,88,70,70,-65,01,7,2,2200
+D,623582925,524,1072,0,66411,251,89,89,70,70,-65,01,7,2,2200
+D,623583830,905,1072,0,66411,306,89,89,70,70,-65,01,7,2,2200
+D,623584866,1036,1072,0,66411,338,89,81,70,69,-65,01,7,2,2200
+D,623585783,917,1071,-1,66412,274,89,89,70,69,-66,01,7,2,2200
+D,623586830,1047,1071,0,66412,308,89,86,70,69,-66,01,7,2,2200
+D,623587796,966,1070,-1,66413,284,89,95,70,69,-67,01,7,2,2200
+D,623588858,1062,1070,0,66413,346,89,87,70,69,-67,01,7,2,2200
+D,623589785,927,1070,0,66413,265,89,87,70,69,-67,01,7,2,2200
+D,623590776,991,1069,-1,66414,264,89,87,70,69,-68,01,7,2,2200
+D,623591790,1014,1069,0,66414,262,89,87,70,69,-68,01,7,2,2200
+D,623592827,1037,1068,-1,66415,308,89,94,70,68,-69,01,7,2,2200
+D,623593780,953,1068,0,66415,267,89,95,70,68,-69,01,7,2,2200
+D,623594773,993,1068,0,66415,264,89,87,70,68,-69,01,7,2,2200
+D,623595774,1001,1068,0,66415,267,89,87,70,68,-69,01,7,2,2200
+D,623596898,1124,1067,-1,66416,373,89,89,70,68,-69,01,7,2,2200
+D,623597880,982,1067,0,66416,354,89,89,70,68,-69,01,7,2,2200
+D,623598925,1045,1067,0,66416,380,89,81,70,68,-69,01,7,2,2200
+D,623599820,895,1066,-1,66417,293,89,89,70,68,-70,01,7,2,2200
+D,623600848,1028,1066,0,66417,318,88,81,70,68,-70,01,7,2,2200
+D,623601803,955,1065,-1,66418,289,88,89,70,68,-71,01,7,2,2200
+D,623602817,1014,1065,0,66418,299,88,87,70,68,-71,01,7,2,2200
+D,623603806,989,1065,0,66418,295,88,81,70,68,-71,01,7,2,2200
+D,623604843,1037,1064,-1,66419,329,88,89,70,68,-72,01,7,2,2200
+D,623605819,976,1064,0,66419,290,88,89,70,68,-72,01,7,2,2200
+D,623606815,996,1064,0,66419,304,88,87,68,68,-72,01,7,2,2200
+D,623607824,1009,1063,-1,66420,303,88,95,68,68,-73,01,7,2,2200
+D,623608853,1029,1063,0,66420,342,88,87,68,67,-73,01,7,2,2200
+D,623609786,933,1062,-1,66421,268,89,95,68,67,-74,01,7,2,2200
+D,623610778,992,1062,0,66421,264,89,95,68,67,-74,01,7,2,2200
+D,623611787,1009,1062,0,66421,266,89,87,68,67,-74,01,7,2,2200
+D,623612820,1033,1061,-1,66422,309,89,88,68,67,-75,01,7,2,2200
+D,623613781,961,1061,0,66422,264,89,87,68,67,-75,01,7,2,2200
+D,623614775,994,1061,0,66422,263,89,87,68,67,-75,01,7,2,2200
+D,623615780,1005,1061,0,66422,264,89,87,68,67,-75,01,7,2,2200
+D,623616933,1153,1060,-1,66423,362,89,89,68,67,-76,01,7,2,2200
+D,623617854,921,1060,0,66423,346,88,81,68,67,-76,01,7,2,2200
+D,623618934,1080,1060,0,66423,426,88,81,68,67,-76,01,7,2,2200
+D,623619802,868,1059,-1,66424,286,88,89,68,67,-76,01,7,2,2200
+D,623620836,1034,1059,0,66424,326,88,81,68,66,-76,01,7,2,2200
+D,623621813,977,1059,0,66424,295,88,81,68,66,-76,01,7,2,2200
+D,623622814,1001,1058,-1,66425,303,87,87,68,66,-77,01,7,2,2200
+D,623623818,1004,1058,0,66425,299,87,81,68,66,-77,01,7,2,2200
+D,623624848,1030,1058,0,66425,320,87,81,68,66,-77,01,7,2,2200
+D,623625821,973,1057,-1,66426,293,87,89,68,66,-78,01,7,2,2200
+D,623626822,1001,1057,0,66426,308,87,86,68,66,-78,01,7,2,2200
+D,623627813,991,1057,0,66426,285,87,79,68,66,-78,01,7,2,2200
+D,623628923,1110,1056,-1,66427,341,87,87,68,65,-79,01,7,2,2200
+D,623629797,874,1056,0,66427,272,87,87,68,65,-79,01,7,2,2200
+D,623630774,977,1055,-1,66428,264,87,87,68,65,-80,01,7,2,2200
+D,623631783,1009,1055,0,66428,271,87,87,65,65,-80,01,7,2,2200
+D,623632835,1052,1055,0,66428,312,87,81,65,65,-80,01,7,2,2200
+D,623633783,948,1054,-1,66429,270,87,87,65,65,-81,01,7,2,2200
+D,623634778,995,1054,0,66429,268,87,87,65,65,-81,01,7,2,2200
+D,623635773,995,1054,0,66429,265,86,79,65,65,-81,01,7,2,2200
+D,623636912,1139,1053,-1,66430,359,86,89,65,65,-82,01,7,2,2200
+D,623637885,973,1053,0,66430,356,86,81,65,65,-82,01,7,2,2200
+D,623638947,1062,1053,0,66430,424,86,81,65,65,-82,01,7,2,2200
+D,623639812,865,1053,0,66430,293,86,73,65,65,-82,01,7,2,2200
+D,623640839,1027,1052,-1,66431,322,85,81,65,65,-83,01,7,2,2200
+D,623641828,989,1052,0,66431,301,85,81,65,65,-83,01,7,2,2200
+D,623642812,984,1052,0,66431,300,85,79,65,65,-83,01,7,2,2200
+D,623643815,1003,1052,0,66431,298,84,73,65,65,-83,01,7,2,2200
+D,623644843,1028,1051,-1,66432,322,84,81,65,64,-83,01,7,2,2200
+D,623645806,963,1051,0,66432,296,84,81,65,64,-83,01,7,2,2200
+D,623646830,1024,1051,0,66432,305,84,79,65,64,-83,01,7,2,2200
+D,623647800,970,1050,-1,66433,285,84,79,65,64,-84,01,7,2,2200
+D,623648911,1111,1050,0,66433,352,84,79,65,64,-84,01,7,2,2200
+D,623649794,883,1050,0,66433,273,83,79,65,64,-84,01,7,2,2200
+D,623650777,983,1049,-1,66434,263,83,79,65,64,-85,01,7,2,2200
+D,623651774,997,1049,0,66434,264,83,79,65,64,-85,01,7,2,2200
+D,623652838,1064,1049,0,66434,319,83,73,65,63,-85,01,7,2,2200
+D,623653793,955,1048,-1,66435,265,83,79,65,63,-86,01,7,2,2200
+D,623654783,990,1048,0,66435,265,82,79,65,63,-86,01,7,2,2200
+D,623655773,990,1048,0,66435,264,82,79,65,63,-86,01,7,2,2200
+D,623656972,1199,1047,-1,66436,366,82,81,63,63,-87,01,7,2,2200
+D,623657864,892,1047,0,66436,346,82,81,63,63,-87,01,7,2,2200
+D,623658940,1076,1047,0,66436,414,82,73,63,63,-87,01,7,2,2200
+D,623659805,865,1046,-1,66437,290,82,81,63,63,-88,01,7,2,2200
+D,623660831,1026,1046,0,66437,323,81,73,63,63,-88,01,7,2,2200
+D,623661798,967,1046,0,66437,284,81,73,63,63,-88,01,7,2,2200
+D,623662824,1026,1046,0,66437,303,81,71,63,63,-88,01,7,2,2200
+D,623663815,991,1046,0,66437,300,80,65,63,63,-88,01,7,2,2200
+D,623664856,1041,1045,-1,66438,327,80,73,63,63,-89,01,7,2,2200
+D,623665807,951,1045,0,66438,283,80,73,63,63,-89,01,7,2,2200
+D,623666814,1007,1044,-1,66439,298,80,79,63,63,-90,01,7,2,2200
+D,623667809,995,1044,0,66439,294,79,71,63,63,-90,01,7,2,2200
+D,623668867,1058,1044,0,66439,336,79,71,63,62,-90,01,7,2,2200
+D,623669782,915,1043,-1,66440,272,79,79,63,62,-91,01,7,2,2200
+D,623670780,998,1043,0,66440,263,79,79,63,62,-91,01,7,2,2200
+D,623671774,994,1043,0,66440,266,79,71,63,62,-91,01,7,2,2200
+D,623672840,1066,1042,-1,66441,323,79,81,63,62,-91,01,7,2,2200
+D,623673793,953,1042,0,66441,265,79,79,63,62,-91,01,7,2,2200
+D,623674780,987,1042,0,66441,263,79,79,63,62,-91,01,7,2,2200
+D,623675793,1013,1041,-1,66442,264,79,79,63,62,-92,01,7,2,2200
+D,623676898,1105,1041,0,66442,349,79,81,63,62,-92,01,7,2,2200
+D,623677919,1021,1040,-1,66443,396,79,81,63,62,-93,01,7,2,2200
+D,623678932,1013,1040,0,66443,365,79,81,63,62,-93,01,7,2,2200
+D,623679815,883,1040,0,66443,297,79,81,63,62,-93,01,7,2,2200
+D,623680849,1034,1040,0,66443,326,79,73,63,61,-93,01,7,2,2200
+D,623682431,1582,1039,-1,66444,340,79,80,61,61,-94,01,7,2,2200
+D,623682984,553,1039,0,66444,264,79,81,61,61,-94,01,7,2,2200
+D,623683843,859,1039,0,66444,315,79,73,61,61,-94,01,7,2,2200
+D,623684844,1001,1038,-1,66445,330,79,81,61,61,-95,01,7,2,2200
+D,623685802,958,1038,0,66445,277,79,81,61,61,-95,01,7,2,2200
+D,623686822,1020,1038,0,66445,307,79,79,61,61,-95,01,7,2,2200
+D,623687805,983,1038,0,66445,288,79,71,61,61,-95,01,7,2,2200
+D,623688875,1070,1038,0,66445,346,78,71,61,60,-95,01,7,2,2200
+D,623689785,910,1037,-1,66446,266,78,79,61,60,-96,01,7,2,2200
+D,623690778,993,1037,0,66446,264,78,71,61,60,-96,01,7,2,2200
+D,623691788,1010,1036,-1,66447,264,78,79,61,60,-97,01,7,2,2200
+D,623692847,1059,1036,0,66447,319,78,81,61,60,-97,01,7,2,2200
+D,623693792,945,1036,0,66447,272,78,79,61,60,-97,01,7,2,2200
+D,623694773,981,1036,0,66447,265,78,79,61,60,-97,01,7,2,2200
+D,623695787,1014,1035,-1,66448,264,78,79,61,60,-98,01,7,2,2200
+D,623696919,1132,1035,0,66448,382,78,73,61,60,-98,01,7,2,2200
+D,623697879,960,1035,0,66448,347,78,73,61,60,-98,01,7,2,2200
+D,623698939,1060,1035,0,66448,407,78,73,61,60,-98,01,7,2,2200
+D,623699808,869,1034,-1,66449,283,77,73,61,60,-98,01,7,2,2200
+D,623700838,1030,1034,0,66449,326,77,73,61,60,-98,01,7,2,2200
+D,623701797,959,1034,0,66449,280,77,73,61,60,-98,01,7,2,2200
+D,623702821,1024,1034,0,66449,310,77,71,61,60,-98,01,7,2,2200
+D,623703814,993,1033,-1,66450,291,77,73,61,60,-99,01,7,2,2200
+D,623704839,1025,1033,0,66450,331,77,73,61,59,-99,01,7,2,2200
+D,623705812,973,1033,0,66450,285,76,65,61,59,-99,01,7,2,2200
+D,623706823,1011,1032,-1,66451,307,76,71,59,59,-100,01,7,2,2200
+D,623707810,987,1032,0,66451,297,76,71,59,59,-100,01,7,2,2200
+D,623708868,1058,1032,0,66451,341,75,63,59,59,-100,01,7,2,2200
+D,623709779,911,1032,0,66451,268,75,63,59,59,-100,01,7,2,2200
+D,623710793,1014,1032,0,66451,264,74,63,59,59,-100,01,7,2,2200
+D,623711777,984,1031,-1,66452,264,74,71,59,59,-101,01,7,2,2200
+D,623712829,1052,1031,0,66452,310,74,64,59,59,-101,01,7,2,2200
+D,623713777,948,1031,0,66452,265,73,63,59,59,-101,01,7,2,2200
+D,623714788,1011,1031,0,66452,280,73,63,59,59,-101,01,7,2,2200
+D,623715787,999,1030,-1,66453,274,73,63,59,59,-102,01,7,2,2200
+D,623716946,1159,1030,0,66453,348,72,65,59,58,-102,01,7,2,2200
+D,623717880,934,1030,0,66453,349,72,65,59,58,-102,01,7,2,2200
+D,623718934,1054,1030,0,66453,405,72,65,59,58,-102,01,7,2,2200
+D,623719800,866,1029,-1,66454,280,71,65,59,58,-103,01,7,2,2200
+D,623720838,1038,1029,0,66454,329,71,65,59,58,-103,01,7,2,2200
+D,623721804,966,1029,0,66454,287,71,57,59,58,-103,01,7,2,2200
+D,623722817,1013,1029,0,66454,309,70,55,59,58,-103,01,7,2,2200
+D,623723814,997,1028,-1,66455,296,70,65,59,58,-104,01,7,2,2200
+D,623724844,1030,1028,0,66455,327,70,65,59,57,-104,01,7,2,2200
+D,623725844,1000,1028,0,66455,304,69,57,59,57,-104,01,7,2,2200
+D,623726824,980,1028,0,66455,302,69,55,59,57,-104,01,7,2,2200
+D,623727804,980,1027,-1,66456,294,68,63,59,57,-105,01,7,2,2200
+D,623728869,1065,1027,0,66456,341,68,63,59,57,-105,01,7,2,2200
+D,623729788,919,1027,0,66456,266,68,63,59,57,-105,01,7,2,2200
+D,623730772,984,1026,-1,66457,262,68,63,59,57,-105,01,7,2,2200
+D,623731791,1019,1026,0,66457,274,68,63,57,57,-105,01,7,2,2200
+D,623732831,1040,1026,0,66457,314,68,65,57,57,-105,01,7,2,2200
+D,623733771,940,1026,0,66457,263,67,63,57,57,-105,01,7,2,2200
+D,623734793,1022,1025,-1,66458,264,67,63,57,57,-106,01,7,2,2200
+D,623735776,983,1025,0,66458,263,67,63,57,57,-106,01,7,2,2200
+D,623736972,1196,1025,0,66458,424,67,57,57,56,-106,01,7,2,2200
+D,623737848,876,1025,0,66458,340,66,57,57,56,-106,01,7,2,2200
+D,623738944,1096,1025,0,66458,407,66,57,57,56,-106,01,7,2,2200
+D,623739811,867,1024,-1,66459,297,66,65,57,56,-107,01,7,2,2200
+D,623740847,1036,1024,0,66459,320,66,65,57,56,-107,01,7,2,2200
+D,623741809,962,1024,0,66459,287,65,57,57,56,-107,01,7,2,2200
+D,623742813,1004,1023,-1,66460,297,65,63,57,56,-108,01,7,2,2200
+D,623743801,988,1023,0,66460,286,65,65,57,56,-108,01,7,2,2200
+D,623744842,1041,1023,0,66460,315,65,65,57,56,-108,01,7,2,2200
+D,623745818,976,1023,0,66460,291,65,57,57,56,-108,01,7,2,2200
+D,623746822,1004,1023,0,66460,302,65,55,57,56,-108,01,7,2,2200
+D,623747809,987,1022,-1,66461,290,65,63,57,56,-109,01,7,2,2200
+D,623748926,1117,1022,0,66461,353,64,63,57,56,-109,01,7,2,2200
+D,623749795,869,1021,-1,66462,272,65,71,57,56,-110,01,7,2,2200
+D,623750778,983,1021,0,66462,261,65,63,57,56,-110,01,7,2,2200
+D,623751788,1010,1021,0,66462,263,65,63,57,56,-110,01,7,2,2200
+D,623752826,1038,1021,0,66462,309,65,65,57,55,-110,01,7,2,2200
+D,623753781,955,1021,0,66462,262,65,63,57,55,-110,01,7,2,2200
+D,623754778,997,1020,-1,66463,262,64,63,57,55,-111,01,7,2,2200
+D,623755780,1002,1020,0,66463,262,64,63,57,55,-111,01,7,2,2200
+D,623756877,1097,1020,0,66463,355,64,65,55,55,-111,01,7,2,2200
+D,623757907,1030,1019,-1,66464,384,64,65,55,55,-112,01,7,2,2200
+D,623758949,1042,1019,0,66464,434,64,65,55,55,-112,01,7,2,2200
+D,623759804,855,1019,0,66464,285,65,65,55,55,-112,01,7,2,2200
+D,623760850,1046,1019,0,66464,325,64,57,55,55,-112,01,7,2,2200
+D,623761799,949,1019,0,66464,276,64,57,55,55,-112,01,7,2,2200
+D,623762825,1026,1019,0,66464,311,64,55,55,55,-112,01,7,2,2200
+D,623763807,982,1018,-1,66465,293,64,65,55,55,-113,01,7,2,2200
+D,623764834,1027,1018,0,66465,322,63,57,55,54,-113,01,7,2,2200
+D,623765815,981,1017,-1,66466,293,63,65,55,54,-113,01,7,2,2200
+D,623766828,1013,1017,0,66466,311,63,63,55,54,-113,01,7,2,2200
+D,623767810,982,1017,0,66466,281,63,63,55,54,-113,01,7,2,2200
+D,623768910,1100,1017,0,66466,345,63,63,55,54,-113,01,7,2,2200
+D,623769799,889,1017,0,66466,277,63,63,55,54,-113,01,7,2,2200
+D,623770776,977,1017,0,66466,266,63,55,55,54,-113,01,7,2,2200
+D,623771783,1007,1017,0,66466,263,63,55,55,54,-113,01,7,2,2200
+D,623772805,1022,1016,-1,66467,286,63,63,55,54,-114,01,7,2,2200
+D,623773777,972,1016,0,66467,265,62,55,55,54,-114,01,7,2,2200
+D,623774776,999,1016,0,66467,264,62,55,55,54,-114,01,7,2,2200
+D,623775789,1013,1016,0,66467,265,62,55,55,54,-114,01,7,2,2200
+D,623776917,1128,1016,0,66467,373,62,57,55,53,-114,01,7,2,2200
+D,623777870,953,1015,-1,66468,346,62,57,55,53,-115,01,7,2,2200
+D,623778944,1074,1015,0,66468,420,61,57,55,53,-115,01,7,2,2200
+D,623779792,848,1015,0,66468,284,61,55,55,53,-115,01,7,2,2200
+D,623780837,1045,1015,0,66468,326,61,49,55,53,-115,01,7,2,2200
+D,623782357,1520,1014,-1,66469,321,60,56,53,53,-116,01,7,2,2200
+D,623782907,550,1014,0,66469,262,60,57,53,53,-116,01,7,2,2200
+D,623783824,917,1014,0,66469,313,60,57,53,53,-116,01,7,2,2200
+D,623784841,1017,1014,0,66469,332,60,49,53,53,-116,01,7,2,2200
+D,623785789,948,1014,0,66469,278,59,49,53,53,-116,01,7,2,2200
+D,623786822,1033,1013,-1,66470,308,59,55,53,53,-117,01,7,2,2200
+D,623787786,964,1013,0,66470,272,59,55,53,53,-117,01,7,2,2200
+D,623788912,1126,1013,0,66470,343,58,47,53,52,-117,01,7,2,2200
+D,623789784,872,1013,0,66470,266,58,48,53,52,-117,01,7,2,2200
+D,623790800,1016,1012,-1,66471,272,58,55,53,52,-118,01,7,2,2200
+D,623791777,977,1012,0,66471,266,58,55,53,52,-118,01,7,2,2200
+D,623792837,1060,1012,0,66471,312,58,57,53,52,-118,01,7,2,2200
+D,623793789,952,1012,0,66471,264,58,55,53,52,-118,01,7,2,2200
+D,623794788,999,1012,0,66471,261,57,47,53,52,-118,01,7,2,2200
+D,623795777,989,1011,-1,66472,263,57,55,53,52,-119,01,7,2,2200
+D,623796896,1119,1011,0,66472,349,57,49,53,52,-119,01,7,2,2200
+D,623797905,1009,1011,0,66472,375,57,49,53,52,-119,01,7,2,2200
+D,623798899,994,1011,0,66472,369,56,47,53,52,-119,01,7,2,2200
+D,623799806,907,1011,0,66472,290,56,49,53,52,-119,01,7,2,2200
+D,623800851,1045,1011,0,66472,326,56,49,53,51,-119,01,7,2,2200
+D,623801812,961,1011,0,66472,295,55,49,53,51,-119,01,7,2,2200
+D,623802827,1015,1010,-1,66473,306,55,49,53,51,-120,01,7,2,2200
+D,623803810,983,1010,0,66473,292,55,49,53,51,-120,01,7,2,2200
+D,623804828,1018,1010,0,66473,317,55,49,53,51,-120,01,7,2,2200
+D,623805807,979,1010,0,66473,282,54,49,53,51,-120,01,7,2,2200
+D,623806822,1015,1010,0,66473,308,54,47,51,51,-120,01,7,2,2200
+D,623807812,990,1009,-1,66474,295,54,55,51,51,-120,01,7,2,2200
+D,623808872,1060,1009,0,66474,342,54,47,51,51,-120,01,7,2,2200
+D,623809800,928,1009,0,66474,272,54,49,51,51,-120,01,7,2,2200
+D,623810777,977,1009,0,66474,264,53,47,51,51,-120,01,7,2,2200
+D,623811782,1005,1009,0,66474,262,53,47,51,51,-120,01,7,2,2200
+D,623812854,1072,1008,-1,66475,335,53,48,51,50,-121,01,7,2,2200
+D,623813781,927,1008,0,66475,269,53,47,51,50,-121,01,7,2,2200
+D,623814771,990,1008,0,66475,263,53,47,51,50,-121,01,7,2,2200
+D,623815784,1013,1008,0,66475,264,52,47,51,50,-121,01,7,2,2200
+D,623816891,1107,1008,0,66475,370,52,41,51,50,-121,01,7,2,2200
+D,623817881,990,1008,0,66475,352,51,41,51,50,-121,01,7,2,2200
+D,623818935,1054,1007,-1,66476,368,51,49,51,50,-122,01,7,2,2200
+D,623819824,889,1007,0,66476,294,51,49,51,50,-122,01,7,2,2200
+D,623820832,1008,1007,0,66476,317,51,41,51,50,-122,01,7,2,2200
+D,623821808,976,1007,0,66476,286,50,41,51,50,-122,01,7,2,2200
+D,623822827,1019,1007,0,66476,313,50,39,51,50,-122,01,7,2,2200
+D,623823835,1008,1006,-1,66477,310,50,49,51,50,-123,01,7,2,2200
+D,623824847,1012,1006,0,66477,333,50,49,51,49,-123,01,7,2,2200
+D,623825808,961,1006,0,66477,282,50,41,51,49,-123,01,7,2,2200
+D,623826817,1009,1006,0,66477,297,49,39,51,49,-123,01,7,2,2200
+D,623827820,1003,1006,0,66477,302,49,39,51,49,-123,01,7,2,2200
+D,623828850,1030,1006,0,66477,340,48,39,51,49,-123,01,7,2,2200
+D,623829784,934,1005,-1,66478,267,48,47,51,49,-124,01,7,2,2200
+D,623830787,1003,1005,0,66478,259,48,47,51,49,-124,01,7,2,2200
+D,623831783,996,1005,0,66478,275,48,47,49,49,-124,01,7,2,2200
+D,623832846,1063,1005,0,66478,317,48,41,49,49,-124,01,7,2,2200
+D,623833774,928,1005,0,66478,266,48,39,49,49,-124,01,7,2,2200
+D,623834789,1015,1005,0,66478,273,47,39,49,49,-124,01,7,2,2200
+D,623835792,1003,1004,-1,66479,264,47,47,49,49,-125,01,7,2,2200
+D,623836891,1099,1004,0,66479,376,47,49,49,48,-125,01,7,2,2200
+D,623837886,995,1004,0,66479,359,47,41,49,48,-125,01,7,2,2200
+D,623838910,1024,1004,0,66479,389,47,41,49,48,-125,01,7,2,2200
+D,623839817,907,1004,0,66479,290,47,41,49,48,-125,01,7,2,2200
+D,623840834,1017,1004,0,66479,316,46,41,49,48,-125,01,7,2,2200
+D,623841810,976,1004,0,66479,285,46,41,49,48,-125,01,7,2,2200
+D,623842818,1008,1003,-1,66480,300,46,47,49,48,-126,01,7,2,2200
+D,623843810,992,1003,0,66480,294,46,41,49,48,-126,01,7,2,2200
+D,623844844,1034,1003,0,66480,329,46,41,49,48,-126,01,7,2,2200
+D,623845830,986,1003,0,66480,301,46,41,49,48,-126,01,7,2,2200
+D,623846818,988,1003,0,66480,301,45,39,49,48,-126,01,7,2,2200
+D,623847836,1018,1002,-1,66481,311,45,47,49,48,-127,01,7,2,2200
+D,623848860,1024,1002,0,66481,338,45,47,49,47,-127,01,7,2,2200
+D,623849787,927,1002,0,66481,272,45,40,49,47,-127,01,7,2,2200
+D,623850784,997,1002,0,66481,263,45,39,49,47,-127,01,7,2,2200
+D,623851778,994,1002,0,66481,264,45,39,49,47,-127,01,7,2,2200
+D,623852829,1051,1001,-1,66482,302,45,49,49,47,-127,01,7,2,2200
+D,623853781,952,1001,0,66482,263,45,47,49,47,-127,01,7,2,2200
+D,623854774,993,1001,0,66482,264,45,39,49,47,-127,01,7,2,2200
+D,623855782,1008,1001,0,66482,263,45,39,49,47,-127,01,7,2,2200
+D,623856933,1151,1001,0,66482,409,44,41,46,46,-127,01,7,2,2200
+D,623857854,921,1001,0,66482,345,44,41,46,46,-127,01,7,2,2200
+D,623858955,1101,1001,0,66482,419,44,41,46,46,-127,01,7,2,2200
+D,623859804,849,1000,-1,66483,294,44,41,46,46,-128,01,7,2,2200
+D,623860840,1036,1000,0,66483,328,44,41,46,46,-128,01,7,2,2200
+D,623861810,970,1000,0,66483,293,44,41,46,46,-128,01,7,2,2200
+D,623862828,1018,1000,0,66483,306,44,39,46,46,-128,01,7,2,2200
+D,623863796,968,1000,0,66483,281,43,41,46,46,-128,01,7,2,2200
+D,623864832,1036,1000,0,66483,315,43,41,46,46,-128,01,7,2,2200
+D,623865806,974,999,-1,66484,291,43,41,46,46,-129,01,7,2,2200
+D,623866835,1029,999,0,66484,312,43,39,46,46,-129,01,7,2,2200
+D,623867817,982,999,0,66484,291,43,39,46,46,-129,01,7,2,2200
+D,623868915,1098,999,0,66484,348,43,41,46,46,-129,01,7,2,2200
+D,623869795,880,999,0,66484,271,43,40,46,46,-129,01,7,2,2200
+D,623870774,979,998,-1,66485,260,43,47,46,46,-130,01,7,2,2200
+D,623871784,1010,998,0,66485,264,43,47,46,46,-130,01,7,2,2200
+D,623872837,1053,998,0,66485,318,43,41,46,45,-130,01,7,2,2200
+D,623873779,942,998,0,66485,264,43,39,46,45,-130,01,7,2,2200
+D,623874790,1011,998,0,66485,265,43,39,46,45,-130,01,7,2,2200
+D,623875775,985,998,0,66485,264,43,39,46,45,-130,01,7,2,2200
+D,623876920,1145,998,0,66485,354,43,41,46,45,-130,01,7,2,2200
+D,623877899,979,997,-1,66486,370,42,41,46,45,-131,01,7,2,2200
+D,623878948,1049,997,0,66486,426,42,41,46,45,-131,01,7,2,2200
+D,623879804,856,997,0,66486,295,42,41,46,45,-131,01,7,2,2200
+D,623880839,1035,997,0,66486,318,42,41,46,45,-131,01,7,2,2200
+D,623882340,1501,997,0,66486,325,42,40,45,45,-131,01,7,2,2200
+D,623882899,559,997,0,66486,263,42,32,45,45,-131,01,7,2,2200
+D,623883825,926,997,0,66486,310,42,33,45,45,-131,01,7,2,2200
+D,623884856,1031,997,0,66486,328,41,32,45,44,-131,01,7,2,2200
+D,623885802,946,997,0,66486,287,41,33,45,44,-131,01,7,2,2200
+D,623886828,1026,996,-1,66487,308,41,39,45,44,-132,01,7,2,2200
+D,623887787,959,996,0,66487,274,41,40,45,44,-132,01,7,2,2200
+D,623888901,1114,996,0,66487,351,41,39,45,44,-132,01,7,2,2200
+D,623889798,897,996,0,66487,272,41,40,45,44,-132,01,7,2,2200
+D,623890789,991,996,0,66487,262,40,32,45,44,-132,01,7,2,2200
+D,623891780,991,996,0,66487,264,40,32,45,44,-132,01,7,2,2200
+D,623892852,1072,996,0,66487,324,40,33,45,44,-132,01,7,2,2200
+D,623893788,936,996,0,66487,265,39,32,45,44,-132,01,7,2,2200
+D,623894794,1006,995,-1,66488,265,39,39,45,44,-133,01,7,2,2200
+D,623895773,979,995,0,66488,263,39,39,45,44,-133,01,7,2,2200
+D,623896853,1080,995,0,66488,339,39,33,45,44,-133,01,7,2,2200
+D,623897971,1118,995,0,66488,447,39,32,45,44,-133,01,7,2,2200
+D,623898878,907,995,0,66488,344,39,31,45,44,-133,01,7,2,2200
+D,623899828,950,995,0,66488,316,38,33,45,44,-133,01,7,2,2200
+D,623900859,1031,994,-1,66489,338,38,32,45,43,-134,01,7,2,2200
+D,623901805,946,994,0,66489,288,38,33,45,43,-134,01,7,2,2200
+D,623902827,1022,994,0,66489,312,38,31,45,43,-134,01,7,2,2200
+D,623903802,975,994,0,66489,278,37,33,45,43,-134,01,7,2,2200
+D,623904850,1048,994,0,66489,336,37,32,45,42,-134,01,7,2,2200
+D,623905803,953,994,0,66489,280,37,33,45,42,-134,01,7,2,2200
+D,623906830,1027,994,0,66489,318,37,31,42,42,-134,01,7,2,2200
+D,623907825,995,993,-1,66490,303,37,39,42,42,-134,01,7,2,2200
+D,623908862,1037,993,0,66490,337,37,32,42,42,-134,01,7,2,2200
+D,623909784,922,993,0,66490,266,37,32,42,42,-134,01,7,2,2200
+D,623910808,1024,993,0,66490,277,36,31,42,42,-134,01,7,2,2200
+D,623911785,977,993,0,66490,265,36,32,42,42,-134,01,7,2,2200
+D,623912844,1059,993,0,66490,324,36,32,42,42,-134,01,7,2,2200
+D,623913774,930,993,0,66490,266,36,32,42,42,-134,01,7,2,2200
+D,623914784,1010,992,-1,66491,265,36,39,42,42,-135,01,7,2,2200
+D,623915793,1009,992,0,66491,264,36,39,42,42,-135,01,7,2,2200
+D,623916899,1106,992,0,66491,354,36,32,42,42,-135,01,7,2,2200
+D,623917905,1006,992,0,66491,383,36,32,42,42,-135,01,7,2,2200
+D,623918907,1002,992,0,66491,347,36,33,42,42,-135,01,7,2,2200
+D,623919804,897,992,0,66491,294,36,33,42,42,-135,01,7,2,2200
+D,623920856,1052,991,-1,66492,328,36,41,42,41,-136,01,7,2,2200
+D,623921826,970,991,0,66492,306,36,41,42,41,-136,01,7,2,2200
+D,623922823,997,991,0,66492,306,36,39,42,41,-136,01,7,2,2200
+D,623923815,992,991,0,66492,291,36,41,42,41,-136,01,7,2,2200
+D,623924844,1029,991,0,66492,321,36,32,42,41,-136,01,7,2,2200
+D,623925800,956,991,0,66492,280,36,33,42,41,-136,01,7,2,2200
+D,623926824,1024,991,0,66492,303,36,31,42,41,-136,01,7,2,2200
+D,623927811,987,991,0,66492,294,36,32,42,41,-136,01,7,2,2200
+D,623928866,1055,991,0,66492,347,35,32,42,41,-136,01,7,2,2200
+D,623929787,921,991,0,66492,266,35,32,42,41,-136,01,7,2,2200
+D,623930779,992,990,-1,66493,264,35,39,42,41,-137,01,7,2,2200
+D,623931790,1011,990,0,66493,275,35,32,41,41,-137,01,7,2,2200
+D,623932838,1048,990,0,66493,322,35,33,41,40,-137,01,7,2,2200
+D,623933782,944,990,0,66493,271,35,32,41,40,-137,01,7,2,2200
+D,623934773,991,990,0,66493,265,35,32,41,40,-137,01,7,2,2200
+D,623935787,1014,990,0,66493,263,35,32,41,40,-137,01,7,2,2200
+D,623936871,1084,990,0,66493,356,35,33,41,40,-137,01,7,2,2200
+D,623937929,1058,989,-1,66494,402,35,32,41,40,-138,01,7,2,2200
+D,623938906,977,989,0,66494,353,35,33,41,40,-138,01,7,2,2200
+D,623939808,902,989,0,66494,294,34,33,41,40,-138,01,7,2,2200
+D,623940851,1043,989,0,66494,332,34,33,41,39,-138,01,7,2,2200
+D,623941799,948,989,0,66494,292,34,33,41,39,-138,01,7,2,2200
+D,623942831,1032,989,0,66494,312,34,31,41,39,-138,01,7,2,2200
+D,623943825,994,989,0,66494,294,34,32,41,39,-138,01,7,2,2200
+D,623944842,1017,989,0,66494,323,34,24,41,39,-138,01,7,2,2200
+D,623945805,963,988,-1,66495,279,34,33,41,39,-139,01,7,2,2200
+D,623946815,1010,988,0,66495,304,34,31,41,39,-139,01,7,2,2200
+D,623947813,998,988,0,66495,292,34,32,41,39,-139,01,7,2,2200
+D,623948864,1051,988,0,66495,350,33,32,41,39,-139,01,7,2,2200
+D,623949778,914,988,0,66495,264,33,32,41,39,-139,01,7,2,2200
+D,623950778,1000,988,0,66495,264,33,32,41,39,-139,01,7,2,2200
+D,623951786,1008,988,0,66495,264,33,24,41,39,-139,01,7,2,2200
+D,623952813,1027,988,0,66495,300,33,24,41,39,-139,01,7,2,2200
+D,623953789,976,987,-1,66496,264,33,32,41,39,-140,01,7,2,2200
+D,623954780,991,987,0,66496,266,32,32,41,39,-140,01,7,2,2200
+D,623955778,998,987,0,66496,266,32,32,41,39,-140,01,7,2,2200
+D,623956957,1179,987,0,66496,372,32,32,39,38,-140,01,7,2,2200
+D,623957874,917,987,0,66496,352,32,32,39,38,-140,01,7,2,2200
+D,623958940,1066,987,0,66496,423,32,32,39,38,-140,01,7,2,2200
+D,623959800,860,987,0,66496,285,32,33,39,38,-140,01,7,2,2200
+D,623960822,1022,986,-1,66497,301,32,33,39,38,-141,01,7,2,2200
+D,623961800,978,986,0,66497,288,32,33,39,38,-141,01,7,2,2200
+D,623962817,1017,986,0,66497,300,32,31,39,38,-141,01,7,2,2200
+D,623963818,1001,986,0,66497,304,32,33,39,38,-141,01,7,2,2200
+D,623964835,1017,986,0,66497,317,32,32,39,38,-141,01,7,2,2200
+D,623965828,993,986,0,66497,302,32,33,39,38,-141,01,7,2,2200
+D,623966811,983,986,0,66497,297,32,31,39,38,-141,01,7,2,2200
+D,623967810,999,985,-1,66498,295,33,39,39,38,-142,01,7,2,2200
+D,623968908,1098,985,0,66498,354,33,33,39,37,-142,01,7,2,2200
+D,623969800,892,985,0,66498,274,33,32,39,37,-142,01,7,2,2200
+D,623970779,979,985,0,66498,264,33,32,39,37,-142,01,7,2,2200
+D,623971790,1011,985,0,66498,263,33,32,39,37,-142,01,7,2,2200
+D,623972810,1020,985,0,66498,300,32,31,39,37,-142,01,7,2,2200
+D,623973783,973,985,0,66498,266,32,32,39,37,-142,01,7,2,2200
+D,623974776,993,984,-1,66499,264,33,39,39,37,-142,01,7,2,2200
+D,623975784,1008,984,0,66499,265,33,39,39,37,-142,01,7,2,2200
+D,623976941,1157,984,0,66499,350,33,32,39,37,-142,01,7,2,2200
+D,623977879,938,984,0,66499,351,33,32,39,37,-142,01,7,2,2200
+D,623978935,1056,984,0,66499,405,33,32,39,37,-142,01,7,2,2200
+D,623979812,877,984,0,66499,284,33,33,39,37,-142,01,7,2,2200
+D,623980831,1019,984,0,66499,318,33,32,39,37,-142,01,7,2,2200
+D,623982347,1516,984,0,66499,332,33,32,37,37,-142,01,7,2,2200
+D,623982903,556,984,0,66499,261,33,32,37,37,-142,01,7,2,2200
+D,623983816,913,984,0,66499,306,33,24,37,37,-142,01,7,2,2200
+D,623984868,1052,983,-1,66500,339,33,32,37,36,-143,01,7,2,2200
+D,623985799,931,983,0,66500,276,33,33,37,36,-143,01,7,2,2200
+D,623986834,1035,983,0,66500,305,32,31,37,36,-143,01,7,2,2200
+D,623987807,973,983,0,66500,296,32,32,37,36,-143,01,7,2,2200
+D,623988861,1054,983,0,66500,339,32,32,37,36,-143,01,7,2,2200
+D,623989793,932,983,0,66500,268,32,32,37,36,-143,01,7,2,2200
+D,623990783,990,983,0,66500,263,32,32,37,36,-143,01,7,2,2200
+D,623991772,989,982,-1,66501,265,32,32,37,36,-144,01,7,2,2200
+D,623992823,1051,982,0,66501,314,32,33,37,35,-144,01,7,2,2200
+D,623993786,963,982,0,66501,266,32,32,37,35,-144,01,7,2,2200
+D,623994778,992,982,0,66501,264,32,32,37,35,-144,01,7,2,2200
+D,623995785,1007,982,0,66501,264,32,32,37,35,-144,01,7,2,2200
+D,623996948,1163,982,0,66501,406,32,32,37,35,-144,01,7,2,2200
+D,623997935,987,982,0,66501,407,32,24,37,35,-144,01,7,2,2200
+D,623998913,978,982,0,66501,385,32,24,37,35,-144,01,7,2,2200
+D,623999817,904,982,0,66501,298,31,24,37,35,-144,01,7,2,2200
+D,624000849,1032,982,0,66501,328,31,24,37,34,-144,01,7,2,2200
+D,624001824,975,981,-1,66502,296,31,33,37,34,-145,01,7,2,2200
+D,624002831,1007,981,0,66502,307,31,33,37,34,-145,01,7,2,2200
+D,624003807,976,981,0,66502,287,31,33,37,34,-145,01,7,2,2200
+D,624004825,1018,981,0,66502,312,31,24,37,34,-145,01,7,2,2200
+D,624005803,978,981,0,66502,289,31,24,37,34,-145,01,7,2,2200
+D,624006834,1031,981,0,66502,311,30,24,34,34,-145,01,7,2,2200
+D,624007820,986,981,0,66502,303,30,24,34,34,-145,01,7,2,2200
+D,624008857,1037,980,-1,66503,342,30,32,34,34,-146,01,7,2,2200
+D,624009791,934,980,0,66503,269,30,32,34,34,-146,01,7,2,2200
+D,624010776,985,980,0,66503,263,30,32,34,34,-146,01,7,2,2200
+D,624011788,1012,980,0,66503,264,30,32,34,34,-146,01,7,2,2200
+D,624012837,1049,980,0,66503,309,30,32,34,34,-146,01,7,2,2200
+D,624013792,955,980,0,66503,269,31,32,34,34,-146,01,7,2,2200
+D,624014790,998,980,0,66503,266,31,32,34,34,-146,01,7,2,2200
+D,624015780,990,980,0,66503,263,30,24,34,34,-146,01,7,2,2200
+D,624016882,1102,979,-1,66504,361,30,33,34,34,-147,01,7,2,2200
+D,624017918,1036,979,0,66504,394,30,32,34,34,-147,01,7,2,2200
+D,624018921,1003,979,0,66504,364,31,32,34,34,-147,01,7,2,2200
+D,624019824,903,979,0,66504,303,31,33,34,34,-147,01,7,2,2200
+D,624020827,1003,979,0,66504,317,31,33,34,34,-147,01,7,2,2200
+D,624021811,984,979,0,66504,297,30,24,34,34,-147,01,7,2,2200
+D,624022827,1016,979,0,66504,305,30,24,34,34,-147,01,7,2,2200
+D,624023812,985,978,-1,66505,290,30,33,34,34,-148,01,7,2,2200
+D,624024842,1030,978,0,66505,331,30,32,34,33,-148,01,7,2,2200
+D,624025802,960,978,0,66505,282,30,33,34,33,-148,01,7,2,2200
+D,624026819,1017,978,0,66505,311,30,31,34,33,-148,01,7,2,2200
+D,624027811,992,978,0,66505,295,31,32,34,33,-148,01,7,2,2200
+D,624028854,1043,978,0,66505,344,31,32,34,33,-148,01,7,2,2200
+D,624029778,924,978,0,66505,268,31,32,34,33,-148,01,7,2,2200
+D,624030785,1007,978,0,66505,268,31,32,34,33,-148,01,7,2,2200
+D,624031794,1009,978,0,66505,274,31,32,33,33,-148,01,7,2,2200
+D,624032849,1055,977,-1,66506,328,31,33,33,32,-149,01,7,2,2200
+D,624033779,930,977,0,66506,269,31,32,33,32,-149,01,7,2,2200
+D,624034772,993,977,0,66506,264,31,32,33,32,-149,01,7,2,2200
+D,624035777,1005,977,0,66506,264,31,32,33,32,-149,01,7,2,2200
+D,624036948,1171,977,0,66506,385,31,32,33,32,-149,01,7,2,2200
+D,624037862,914,977,0,66506,355,31,33,33,32,-149,01,7,2,2200
+D,624038943,1081,977,0,66506,361,31,24,33,32,-149,01,7,2,2200
+D,624039814,871,977,0,66506,289,30,24,33,32,-149,01,7,2,2200
+D,624040838,1024,977,0,66506,330,30,24,33,31,-149,01,7,2,2200
+D,624041831,993,976,-1,66507,310,30,33,33,31,-149,01,7,2,2200
+D,624042831,1000,976,0,66507,309,30,31,33,31,-149,01,7,2,2200
+D,624043811,980,976,0,66507,295,30,33,33,31,-149,01,7,2,2200
+D,624044844,1033,976,0,66507,324,31,32,33,31,-149,01,7,2,2200
+D,624045806,962,976,0,66507,279,31,33,33,31,-149,01,7,2,2200
+D,624046825,1019,976,0,66507,306,31,31,33,31,-149,01,7,2,2200
+D,624047808,983,976,0,66507,290,30,24,33,31,-149,01,7,2,2200
+D,624048878,1070,975,-1,66508,350,30,32,33,30,-150,01,7,2,2200
+D,624049782,904,975,0,66508,263,30,32,33,30,-150,01,7,2,2200
+D,624050777,995,975,0,66508,263,31,32,33,30,-150,01,7,2,2200
+D,624051786,1009,975,0,66508,263,31,32,33,30,-150,01,7,2,2200
+D,624052818,1032,975,0,66508,303,31,31,33,30,-150,01,7,2,2200
+D,624053776,958,975,0,66508,263,31,32,33,30,-150,01,7,2,2200
+D,624054785,1009,975,0,66508,264,30,24,33,30,-150,01,7,2,2200
+D,624055773,988,975,0,66508,263,30,24,33,30,-150,01,7,2,2200
+D,624056969,1196,974,-1,66509,433,30,32,30,30,-151,01,7,2,2200
+D,624057954,985,974,0,66509,431,30,32,30,30,-151,01,7,2,2200
+D,624058927,973,974,0,66509,362,30,32,30,30,-151,01,7,2,2200
+D,624059816,889,974,0,66509,295,30,33,30,30,-151,01,7,2,2200
+D,624060852,1036,974,0,66509,329,31,32,30,30,-151,01,7,2,2200
+D,624061800,948,974,0,66509,286,31,33,30,30,-151,01,7,2,2200
+D,624062834,1034,974,0,66509,315,31,31,30,30,-151,01,7,2,2200
+D,624063826,992,974,0,66509,305,30,24,30,30,-151,01,7,2,2200
+D,624064842,1016,974,0,66509,325,30,24,30,30,-151,01,7,2,2200
+D,624065805,963,974,0,66509,279,30,24,30,30,-151,01,7,2,2200
+D,624066835,1030,974,0,66509,307,30,24,30,30,-151,01,7,2,2200
+D,624067812,977,973,-1,66510,296,30,32,30,30,-152,01,7,2,2200
+D,624068867,1055,973,0,66510,347,30,31,30,30,-152,01,7,2,2200
+D,624069791,924,973,0,66510,266,30,32,30,30,-152,01,7,2,2200
+D,624070779,988,973,0,66510,263,30,32,30,30,-152,01,7,2,2200
+D,624071792,1013,973,0,66510,265,30,32,30,30,-152,01,7,2,2200
+D,624072842,1050,973,0,66510,313,30,24,30,29,-152,01,7,2,2200
+D,624073788,946,973,0,66510,274,30,24,30,29,-152,01,7,2,2200
+D,624074779,991,972,-1,66511,269,30,32,30,29,-153,01,7,2,2200
+D,624075777,998,972,0,66511,263,30,32,30,29,-153,01,7,2,2200
+D,624076877,1100,972,0,66511,359,30,32,30,29,-153,01,7,2,2200
+D,624077918,1041,972,0,66511,393,30,32,30,29,-153,01,7,2,2200
+D,624078935,1017,972,0,66511,364,30,24,30,29,-153,01,7,2,2200
+D,624079825,890,972,0,66511,304,30,24,30,29,-153,01,7,2,2200
+D,624080848,1023,972,0,66511,327,29,24,30,28,-153,01,7,2,2200
+D,624082400,1552,972,0,66511,344,29,24,28,28,-153,01,7,2,2200
+D,624082951,551,971,-1,66512,268,29,32,28,28,-154,01,7,2,2200
+D,624083819,868,971,0,66512,306,29,33,28,28,-154,01,7,2,2200
+D,624084865,1046,971,0,66512,345,29,32,28,28,-154,01,7,2,2200
+D,624085806,941,971,0,66512,283,29,33,28,28,-154,01,7,2,2200
+D,624086823,1017,971,0,66512,313,30,31,28,28,-154,01,7,2,2200
+D,624087812,989,971,0,66512,295,29,24,28,28,-154,01,7,2,2200
+D,624088876,1064,971,0,66512,347,29,24,28,28,-154,01,7,2,2200
+D,624089776,900,971,0,66512,267,29,24,28,28,-154,01,7,2,2200
+D,624090774,998,970,-1,66513,265,29,32,28,28,-155,01,7,2,2200
+D,624091784,1010,970,0,66513,263,29,32,28,28,-155,01,7,2,2200
+D,624092841,1057,970,0,66513,314,29,33,28,27,-155,01,7,2,2200
+D,624093787,946,970,0,66513,266,29,32,28,27,-155,01,7,2,2200
+D,624094771,984,970,0,66513,263,29,32,28,27,-155,01,7,2,2200
+D,624095799,1028,970,0,66513,287,29,32,28,27,-155,01,7,2,2200
+D,624096907,1108,970,0,66513,349,30,32,28,27,-155,01,7,2,2200
+D,624097878,971,970,0,66513,365,29,24,28,27,-155,01,7,2,2200
+D,624098899,1021,969,-1,66514,355,30,33,28,27,-156,01,7,2,2200
+D,624099815,916,969,0,66514,293,30,33,28,27,-156,01,7,2,2200
+D,624100839,1024,969,0,66514,315,30,32,28,27,-156,01,7,2,2200
+D,624101809,970,969,0,66514,292,30,33,28,27,-156,01,7,2,2200
+D,624102819,1010,969,0,66514,307,30,31,28,27,-156,01,7,2,2200
+D,624103815,996,969,0,66514,289,30,33,28,27,-156,01,7,2,2200
+D,624104846,1031,969,0,66514,324,30,24,28,26,-156,01,7,2,2200
+D,624105810,964,969,0,66514,288,30,24,28,26,-156,01,7,2,2200
+D,624106840,1030,968,-1,66515,315,30,31,26,26,-156,01,7,2,2200
+D,624107814,974,968,0,66515,301,30,32,26,26,-156,01,7,2,2200
+D,624108859,1045,968,0,66515,342,30,32,26,26,-156,01,7,2,2200
+D,624109778,919,968,0,66515,268,30,32,26,26,-156,01,7,2,2200
+D,624110771,993,968,0,66515,263,30,32,26,26,-156,01,7,2,2200
+D,624111776,1005,968,0,66515,262,30,32,26,26,-156,01,7,2,2200
+D,624112819,1043,968,0,66515,311,30,32,26,25,-156,01,7,2,2200
+D,624113786,967,968,0,66515,266,30,24,26,25,-156,01,7,2,2200
+D,624114776,990,968,0,66515,263,30,24,26,25,-156,01,7,2,2200
+D,624115776,1000,968,0,66515,265,29,24,26,25,-156,01,7,2,2200
+D,624116862,1086,968,0,66515,345,29,24,26,25,-156,01,7,2,2200
+D,624117899,1037,967,-1,66516,370,29,32,26,25,-157,01,7,2,2200
+D,624118929,1030,967,0,66516,392,29,32,26,25,-157,01,7,2,2200
+D,624119824,895,967,0,66516,300,30,33,26,25,-157,01,7,2,2200
+D,624120812,988,967,0,66516,299,29,24,26,25,-157,01,7,2,2200
+D,624121811,999,967,0,66516,303,29,24,26,25,-157,01,7,2,2200
+D,624122822,1011,967,0,66516,294,29,24,26,25,-157,01,7,2,2200
+D,624123824,1002,967,0,66516,304,29,24,26,25,-157,01,7,2,2200
+D,624124852,1028,967,0,66516,323,29,24,26,25,-157,01,7,2,2200
+D,624125806,954,966,-1,66517,298,29,33,26,25,-158,01,7,2,2200
+D,624126831,1025,966,0,66517,302,29,31,26,25,-158,01,7,2,2200
+D,624127832,1001,966,0,66517,312,29,32,26,25,-158,01,7,2,2200
+D,624128920,1088,966,0,66517,345,29,24,26,24,-158,01,7,2,2200
+D,624129786,866,966,0,66517,266,29,24,26,24,-158,01,7,2,2200
+D,624130774,988,966,0,66517,264,28,24,26,24,-158,01,7,2,2200
+D,624131786,1012,966,0,66517,273,28,24,24,24,-158,01,7,2,2200
+D,624132838,1052,966,0,66517,312,28,24,24,24,-158,01,7,2,2200
+D,624133784,946,966,0,66517,266,28,24,24,24,-158,01,7,2,2200
+D,624134789,1005,965,-1,66518,263,28,32,24,24,-159,01,7,2,2200
+D,624135785,996,965,0,66518,267,28,32,24,24,-159,01,7,2,2200
+D,624136855,1070,965,0,66518,340,28,24,24,24,-159,01,7,2,2200
+D,624137957,1102,965,0,66518,434,28,24,24,24,-159,01,7,2,2200
+D,624138897,940,965,0,66518,352,28,24,24,24,-159,01,7,2,2200
+D,624139825,928,965,0,66518,312,28,24,24,24,-159,01,7,2,2200
+D,624140846,1021,965,0,66518,336,27,24,24,23,-159,01,7,2,2200
+D,624141805,959,965,0,66518,288,27,24,24,23,-159,01,7,2,2200
+D,624142817,1012,964,-1,66519,305,28,31,24,23,-160,01,7,2,2200
+D,624143794,977,964,0,66519,281,28,33,24,23,-160,01,7,2,2200
+D,624144840,1046,964,0,66519,322,28,32,24,23,-160,01,7,2,2200
+D,624145789,949,964,0,66519,277,28,33,24,23,-160,01,7,2,2200
+D,624146822,1033,964,0,66519,313,28,31,24,23,-160,01,7,2,2200
+D,624147811,989,964,0,66519,290,28,32,24,23,-160,01,7,2,2200
+D,624148848,1037,964,0,66519,339,28,24,24,23,-160,01,7,2,2200
+D,624149793,945,963,-1,66520,265,28,32,24,23,-161,01,7,2,2200
+D,624150786,993,963,0,66520,266,28,32,24,23,-161,01,7,2,2200
+D,624151786,1000,963,0,66520,264,29,32,24,23,-161,01,7,2,2200
+D,624152833,1047,963,0,66520,315,29,33,24,22,-161,01,7,2,2200
+D,624153774,941,963,0,66520,265,29,32,24,22,-161,01,7,2,2200
+D,624154786,1012,963,0,66520,265,29,32,24,22,-161,01,7,2,2200
+D,624155771,985,963,0,66520,264,29,32,24,22,-161,01,7,2,2200
+D,624156936,1165,963,0,66520,405,29,24,22,22,-161,01,7,2,2200
+D,624157957,1021,962,-1,66521,432,29,32,22,22,-162,01,7,2,2200
+D,624158891,934,962,0,66521,345,29,31,22,22,-162,01,7,2,2200
+D,624159809,918,962,0,66521,302,29,33,22,22,-162,01,7,2,2200
+D,624160835,1026,962,0,66521,318,29,32,22,22,-162,01,7,2,2200
+D,624161821,986,962,0,66521,307,29,33,22,22,-162,01,7,2,2200
+D,624162809,988,962,0,66521,301,29,31,22,22,-162,01,7,2,2200
+D,624163809,1000,962,0,66521,299,30,33,22,22,-162,01,7,2,2200
+D,624164849,1040,962,0,66521,321,29,24,22,22,-162,01,7,2,2200
+D,624165807,958,962,0,66521,281,29,24,22,22,-162,01,7,2,2200
+D,624166830,1023,961,-1,66522,301,29,31,22,22,-163,01,7,2,2200
+D,624167805,975,961,0,66522,295,29,32,22,22,-163,01,7,2,2200
+D,624168871,1066,961,0,66522,344,29,32,22,22,-163,01,7,2,2200
+D,624169782,911,961,0,66522,265,30,32,22,22,-163,01,7,2,2200
+D,624170775,993,961,0,66522,265,30,32,22,22,-163,01,7,2,2200
+D,624171781,1006,961,0,66522,265,30,32,22,22,-163,01,7,2,2200
+D,624172840,1059,961,0,66522,321,29,24,22,20,-163,01,7,2,2200
+D,624173776,936,961,0,66522,269,29,24,22,20,-163,01,7,2,2200
+D,624174793,1017,961,0,66522,264,29,24,22,20,-163,01,7,2,2200
+D,624175775,982,961,0,66522,265,29,24,22,20,-163,01,7,2,2200
+D,624176898,1123,960,-1,66523,352,29,32,22,20,-163,01,7,2,2200
+D,624177910,1012,960,0,66523,392,29,32,22,20,-163,01,7,2,2200
+D,624178883,973,960,0,66523,364,29,33,22,20,-163,01,7,2,2200
+D,624179810,927,960,0,66523,296,29,24,22,20,-163,01,7,2,2200
+D,624180841,1031,960,0,66523,318,29,24,22,20,-163,01,7,2,2200
+D,624182351,1510,960,0,66523,328,29,24,20,20,-163,01,7,2,2200
+D,624182932,581,960,0,66523,292,29,24,20,20,-163,01,7,2,2200
+D,624183833,901,960,0,66523,311,28,24,20,20,-163,01,7,2,2200
+D,624184850,1017,960,0,66523,331,28,24,20,19,-163,01,7,2,2200
+D,624185811,961,960,0,66523,283,28,24,20,19,-163,01,7,2,2200
+D,624186824,1013,959,-1,66524,311,28,31,20,19,-164,01,7,2,2200
+D,624187809,985,959,0,66524,292,28,32,20,19,-164,01,7,2,2200
+D,624188869,1060,959,0,66524,342,28,24,20,19,-164,01,7,2,2200
+D,624189784,915,959,0,66524,270,28,24,20,19,-164,01,7,2,2200
+D,624190784,1000,959,0,66524,263,28,24,20,19,-164,01,7,2,2200
+D,624191775,991,959,0,66524,264,28,24,20,19,-164,01,7,2,2200
+D,624192817,1042,958,-1,66525,301,28,33,20,19,-165,01,7,2,2200
+D,624193799,982,958,0,66525,276,28,32,20,19,-165,01,7,2,2200
+D,624194786,987,958,0,66525,264,28,32,20,19,-165,01,7,2,2200
+D,624195773,987,958,0,66525,263,28,32,20,19,-165,01,7,2,2200
+D,624196963,1190,958,0,66525,396,28,24,20,19,-165,01,7,2,2200
+D,624197881,918,958,0,66525,359,28,24,20,19,-165,01,7,2,2200
+D,624198899,1018,958,0,66525,352,28,24,20,19,-165,01,7,2,2200
+D,624199815,916,958,0,66525,294,28,24,20,19,-165,01,7,2,2200
+D,624200825,1010,958,0,66525,317,28,24,20,19,-165,01,7,2,2200
+D,624201810,985,958,0,66525,291,27,24,20,19,-165,01,7,2,2200
+D,624202824,1014,957,-1,66526,305,28,31,20,19,-166,01,7,2,2200
+D,624203812,988,957,0,66526,290,28,33,20,19,-166,01,7,2,2200
+D,624204843,1031,957,0,66526,328,28,32,20,18,-166,01,7,2,2200
+D,624205817,974,957,0,66526,291,28,33,20,18,-166,01,7,2,2200
+D,624206829,1012,957,0,66526,302,28,31,18,18,-166,01,7,2,2200
+D,624207838,1009,957,0,66526,311,28,24,18,18,-166,01,7,2,2200
+D,624208870,1032,957,0,66526,343,28,24,18,18,-166,01,7,2,2200
+D,624209783,913,957,0,66526,269,28,24,18,18,-166,01,7,2,2200
+D,624210776,993,956,-1,66527,264,28,32,18,18,-167,01,7,2,2200
+D,624211780,1004,956,0,66527,263,28,32,18,18,-167,01,7,2,2200
+D,624212807,1027,956,0,66527,299,28,32,18,18,-167,01,7,2,2200
+D,624213789,982,956,0,66527,265,28,32,18,18,-167,01,7,2,2200
+D,624214775,986,956,0,66527,263,28,32,18,18,-167,01,7,2,2200
+D,624215777,1002,956,0,66527,267,29,32,18,18,-167,01,7,2,2200
+D,624216909,1132,956,0,66527,364,28,24,18,18,-167,01,7,2,2200
+D,624217902,993,956,0,66527,375,28,24,18,18,-167,01,7,2,2200
+D,624218934,1032,955,-1,66528,365,28,32,18,18,-168,01,7,2,2200
+D,624219806,872,955,0,66528,294,29,33,18,18,-168,01,7,2,2200
+D,624220838,1032,955,0,66528,328,29,32,18,16,-168,01,7,2,2200
+D,624221806,968,955,0,66528,293,29,33,18,16,-168,01,7,2,2200
+D,624222829,1023,955,0,66528,310,29,24,18,16,-168,01,7,2,2200
+D,624223813,984,955,0,66528,287,29,24,18,16,-168,01,7,2,2200
+D,624224841,1028,955,0,66528,316,28,24,18,16,-168,01,7,2,2200
+D,624225812,971,955,0,66528,285,28,24,18,16,-168,01,7,2,2200
+D,624226839,1027,955,0,66528,310,28,24,18,16,-168,01,7,2,2200
+D,624227808,969,954,-1,66529,299,28,32,18,16,-169,01,7,2,2200
+D,624228868,1060,954,0,66529,346,28,32,18,16,-169,01,7,2,2200
+D,624229782,914,954,0,66529,264,28,32,18,16,-169,01,7,2,2200
+D,624230772,990,954,0,66529,264,29,32,18,16,-169,01,7,2,2200
+D,624231804,1032,954,0,66529,274,29,32,16,16,-169,01,7,2,2200
+D,624232829,1025,954,0,66529,304,28,24,16,16,-169,01,7,2,2200
+D,624233789,960,954,0,66529,268,28,24,16,16,-169,01,7,2,2200
+D,624234773,984,954,0,66529,264,28,24,16,16,-169,01,7,2,2200
+D,624235779,1006,954,0,66529,264,28,24,16,16,-169,01,7,2,2200
+D,624236870,1091,954,0,66529,346,28,24,16,16,-169,01,7,2,2200
+D,624237895,1025,954,0,66529,374,28,24,16,16,-169,01,7,2,2200
+D,624238932,1037,954,0,66529,407,28,24,16,16,-169,01,7,2,2200
+D,624239807,875,953,-1,66530,290,28,33,16,16,-170,01,7,2,2200
+D,624240834,1027,953,0,66530,327,28,24,16,14,-170,01,7,2,2200
+D,624241802,968,953,0,66530,292,27,24,16,14,-170,01,7,2,2200
+D,624242827,1025,953,0,66530,308,27,24,16,14,-170,01,7,2,2200
+D,624243822,995,953,0,66530,295,27,24,16,14,-170,01,7,2,2200
+D,624244847,1025,953,0,66530,319,27,24,16,14,-170,01,7,2,2200
+D,624245801,954,953,0,66530,285,27,24,16,14,-170,01,7,2,2200
+D,624246817,1016,953,0,66530,301,27,24,16,14,-170,01,7,2,2200
+D,624247803,986,952,-1,66531,286,27,32,16,14,-171,01,7,2,2200
+D,624248854,1051,952,0,66531,341,27,32,16,14,-171,01,7,2,2200
+D,624249791,937,952,0,66531,270,27,24,16,14,-171,01,7,2,2200
+D,624250778,987,952,0,66531,264,27,24,16,14,-171,01,7,2,2200
+D,624251790,1012,952,0,66531,263,27,24,16,14,-171,01,7,2,2200
+D,624252822,1032,952,0,66531,301,27,24,16,14,-171,01,7,2,2200
+D,624253790,968,952,0,66531,264,27,24,16,14,-171,01,7,2,2200
+D,624254775,985,952,0,66531,263,26,24,16,14,-171,01,7,2,2200
+D,624255787,1012,952,0,66531,264,26,24,16,14,-171,01,7,2,2200
+D,624256954,1167,952,0,66531,384,26,24,14,14,-171,01,7,2,2200
+D,624257898,944,951,-1,66532,374,26,24,14,14,-171,01,7,2,2200
+D,624258936,1038,951,0,66532,354,26,24,14,14,-171,01,7,2,2200
+D,624259820,884,951,0,66532,293,26,24,14,14,-171,01,7,2,2200
+D,624260842,1022,951,0,66532,328,26,24,14,12,-171,01,7,2,2200
+D,624261812,970,951,0,66532,295,26,24,14,12,-171,01,7,2,2200
+D,624262826,1014,951,0,66532,307,26,24,14,12,-171,01,7,2,2200
+D,624263810,984,951,0,66532,284,26,24,14,12,-171,01,7,2,2200
+D,624264837,1027,951,0,66532,320,26,24,14,12,-171,01,7,2,2200
+D,624265805,968,951,0,66532,283,26,24,14,12,-171,01,7,2,2200
+D,624266823,1018,950,-1,66533,306,26,31,14,12,-172,01,7,2,2200
+D,624267803,980,950,0,66533,290,26,32,14,12,-172,01,7,2,2200
+D,624268843,1040,950,0,66533,336,26,32,14,12,-172,01,7,2,2200
+D,624269783,940,950,0,66533,271,27,32,14,12,-172,01,7,2,2200
+D,624270789,1006,950,0,66533,262,26,24,14,12,-172,01,7,2,2200
+D,624271776,987,950,0,66533,265,26,24,14,12,-172,01,7,2,2200
+D,624272819,1043,950,0,66533,310,26,24,14,12,-172,01,7,2,2200
+D,624273787,968,950,0,66533,266,26,24,14,12,-172,01,7,2,2200
+D,624274776,989,949,-1,66534,266,26,32,14,12,-173,01,7,2,2200
+D,624275784,1008,950,1,66533,263,26,24,14,12,-172,01,7,2,2200
+D,624276930,1146,949,-1,66534,382,26,32,14,12,-173,01,7,2,2200
+D,624277947,1017,949,0,66534,415,26,24,14,12,-173,01,7,2,2200
+D,624278899,952,949,0,66534,353,26,24,14,12,-173,01,7,2,2200
+D,624279823,924,949,0,66534,296,26,24,14,12,-173,01,7,2,2200
+D,624280853,1030,949,0,66534,338,26,24,14,12,-173,01,7,2,2200
+D,624282352,1499,949,0,66534,333,26,24,12,12,-173,01,7,2,2200
+D,624282912,560,949,0,66534,269,26,24,12,12,-173,01,7,2,2200
+D,624283837,925,949,0,66534,309,26,24,12,12,-173,01,7,2,2200
+D,624284840,1003,949,0,66534,314,26,24,12,12,-173,01,7,2,2200
+D,624285812,972,949,0,66534,286,26,24,12,12,-173,01,7,2,2200
+D,624286825,1013,949,0,66534,307,26,24,12,12,-173,01,7,2,2200
+D,624287815,990,948,-1,66535,302,26,32,12,12,-174,01,7,2,2200
+D,624288860,1045,948,0,66535,347,26,24,12,10,-174,01,7,2,2200
+D,624289786,926,948,0,66535,266,26,24,12,10,-174,01,7,2,2200
+D,624290775,989,948,0,66535,264,26,24,12,10,-174,01,7,2,2200
+D,624291777,1002,948,0,66535,265,26,24,12,10,-174,01,7,2,2200
+D,624292834,1057,948,0,66535,311,26,24,12,10,-174,01,7,2,2200
+D,624293776,942,948,0,66535,263,26,24,12,10,-174,01,7,2,2200
+D,624294781,1005,948,0,66535,264,25,24,12,10,-174,01,7,2,2200
+D,624295788,1007,948,0,66535,264,25,24,12,10,-174,01,7,2,2200
+D,624296914,1126,948,0,66535,370,25,16,12,10,-174,01,7,2,2200
+D,624297948,1034,948,0,66535,419,25,16,12,10,-174,01,7,2,2200
+D,624298897,949,948,0,66535,348,24,16,12,10,-174,01,7,2,2200
+D,624299819,922,948,0,66535,299,24,16,12,10,-174,01,7,2,2200
+D,624300837,1018,947,-1,66536,318,24,24,12,10,-175,01,7,2,2200
+D,624301814,977,947,0,66536,290,24,24,12,10,-175,01,7,2,2200
+D,624302820,1006,947,0,66536,310,24,24,12,10,-175,01,7,2,2200
+D,624303822,1002,947,0,66536,292,24,24,12,10,-175,01,7,2,2200
+D,624304850,1028,947,0,66536,316,24,16,12,10,-175,01,7,2,2200
+D,624305810,960,947,0,66536,281,24,24,12,10,-175,01,7,2,2200
+D,624306824,1014,947,0,66536,303,24,24,10,10,-175,01,7,2,2200
+# HOLD released: pushed 2.02 deg off anchor after 5692 ms
+D,624307817,993,947,0,66536,306,23,16,10,10,-175,01,7,2,2200
+D,624308854,1037,947,0,66536,344,23,16,10,10,-175,01,7,2,2200
+D,624309776,922,947,0,66536,266,23,16,10,10,-175,01,7,2,2200
+D,624310785,1009,947,0,66536,264,23,16,10,10,-175,01,7,2,2200
+D,624311770,985,946,-1,66537,263,23,24,10,10,-176,01,7,2,2200
+D,624312821,1051,946,0,66537,300,23,24,10,10,-176,01,7,2,2200
+D,624313778,957,946,0,66537,267,23,24,10,10,-176,01,7,2,2200
+D,624314773,995,946,0,66537,263,23,24,10,10,-176,01,7,2,2200
+D,624315783,1010,946,0,66537,265,23,24,10,10,-176,01,7,2,2200
+D,624316944,1161,946,0,66537,362,23,24,10,7,-176,01,7,2,2200
+D,624317866,922,946,0,66537,345,23,16,10,7,-176,01,7,2,2200
+D,624318926,1060,946,0,66537,404,22,16,10,7,-176,01,7,2,2200
+D,624319808,882,946,0,66537,290,22,16,10,7,-176,01,7,2,2200
+D,624320837,1029,946,0,66537,310,22,16,10,7,-176,01,7,2,2200
+D,624321808,971,946,0,66537,286,22,16,10,7,-176,01,7,2,2200
+D,624322823,1015,945,-1,66538,297,22,24,10,7,-177,01,7,2,2200
+SPIN#2 START dir=-1 omega=-0.242 wedge=3
+D,624323803,980,945,0,66538,292,22,24,10,7,-177,01,7,2,2200
+D,624324820,1017,945,0,66538,312,22,24,10,7,-177,01,7,2,2200
+D,624325812,992,945,0,66538,294,22,24,10,7,-177,01,7,2,2200
+D,624326804,992,945,0,66538,295,22,24,10,7,-177,01,7,2,2200
+D,624327804,1000,945,0,66538,294,22,24,10,7,-177,01,7,2,2200
+D,624328855,1051,945,0,66538,335,22,24,10,7,-177,01,7,2,2200
+D,624329804,949,945,0,66538,279,22,24,10,7,-177,01,7,2,2200
+D,624330790,986,945,0,66538,264,22,24,10,7,-177,01,7,2,2200
+D,624331793,1003,945,0,66538,270,22,16,7,7,-177,01,7,2,2200
+D,624332822,1029,945,0,66538,308,22,16,7,7,-177,01,7,2,2200
+D,624333788,966,945,0,66538,266,22,16,7,7,-177,01,7,2,2200
+D,624334776,988,945,0,66538,263,21,16,7,7,-177,01,7,2,2200
+D,624335776,1000,944,-1,66539,267,22,24,7,7,-178,01,7,2,2200
+D,624336931,1155,944,0,66539,411,22,24,7,7,-178,01,7,2,2200
+D,624337936,1005,944,0,66539,425,22,24,7,7,-178,01,7,2,2200
+D,624338899,963,944,0,66539,348,22,24,7,7,-178,01,7,2,2200
+D,624339831,932,944,0,66539,306,22,24,7,7,-178,01,7,2,2200
+D,624340839,1008,944,0,66539,312,22,24,7,7,-178,01,7,2,2200
+D,624341802,963,944,0,66539,291,22,16,7,7,-178,01,7,2,2200
+D,624342816,1014,944,0,66539,301,22,16,7,7,-178,01,7,2,2200
+D,624343811,995,944,0,66539,288,21,16,7,7,-178,01,7,2,2200
+D,624344826,1015,944,0,66539,313,21,16,7,7,-178,01,7,2,2200
+D,624345803,977,944,0,66539,285,21,16,7,7,-178,01,7,2,2200
+D,624346822,1019,944,0,66539,315,21,16,7,7,-178,01,7,2,2200
+D,624347815,993,944,0,66539,295,21,16,7,7,-178,01,7,2,2200
+D,624348851,1036,944,0,66539,339,20,16,7,7,-178,01,7,2,2200
+D,624349780,929,944,0,66539,266,20,16,7,7,-178,01,7,2,2200
+D,624350782,1002,943,-1,66540,259,20,24,7,7,-178,01,7,2,2200
+D,624351771,989,943,0,66540,264,20,24,7,7,-178,01,7,2,2200
+D,624352826,1055,943,0,66540,299,20,16,7,7,-178,01,7,2,2200
+D,624353785,959,943,0,66540,262,20,16,7,7,-178,01,7,2,2200
+D,624354772,987,943,0,66540,264,20,16,7,7,-178,01,7,2,2200
+D,624355781,1009,943,0,66540,263,20,16,7,7,-178,01,7,2,2200
+D,624356894,1113,943,0,66540,359,20,16,7,7,-178,01,7,2,2200
+D,624357892,998,943,0,66540,369,20,16,7,7,-178,01,7,2,2200
+D,624358937,1045,943,0,66540,418,19,16,7,7,-178,01,7,2,2200
+D,624359818,881,943,0,66540,289,19,16,7,7,-178,01,7,2,2200
+D,624360833,1015,943,0,66540,318,19,16,7,7,-178,01,7,2,2200
+D,624361801,968,943,0,66540,291,19,16,7,7,-178,01,7,2,2200
+D,624362825,1024,942,-1,66541,299,19,24,7,7,-179,01,7,2,2200
+D,624363800,975,942,0,66541,292,19,24,7,7,-179,01,7,2,2200
+D,624364833,1033,942,0,66541,320,20,24,7,7,-179,01,7,2,2200
+D,624365800,967,942,0,66541,284,20,16,7,7,-179,01,7,2,2200
+D,624366808,1008,942,0,66541,293,19,16,7,7,-179,01,7,2,2200
+D,624367821,1013,942,0,66541,301,19,16,7,7,-179,01,7,2,2200
+D,624368849,1028,942,0,66541,340,19,16,7,7,-179,01,7,2,2200
+D,624369780,931,942,0,66541,268,19,16,7,7,-179,01,7,2,2200
+D,624370773,993,942,0,66541,264,19,16,7,7,-179,01,7,2,2200
+D,624371780,1007,942,0,66541,262,19,16,7,7,-179,01,7,2,2200
+D,624372820,1040,942,0,66541,299,19,16,7,7,-179,01,7,2,2200
+D,624373781,961,942,0,66541,266,19,16,7,7,-179,01,7,2,2200
+D,624374772,991,942,0,66541,262,18,16,7,7,-179,01,7,2,2200
+D,624375781,1009,942,0,66541,264,18,16,7,7,-179,01,7,2,2200
+D,624376947,1166,942,0,66541,388,18,16,7,7,-179,01,7,2,2200
+D,624377919,972,942,0,66541,392,18,16,7,7,-179,01,7,2,2200
+D,624378896,977,942,0,66541,384,18,16,7,7,-179,01,7,2,2200
+D,624379810,914,941,-1,66542,299,18,24,7,7,-180,01,7,2,2200
+D,624380836,1026,942,1,66541,308,18,8,7,7,-179,01,7,2,2200
+D,624382322,1486,941,-1,66542,315,18,16,7,7,-180,01,7,2,2200
+D,624382874,552,941,0,66542,263,18,16,7,7,-180,01,7,2,2200
+D,624383834,960,941,0,66542,307,18,16,7,7,-180,01,7,2,2200
+D,624384851,1017,941,0,66542,324,18,16,7,7,-180,01,7,2,2200
+D,624385802,951,941,0,66542,274,18,16,7,7,-180,01,7,2,2200
+D,624386822,1020,941,0,66542,304,17,16,7,7,-180,01,7,2,2200
+D,624387806,984,941,0,66542,295,17,16,7,7,-180,01,7,2,2200
+D,624388858,1052,941,0,66542,345,17,16,7,7,-180,01,7,2,2200
+D,624389779,921,941,0,66542,271,17,16,7,7,-180,01,7,2,2200
+D,624390779,1000,941,0,66542,265,17,16,7,7,-180,01,7,2,2200
+D,624391793,1014,941,0,66542,264,17,16,7,7,-180,01,7,2,2200
+D,624392818,1025,941,0,66542,311,17,16,7,7,-180,01,7,2,2200
+D,624393772,954,941,0,66542,264,17,8,7,7,-180,01,7,2,2200
+D,624394779,1007,941,0,66542,264,16,8,7,7,-180,01,7,2,2200
+D,624395796,1017,941,0,66542,269,16,8,7,7,-180,01,7,2,2200
+D,624396896,1100,941,0,66542,351,16,8,7,7,-180,01,7,2,2200
+D,624397943,1047,941,0,66542,415,15,8,7,7,-180,01,7,2,2200
+D,624398887,944,941,0,66542,350,15,8,7,7,-180,01,7,2,2200
+D,624399822,935,941,0,66542,302,15,8,7,7,-180,01,7,2,2200
+D,624400840,1018,941,0,66542,317,15,8,7,0,-180,01,7,2,2200
+D,624401807,967,941,0,66542,298,14,8,7,0,-180,01,7,2,2200
+D,624402818,1011,941,0,66542,306,14,8,7,0,-180,01,7,2,2200
+D,624403820,1002,941,0,66542,290,14,8,7,0,-180,01,7,2,2200
+D,624404825,1005,941,0,66542,305,14,8,7,0,-180,01,7,2,2200
+D,624405797,972,941,0,66542,289,13,8,7,0,-180,01,7,2,2200
+D,624406814,1017,941,0,66542,300,13,8,0,0,-180,01,7,2,2200
+D,624407844,1030,940,-1,66543,315,13,16,0,0,-181,01,7,2,2200
+D,624408863,1019,940,0,66543,336,13,16,0,0,-181,01,7,2,2200
+D,624409776,913,940,0,66543,263,14,16,0,0,-181,01,7,2,2200
+D,624410787,1011,940,0,66543,263,13,8,0,0,-181,01,7,2,2200
+D,624411791,1004,940,0,66543,264,13,16,0,0,-181,01,7,2,2200
+D,624412795,1004,940,0,66543,278,13,8,0,0,-181,01,7,2,2200
+D,624413788,993,940,0,66543,267,13,8,0,0,-181,01,7,2,2200
+D,624414793,1005,940,0,66543,264,13,8,0,0,-181,01,7,2,2200
+D,624415776,983,940,0,66543,264,13,8,0,0,-181,01,7,2,2200
+D,624416933,1157,940,0,66543,415,12,8,0,0,-181,01,7,2,2200
+D,624417989,1056,940,0,66543,455,12,8,0,0,-181,01,7,2,2200
+D,624418863,874,940,0,66543,352,12,8,0,0,-181,01,7,2,2200
+D,624419811,948,940,0,66543,291,12,8,0,0,-181,01,7,2,2200
+D,624420804,993,940,0,66543,296,12,8,0,0,-181,01,7,2,2200
+D,624421797,993,940,0,66543,285,12,8,0,0,-181,01,7,2,2200
+D,624422807,1010,940,0,66543,293,11,8,0,0,-181,01,7,2,2200
+D,624423818,1011,940,0,66543,301,11,8,0,0,-181,01,7,2,2200
+D,624424864,1046,940,0,66543,313,11,8,0,0,0,01,8,3,2200
+D,624425793,929,940,0,66543,282,11,8,0,0,0,01,8,3,2200
+D,624426804,1011,940,0,66543,277,11,8,0,0,0,01,8,3,2200
+D,624427835,1031,940,0,66543,313,11,8,0,0,0,01,8,3,2200
+D,624428839,1004,940,0,66543,313,11,8,0,0,0,01,8,3,2200
+D,624429745,906,940,0,66543,232,11,8,0,0,0,01,8,3,2200
+D,624430739,994,940,0,66543,229,11,8,0,0,0,01,8,3,2200
+D,624431740,1001,940,0,66543,232,10,8,0,0,0,01,8,3,2200
+D,624432740,1000,940,0,66543,232,10,8,0,0,0,01,8,3,2200
+D,624433752,1012,940,0,66543,243,10,8,0,0,0,01,8,3,2200
+D,624434736,984,939,-1,66544,228,10,16,0,0,0,01,8,3,2200
+D,624435759,1023,939,0,66544,232,11,16,0,0,0,01,8,3,2200
+D,624436932,1173,939,0,66544,381,11,16,0,0,0,01,8,3,2200
+D,624437990,1058,939,0,66544,445,11,8,0,0,0,01,8,3,2200
+D,624438872,882,939,0,66544,351,11,8,0,0,0,01,8,3,2200
+D,624439785,913,939,0,66544,267,11,8,0,0,0,01,8,3,2200
+D,624440804,1019,939,0,66544,293,11,8,0,0,0,01,8,3,2200
+D,624441800,996,939,0,66544,277,10,8,0,0,0,01,8,3,2200
+D,624442813,1013,939,0,66544,291,10,8,0,0,0,01,8,3,2200
+D,624443801,988,939,0,66544,273,10,8,0,0,0,01,8,3,2200
+D,624444812,1011,939,0,66544,294,10,8,0,0,0,01,8,3,2200
+D,624445795,983,939,0,66544,276,10,8,0,0,0,01,8,3,2200
+D,624446812,1017,939,0,66544,291,10,8,0,0,0,01,8,3,2200
+D,624447940,1128,939,0,66544,420,10,8,0,0,0,01,8,3,2200
+D,624448806,866,939,0,66544,282,10,8,0,0,0,01,8,3,2200
+D,624449732,926,939,0,66544,222,10,8,0,0,0,01,8,3,2200
+D,624450757,1025,939,0,66544,230,10,8,0,0,0,01,8,3,2200
+D,624451742,985,939,0,66544,223,10,8,0,0,0,01,8,3,2200
+D,624452744,1002,939,0,66544,233,10,8,0,0,0,01,8,3,2200
+D,624453757,1013,939,0,66544,237,9,8,0,0,0,01,8,3,2200
+D,624454748,991,939,0,66544,240,9,8,0,0,0,01,8,3,2200
+D,624455748,1000,939,0,66544,240,9,8,0,0,0,01,8,3,2200
+D,624456934,1186,939,0,66544,344,9,8,0,0,0,01,8,3,2200
+D,624457987,1053,939,0,66544,456,9,8,0,0,0,01,8,3,2200
+D,624458883,896,939,0,66544,365,9,8,0,0,0,01,8,3,2200
+D,624459790,907,939,0,66544,264,9,8,0,0,0,01,8,3,2200
+D,624460810,1020,939,0,66544,290,9,8,0,0,0,01,8,3,2200
+D,624461798,988,939,0,66544,275,9,8,0,0,0,01,8,3,2200
+D,624462811,1013,939,0,66544,288,9,8,0,0,0,01,8,3,2200
+D,624463794,983,939,0,66544,273,9,8,0,0,0,01,8,3,2200
+D,624464796,1002,939,0,66544,284,9,0,0,0,0,01,8,3,2200
+D,624465799,1003,939,0,66544,292,8,0,0,0,0,01,8,3,2200
+D,624466805,1006,939,0,66544,296,8,0,0,0,0,01,8,3,2200
+D,624467950,1145,939,0,66544,391,8,0,0,0,0,01,8,3,2200
+D,624468789,839,939,0,66544,270,7,0,0,0,0,01,8,3,2200
+D,624469731,942,939,0,66544,223,7,0,0,0,0,01,8,3,2200
+D,624470750,1019,939,0,66544,229,7,0,0,0,0,01,8,3,2200
+D,624471731,981,939,0,66544,223,7,0,0,0,0,01,8,3,2200
+D,624472740,1009,939,0,66544,232,6,0,0,0,0,01,8,3,2200
+D,624473745,1005,939,0,66544,236,6,0,0,0,0,01,8,3,2200
+D,624474744,999,939,0,66544,230,6,0,0,0,0,01,8,3,2200
+D,624475736,992,939,0,66544,228,6,0,0,0,0,01,8,3,2200
+D,624476944,1208,939,0,66544,384,5,0,0,0,0,01,8,3,2200
+D,624477972,1028,939,0,66544,450,5,0,0,0,0,01,8,3,2200
+D,624478903,931,939,0,66544,373,5,0,0,0,0,01,8,3,2200
+D,624479794,891,939,0,66544,276,5,0,0,0,0,01,8,3,2200
+D,624480784,990,939,0,66544,269,5,0,0,0,0,01,8,3,2200
+D,624482092,1308,939,0,66544,304,4,0,0,0,0,01,8,3,2200
+D,624482797,705,939,0,66544,277,4,0,0,0,0,01,8,3,2200
+D,624483789,992,939,0,66544,263,4,0,0,0,0,01,8,3,2200
+D,624484815,1026,939,0,66544,292,4,0,0,0,0,01,8,3,2200
+D,624485782,967,939,0,66544,261,4,0,0,0,0,01,8,3,2200
+D,624486796,1014,939,0,66544,278,4,0,0,0,0,01,8,3,2200
+D,624487915,1119,939,0,66544,384,3,0,0,0,0,01,8,3,2200
+D,624488816,901,939,0,66544,298,3,0,0,0,0,01,8,3,2200
+D,624489746,930,939,0,66544,225,3,0,0,0,0,01,8,3,2200
+D,624490745,999,939,0,66544,232,3,0,0,0,0,01,8,3,2200
+D,624491749,1004,939,0,66544,222,3,0,0,0,0,01,8,3,2200
+D,624492753,1004,939,0,66544,232,3,0,0,0,0,01,8,3,2200
+D,624493751,998,939,0,66544,231,3,0,0,0,0,01,8,3,2200
+D,624494760,1009,939,0,66544,233,3,0,0,0,0,01,8,3,2200
+D,624495736,976,939,0,66544,221,3,0,0,0,0,01,8,3,2200
+D,624496943,1207,939,0,66544,349,2,0,0,0,0,01,8,3,2200
+D,624497981,1038,939,0,66544,452,2,0,0,0,0,01,8,3,2200
+D,624498900,919,939,0,66544,372,2,0,0,0,0,01,8,3,2200
+D,624499809,909,939,0,66544,283,2,0,0,0,0,01,8,3,2200
+D,624500793,984,939,0,66544,268,2,0,0,0,0,01,8,3,2200
+SPIN#2 RELEASE speed=0.876 peak=0.983 angle=167.3
+D,624501796,1003,939,0,66544,283,2,0,0,0,0,01,8,3,2200
+D,624502778,982,939,0,66544,267,2,0,0,0,0,01,8,3,2200
+D,624503808,1030,939,0,66544,286,2,0,0,0,0,01,8,3,2200
+D,624504795,987,939,0,66544,279,2,0,0,0,0,01,8,3,2200
+D,624505801,1006,939,0,66544,277,2,0,0,0,0,01,8,3,2200
+D,624506798,997,939,0,66544,279,2,0,0,0,0,01,8,3,2200
+D,624507931,1133,939,0,66544,391,2,0,0,0,0,01,8,3,2200
+D,624508795,864,939,0,66544,271,1,0,0,0,0,01,8,3,2200
+D,624509743,948,939,0,66544,234,1,0,0,0,0,01,8,3,2200
+D,624510743,1000,939,0,66544,229,1,0,0,0,0,01,8,3,2200
+D,624511741,998,940,1,66543,220,1,-8,0,0,0,01,8,3,2200
+D,624512749,1008,940,0,66543,233,1,-8,0,0,0,01,8,3,2200
+D,624513747,998,940,0,66543,237,0,-8,0,0,0,01,8,3,2200
+D,624514748,1001,939,-1,66544,232,0,0,0,0,0,01,8,3,2200
+D,624515736,988,939,0,66544,227,0,0,0,0,0,01,8,3,2200
+D,624516907,1171,940,1,66543,351,0,-8,0,0,0,01,8,3,2200
+D,624517977,1070,940,0,66543,451,0,-8,0,0,0,01,8,3,2200
+D,624518878,901,940,0,66543,345,-1,-8,0,0,0,01,8,3,2200
+D,624519785,907,940,0,66543,262,-1,-8,0,0,0,01,8,3,2200
+D,624520818,1033,940,0,66543,306,-1,-8,0,0,0,01,8,3,2200
+D,624521792,974,940,0,66543,283,-2,-8,0,0,0,01,8,3,2200
+D,624522821,1029,940,0,66543,299,-2,-8,0,0,0,01,8,3,2200
+D,624523798,977,940,0,66543,280,-2,-8,0,0,0,01,8,3,2200
+D,624524814,1016,940,0,66543,294,-2,-8,0,0,0,01,8,3,2200
+D,624525792,978,940,0,66543,281,-2,-8,0,0,0,01,8,3,2200
+D,624526811,1019,940,0,66543,291,-3,-8,0,0,0,01,8,3,2200
+D,624527925,1114,940,0,66543,402,-3,-8,0,0,0,01,8,3,2200
+D,624528784,859,940,0,66543,276,-3,-8,0,0,0,01,8,3,2200
+D,624529750,966,940,0,66543,232,-3,-8,0,0,0,01,8,3,2200
+D,624530750,1000,940,0,66543,231,-3,-8,0,0,0,01,8,3,2200
+D,624531760,1010,940,0,66543,246,-4,-8,0,0,0,01,8,3,2200
+D,624532751,991,940,0,66543,234,-4,-8,0,0,0,01,8,3,2200
+D,624533760,1009,940,0,66543,240,-4,-8,0,0,0,01,8,3,2200
+D,624534740,980,940,0,66543,231,-4,-8,0,0,0,01,8,3,2200
+D,624535740,1000,940,0,66543,231,-4,-8,0,0,0,01,8,3,2200
+D,624536915,1175,940,0,66543,374,-4,-8,0,0,0,01,8,3,2200
+D,624537982,1067,940,0,66543,445,-5,-8,0,0,0,01,8,3,2200
+D,624538883,901,940,0,66543,355,-5,-8,0,0,0,01,8,3,2200
+D,624539785,902,940,0,66543,268,-5,-8,0,0,0,01,8,3,2200
+D,624540798,1013,940,0,66543,289,-5,-8,0,0,0,01,8,3,2200
+D,624541805,1007,940,0,66543,285,-5,0,0,0,0,01,8,3,2200
+D,624542819,1014,940,0,66543,301,-5,0,0,0,0,01,8,3,2200
+D,624543783,964,940,0,66543,275,-4,0,0,0,0,01,8,3,2200
+D,624544815,1032,940,0,66543,296,-5,-8,0,0,0,01,8,3,2200
+D,624545789,974,940,0,66543,271,-5,-8,0,0,0,01,8,3,2200
+D,624546818,1029,940,0,66543,291,-5,-8,0,0,0,01,8,3,2200
+D,624547933,1115,940,0,66543,390,-5,0,0,0,0,01,8,3,2200
+D,624548792,859,940,0,66543,274,-4,0,0,0,0,01,8,3,2200
+D,624549740,948,940,0,66543,223,-4,0,0,0,0,01,8,3,2200
+D,624550739,999,940,0,66543,231,-4,0,0,0,0,01,8,3,2200
+D,624551750,1011,940,0,66543,223,-4,0,0,0,0,01,8,3,2200
+D,624552761,1011,941,1,66542,234,-4,-8,0,0,0,01,8,3,2200
+D,624553765,1004,940,-1,66543,255,-4,0,0,0,0,01,8,3,2200
+D,624554731,966,941,1,66542,223,-4,-8,0,0,0,01,8,3,2200
+D,624555752,1021,941,0,66542,231,-4,-8,0,0,0,01,8,3,2200
+D,624556927,1175,941,0,66542,361,-4,-8,0,0,0,01,8,3,2200
+D,624557994,1067,941,0,66542,453,-5,-8,0,0,0,01,8,3,2200
+D,624558878,884,941,0,66542,356,-5,-8,0,0,0,01,8,3,2200
+D,624559784,906,941,0,66542,264,-5,-8,0,0,0,01,8,3,2200
+D,624560805,1021,941,0,66542,295,-5,-8,0,0,0,01,8,3,2200
+D,624561796,991,941,0,66542,271,-5,-8,0,0,0,01,8,3,2200
+D,624562798,1002,941,0,66542,289,-5,-8,0,0,0,01,8,3,2200
+D,624563818,1020,941,0,66542,297,-5,-8,0,0,0,01,8,3,2200
+D,624564818,1000,941,0,66542,295,-5,-8,0,0,0,01,8,3,2200
+D,624565795,977,941,0,66542,275,-6,-8,0,0,0,01,8,3,2200
+D,624566807,1012,941,0,66542,288,-6,-8,0,0,0,01,8,3,2200
+D,624567945,1138,941,0,66542,395,-6,-8,0,0,0,01,8,3,2200
+D,624568791,846,941,0,66542,272,-6,-8,0,0,0,01,8,3,2200
+D,624569738,947,941,0,66542,223,-6,-8,0,0,0,01,8,3,2200
+D,624570738,1000,941,0,66542,230,-6,-8,0,0,0,01,8,3,2200
+D,624571750,1012,941,0,66542,223,-6,-8,0,0,0,01,8,3,2200
+D,624572760,1010,941,0,66542,233,-6,-8,0,0,0,01,8,3,2200
+D,624573744,984,941,0,66542,235,-6,-8,0,0,0,01,8,3,2200
+D,624574763,1019,941,0,66542,244,-6,-8,0,0,0,01,8,3,2200
+D,624575737,974,941,0,66542,228,-6,-8,0,0,0,01,8,3,2200
+D,624576925,1188,941,0,66542,361,-6,-8,0,0,0,01,8,3,2200
+D,624577981,1056,941,0,66542,464,-6,-8,0,0,0,01,8,3,2200
+D,624578891,910,941,0,66542,376,-7,-8,0,0,0,01,8,3,2200
+D,624579794,903,941,0,66542,274,-7,-8,0,0,0,01,8,3,2200
+D,624580802,1008,941,0,66542,280,-7,-8,0,0,0,01,8,3,2200
+D,624582100,1298,941,0,66542,290,-7,-8,0,0,0,01,8,3,2200
+D,624582779,679,941,0,66542,271,-7,0,0,0,0,01,8,3,2200
+D,624583806,1027,941,0,66542,281,-7,-8,0,0,0,01,8,3,2200
+D,624584811,1005,941,0,66542,289,-6,0,0,0,0,01,8,3,2200
+D,624585794,983,941,0,66542,275,-6,0,0,0,0,01,8,3,2200
+D,624586811,1017,942,1,66541,290,-6,-8,0,0,0,01,8,3,2200
+D,624587934,1123,942,0,66541,398,-6,-8,0,0,0,01,8,3,2200
+D,624588794,860,942,0,66541,279,-6,-8,0,0,0,01,8,3,2200
+D,624589728,934,941,-1,66542,217,-6,0,0,0,0,01,8,3,2200
+D,624590747,1019,942,1,66541,231,-6,-8,0,0,0,01,8,3,2200
+D,624591736,989,942,0,66541,217,-6,-8,0,0,0,01,8,3,2200
+D,624592744,1008,942,0,66541,233,-6,-8,0,0,0,01,8,3,2200
+D,624593745,1001,942,0,66541,235,-6,-8,0,0,0,01,8,3,2200
+D,624594745,1000,942,0,66541,232,-6,-8,0,0,0,01,8,3,2200
+D,624595734,989,942,0,66541,226,-6,-8,0,0,0,01,8,3,2200
+D,624596928,1194,942,0,66541,378,-7,-8,0,0,0,01,8,3,2200
+D,624597999,1071,942,0,66541,460,-7,-8,0,0,0,01,8,3,2200
+D,624598894,895,942,0,66541,375,-7,-8,0,0,0,01,8,3,2200
+D,624599801,907,942,0,66541,281,-7,-8,0,0,0,01,8,3,2200
+D,624600794,993,942,0,66541,273,-7,-8,0,0,0,01,8,3,2200
+D,624601794,1000,942,0,66541,277,-7,-8,0,0,0,01,8,3,2200
+D,624602795,1001,942,0,66541,273,-7,-8,0,0,0,01,8,3,2200
+D,624603796,1001,942,0,66541,274,-7,-8,0,0,0,01,8,3,2200
+D,624604790,994,942,0,66541,268,-7,-8,0,0,0,01,8,3,2200
+D,624605808,1018,942,0,66541,286,-7,-8,0,0,0,01,8,3,2200
+D,624606783,975,942,0,66541,269,-7,-8,0,0,0,01,8,3,2200
+D,624607928,1145,942,0,66541,403,-7,-8,0,0,0,01,8,3,2200
+D,624608809,881,942,0,66541,281,-7,-8,0,0,0,01,8,3,2200
+D,624609726,917,942,0,66541,217,-7,-8,0,0,0,01,8,3,2200
+D,624610745,1019,942,0,66541,231,-7,-8,0,0,0,01,8,3,2200
+D,624611731,986,942,0,66541,217,-7,-8,0,0,0,01,8,3,2200
+D,624612761,1030,942,0,66541,234,-7,-8,0,0,0,01,8,3,2200
+D,624613745,984,942,0,66541,236,-7,-8,0,0,0,01,8,3,2200
+D,624614745,1000,942,0,66541,232,-7,-8,0,0,0,01,8,3,2200
+D,624615734,989,943,1,66540,225,-8,-16,0,0,0,01,8,3,2200
+D,624616929,1195,943,0,66540,353,-8,-8,0,0,0,01,8,3,2200
+D,624617958,1029,943,0,66540,445,-8,-8,0,0,0,01,8,3,2200
+D,624618893,935,943,0,66540,374,-8,-8,0,0,0,01,8,3,2200
+D,624619804,911,943,0,66540,280,-8,-16,0,0,0,01,8,3,2200
+D,624620790,986,943,0,66540,273,-8,-8,0,0,0,01,8,3,2200
+D,624621797,1007,943,0,66540,275,-8,-8,0,0,0,01,8,3,2200
+D,624622793,996,943,0,66540,278,-8,-8,0,0,0,01,8,3,2200
+D,624623800,1007,943,0,66540,276,-8,-8,0,0,0,01,8,3,2200
+D,624624790,990,943,0,66540,278,-8,-8,0,0,0,01,8,3,2200
+D,624625803,1013,943,0,66540,280,-8,-8,0,0,0,01,8,3,2200
+D,624626792,989,943,0,66540,274,-8,-8,0,0,0,01,8,3,2200
+D,624627937,1145,943,0,66540,394,-8,-8,0,0,0,01,8,3,2200
+D,624628812,875,943,0,66540,290,-8,-8,0,0,0,01,8,3,2200
+D,624629752,940,943,0,66540,234,-8,-8,0,0,0,01,8,3,2200
+D,624630745,993,943,0,66540,226,-8,-8,0,0,0,01,8,3,2200
+D,624631741,996,943,0,66540,220,-8,-8,0,0,0,01,8,3,2200
+D,624632750,1009,943,0,66540,230,-8,-8,0,0,0,01,8,3,2200
+D,624633744,994,943,0,66540,234,-8,-8,0,0,0,01,8,3,2200
+D,624634737,993,943,0,66540,228,-8,-8,0,0,0,01,8,3,2200
+D,624635739,1002,943,0,66540,224,-8,-8,0,0,0,01,8,3,2200
+D,624636953,1214,943,0,66540,351,-8,-8,0,0,0,01,8,3,2200
+D,624638004,1051,943,0,66540,453,-8,-8,0,0,0,01,8,3,2200
+D,624638886,882,944,1,66539,373,-8,-16,0,0,0,01,8,3,2200
+D,624639797,911,944,0,66539,279,-9,-16,0,0,0,01,8,3,2200
+D,624640817,1020,944,0,66539,297,-9,-16,0,0,0,01,8,3,2200
+D,624641811,994,944,0,66539,283,-9,-16,0,0,0,01,8,3,2200
+D,624642795,984,944,0,66539,284,-9,-16,0,0,0,01,8,3,2200
+D,624643790,995,944,0,66539,280,-10,-16,0,0,0,01,8,3,2200
+D,624644804,1014,944,0,66539,281,-10,-16,0,0,0,01,8,3,2200
+D,624645805,1001,944,0,66539,283,-10,-8,0,0,0,01,8,3,2200
+D,624646803,998,944,0,66539,282,-10,-8,0,0,0,01,8,3,2200
+D,624647934,1131,944,0,66539,387,-10,-8,0,0,0,01,8,3,2200
+D,624648801,867,944,0,66539,278,-10,-8,0,0,0,01,8,3,2200
+D,624649728,927,944,0,66539,220,-10,-8,0,0,0,01,8,3,2200
+D,624650760,1032,944,0,66539,233,-10,-8,0,0,0,01,8,3,2200
+D,624651753,993,944,0,66539,244,-9,-8,0,0,0,01,8,3,2200
+D,624652755,1002,944,0,66539,228,-9,-8,0,0,0,01,8,3,2200
+D,624653769,1014,944,0,66539,241,-9,-8,0,0,0,01,8,3,2200
+D,624654734,965,944,0,66539,226,-9,-8,0,0,0,01,8,3,2200
+D,624655740,1006,944,0,66539,232,-9,-8,0,0,0,01,8,3,2200
+D,624656927,1187,944,0,66539,367,-9,-8,0,0,0,01,8,3,2200
+D,624657979,1052,944,0,66539,450,-9,-8,0,0,0,01,8,3,2200
+D,624658886,907,944,0,66539,377,-9,-8,0,0,0,01,8,3,2200
+D,624659791,905,945,1,66538,275,-9,-16,0,0,0,01,8,3,2200
+D,624660801,1010,945,0,66538,275,-10,-16,0,0,0,01,8,3,2200
+D,624661825,1024,945,0,66538,305,-10,-16,0,0,0,01,8,3,2200
+D,624662799,974,945,0,66538,280,-10,-16,0,0,0,01,8,3,2200
+D,624663790,991,945,0,66538,281,-10,-16,0,0,0,01,8,3,2200
+D,624664796,1006,945,0,66538,275,-11,-16,0,0,0,01,8,3,2200
+D,624665798,1002,945,0,66538,277,-11,-16,0,0,0,01,8,3,2200
+D,624666789,991,945,0,66538,271,-11,-16,0,0,0,01,8,3,2200
+D,624667909,1120,945,0,66538,396,-11,-16,0,0,0,01,8,3,2200
+D,624668802,893,945,0,66538,284,-11,-16,0,0,0,01,8,3,2200
+D,624669752,950,945,0,66538,224,-11,-8,0,0,0,01,8,3,2200
+D,624670740,988,945,0,66538,232,-11,-8,0,0,0,01,8,3,2200
+D,624671735,995,945,0,66538,222,-11,-8,0,0,0,01,8,3,2200
+D,624672755,1020,945,0,66538,232,-11,-8,0,0,0,01,8,3,2200
+D,624673744,989,945,0,66538,235,-11,-8,0,0,0,01,8,3,2200
+D,624674746,1002,945,0,66538,233,-11,-8,0,0,0,01,8,3,2200
+D,624675734,988,945,0,66538,225,-11,-8,0,0,0,01,8,3,2200
+D,624676904,1170,945,0,66538,368,-10,-8,0,0,0,01,8,3,2200
+D,624677989,1085,945,0,66538,459,-10,-8,0,0,0,01,8,3,2200
+D,624678882,893,945,0,66538,359,-10,-8,0,0,0,01,8,3,2200
+D,624679790,908,945,0,66538,272,-10,-8,0,0,0,01,8,3,2200
+D,624680804,1014,945,0,66538,288,-10,-8,0,0,0,01,8,3,2200
+D,624682105,1301,945,0,66538,293,-10,-8,0,0,0,01,8,3,2200
+D,624682792,687,945,0,66538,280,-10,-8,0,0,0,01,8,3,2200
+D,624683815,1023,945,0,66538,290,-10,-8,0,0,0,01,8,3,2200
+D,624684821,1006,946,1,66537,300,-10,-16,0,0,0,01,8,3,2200
+D,624685785,964,945,-1,66538,268,-10,-8,0,0,0,01,8,3,2200
+D,624686809,1024,945,0,66538,287,-10,-8,0,0,0,01,8,3,2200
+D,624687937,1128,945,0,66538,387,-10,-8,0,0,0,01,8,3,2200
+D,624688792,855,946,1,66537,274,-10,-16,0,0,0,01,8,3,2200
+D,624689729,937,946,0,66537,220,-10,-16,0,0,0,01,8,3,2200
+D,624690752,1023,946,0,66537,231,-10,-8,0,0,0,01,8,3,2200
+D,624691730,978,946,0,66537,221,-10,-8,0,0,0,01,8,3,2200
+D,624692760,1030,946,0,66537,233,-10,-8,0,0,0,01,8,3,2200
+D,624693744,984,946,0,66537,235,-10,-8,0,0,0,01,8,3,2200
+D,624694758,1014,946,0,66537,247,-10,-8,0,0,0,01,8,3,2200
+D,624695755,997,946,0,66537,228,-10,-8,0,0,0,01,8,3,2200
+D,624696918,1163,946,0,66537,353,-10,-8,0,0,0,01,8,3,2200
+D,624697988,1070,946,0,66537,453,-10,-8,0,0,0,01,8,3,2200
+D,624698902,914,946,0,66537,376,-10,-8,0,0,0,01,8,3,2200
+D,624699782,880,946,0,66537,264,-10,-8,0,0,0,01,8,3,2200
+D,624700803,1021,946,0,66537,284,-9,-8,0,0,0,01,8,3,2200
+D,624701789,986,946,0,66537,275,-9,-8,0,0,0,01,8,3,2200
+D,624702806,1017,946,0,66537,284,-9,-8,0,0,0,01,8,3,2200
+D,624703780,974,946,0,66537,271,-9,-8,0,0,0,01,8,3,2200
+D,624704803,1023,946,0,66537,284,-9,-8,0,0,0,01,8,3,2200
+D,624705795,992,946,0,66537,284,-9,-8,0,0,0,01,8,3,2200
+D,624706802,1007,946,0,66537,288,-9,-8,0,0,0,01,8,3,2200
+D,624707951,1149,946,0,66537,395,-9,-8,0,0,0,01,8,3,2200
+D,624708790,839,946,0,66537,270,-9,-8,0,0,0,01,8,3,2200
+D,624709732,942,946,0,66537,223,-9,-8,0,0,0,01,8,3,2200
+D,624710757,1025,946,0,66537,229,-9,-8,0,0,0,01,8,3,2200
+D,624711732,975,946,0,66537,223,-9,-8,0,0,0,01,8,3,2200
+D,624712740,1008,946,0,66537,232,-9,-8,0,0,0,01,8,3,2200
+D,624713745,1005,947,1,66536,236,-9,-16,0,0,0,01,8,3,2200
+D,624714743,998,947,0,66536,230,-9,-16,0,0,0,01,8,3,2200
+D,624715754,1011,947,0,66536,227,-9,-8,0,0,0,01,8,3,2200
+D,624716944,1190,947,0,66536,381,-10,-16,0,0,0,01,8,3,2200
+D,624717998,1054,947,0,66536,461,-10,-16,0,0,0,01,8,3,2200
+D,624718883,885,947,0,66536,359,-10,-8,0,0,0,01,8,3,2200
+D,624719807,924,947,0,66536,283,-10,-8,0,0,0,01,8,3,2200
+D,624720802,995,947,0,66536,277,-10,-8,0,0,0,01,8,3,2200
+D,624721794,992,947,0,66536,270,-10,-8,0,0,0,01,8,3,2200
+D,624722804,1010,947,0,66536,281,-10,-8,0,0,0,01,8,3,2200
+D,624723799,995,947,0,66536,272,-10,-8,0,0,0,01,8,3,2200
+D,624724794,995,947,0,66536,277,-10,-8,0,0,0,01,8,3,2200
+D,624725807,1013,947,0,66536,286,-9,-8,0,0,0,01,8,3,2200
+D,624726785,978,947,0,66536,277,-9,-8,0,0,0,01,8,3,2200
+D,624727916,1131,947,0,66536,398,-9,-8,0,0,0,01,8,3,2200
+D,624728813,897,947,0,66536,289,-9,-8,0,0,0,01,8,3,2200
+D,624729730,917,947,0,66536,220,-9,-8,0,0,0,01,8,3,2200
+D,624730751,1021,947,0,66536,232,-9,-8,0,0,0,01,8,3,2200
+D,624731745,994,947,0,66536,218,-9,-8,0,0,0,01,8,3,2200
+D,624732744,999,947,0,66536,232,-9,-8,0,0,0,01,8,3,2200
+D,624733737,993,947,0,66536,228,-9,-8,0,0,0,01,8,3,2200
+D,624734741,1004,947,0,66536,233,-9,-8,0,0,0,01,8,3,2200
+D,624735729,988,947,0,66536,219,-9,-8,0,0,0,01,8,3,2200
+D,624736932,1203,947,0,66536,344,-9,-8,0,0,0,01,8,3,2200
+D,624737967,1035,947,0,66536,448,-9,-8,0,0,0,01,8,3,2200
+D,624738884,917,947,0,66536,365,-9,-8,0,0,0,01,8,3,2200
+D,624739788,904,947,0,66536,280,-9,-8,0,0,0,01,8,3,2200
+D,624740790,1002,947,0,66536,273,-9,-8,0,0,0,01,8,3,2200
+D,624741798,1008,948,1,66535,276,-9,-16,0,0,0,01,8,3,2200
+D,624742792,994,947,-1,66536,274,-9,-8,0,0,0,01,8,3,2200
+D,624743794,1002,947,0,66536,277,-9,0,0,0,0,01,8,3,2200
+D,624744791,997,947,0,66536,277,-8,0,0,0,0,01,8,3,2200
+D,624745805,1014,947,0,66536,282,-8,0,0,0,0,01,8,3,2200
+D,624746795,990,947,0,66536,275,-8,0,0,0,0,01,8,3,2200
+D,624747915,1120,948,1,66535,383,-8,-8,0,0,0,01,8,3,2200
+D,624748840,925,948,0,66535,318,-8,-8,0,0,0,01,8,3,2200
+D,624749744,904,948,0,66535,233,-8,-8,0,0,0,01,8,3,2200
+D,624750741,997,948,0,66535,225,-8,-8,0,0,0,01,8,3,2200
+D,624751730,989,948,0,66535,222,-8,-8,0,0,0,01,8,3,2200
+D,624752739,1009,948,0,66535,226,-8,-8,0,0,0,01,8,3,2200
+D,624753751,1012,948,0,66535,231,-8,-8,0,0,0,01,8,3,2200
+D,624754735,984,948,0,66535,227,-8,-8,0,0,0,01,8,3,2200
+D,624755738,1003,948,0,66535,222,-8,-8,0,0,0,01,8,3,2200
+D,624756897,1159,948,0,66535,374,-8,-8,0,0,0,01,8,3,2200
+D,624757994,1097,948,0,66535,462,-8,-8,0,0,0,01,8,3,2200
+D,624758882,888,948,0,66535,356,-8,-8,0,0,0,01,8,3,2200
+D,624759796,914,948,0,66535,277,-8,-8,0,0,0,01,8,3,2200
+D,624760823,1027,948,0,66535,303,-8,-8,0,0,0,01,8,3,2200
+D,624761798,975,948,0,66535,280,-8,-8,0,0,0,01,8,3,2200
+D,624762795,997,948,0,66535,286,-8,-8,0,0,0,01,8,3,2200
+D,624763805,1010,948,0,66535,282,-8,-8,0,0,0,01,8,3,2200
+D,624764807,1002,948,0,66535,289,-8,-8,0,0,0,01,8,3,2200
+D,624765785,978,948,0,66535,277,-8,-8,0,0,0,01,8,3,2200
+D,624766804,1019,948,0,66535,290,-8,-8,0,0,0,01,8,3,2200
+D,624767933,1129,948,0,66535,385,-8,-8,0,0,0,01,8,3,2200
+D,624768791,858,948,0,66535,276,-8,-8,0,0,0,01,8,3,2200
+D,624769732,941,948,0,66535,222,-8,-8,0,0,0,01,8,3,2200
+D,624770759,1027,948,0,66535,241,-8,-8,0,0,0,01,8,3,2200
+D,624771739,980,948,0,66535,225,-8,-8,0,0,0,01,8,3,2200
+D,624772749,1010,948,0,66535,233,-8,0,0,0,0,01,8,3,2200
+D,624773745,996,948,0,66535,236,-8,-8,0,0,0,01,8,3,2200
+D,624774743,998,948,0,66535,230,-8,-8,0,0,0,01,8,3,2200
+D,624775754,1011,948,0,66535,227,-8,-8,0,0,0,01,8,3,2200
+D,624776912,1158,948,0,66535,372,-8,-8,0,0,0,01,8,3,2200
+D,624777977,1065,948,0,66535,444,-7,0,0,0,0,01,8,3,2200
+D,624778870,893,948,0,66535,343,-7,0,0,0,0,01,8,3,2200
+D,624779784,914,948,0,66535,266,-7,0,0,0,0,01,8,3,2200
+D,624780814,1030,948,0,66535,293,-7,0,0,0,0,01,8,3,2200
+D,624782159,1345,948,0,66535,325,-6,0,0,0,0,01,8,3,2200
+D,624782780,621,948,0,66535,273,-6,0,0,0,0,01,8,3,2200
+D,624783797,1017,948,0,66535,282,-6,0,0,0,0,01,8,3,2200
+D,624784811,1014,948,0,66535,288,-6,0,0,0,0,01,8,3,2200
+D,624785780,969,948,0,66535,273,-5,0,0,0,0,01,8,3,2200
+D,624786803,1023,948,0,66535,281,-5,0,0,0,0,01,8,3,2200
+D,624787948,1145,948,0,66535,390,-5,0,0,0,0,01,8,3,2200
+D,624788786,838,948,0,66535,268,-5,0,0,0,0,01,8,3,2200
+D,624789733,947,948,0,66535,223,-5,0,0,0,0,01,8,3,2200
+D,624790739,1006,948,0,66535,231,-4,0,0,0,0,01,8,3,2200
+D,624791751,1012,948,0,66535,223,-4,0,0,0,0,01,8,3,2200
+D,624792775,1024,948,0,66535,248,-4,0,0,0,0,01,8,3,2200
+D,624793746,971,948,0,66535,236,-4,0,0,0,0,01,8,3,2200
+D,624794746,1000,948,0,66535,231,-4,0,0,0,0,01,8,3,2200
+D,624795738,992,948,0,66535,228,-4,0,0,0,0,01,8,3,2200
+D,624796924,1186,948,0,66535,375,-3,0,0,0,0,01,8,3,2200
+D,624797973,1049,948,0,66535,454,-3,0,0,0,0,01,8,3,2200
+D,624798891,918,948,0,66535,373,-3,0,0,0,0,01,8,3,2200
+D,624799790,899,948,0,66535,274,-3,0,0,0,0,01,8,3,2200
+D,624800789,999,948,0,66535,271,-3,0,0,0,0,01,8,3,2200
+D,624801796,1007,948,0,66535,278,-3,0,0,0,0,01,8,3,2200
+D,624802777,981,948,0,66535,269,-3,0,0,0,0,01,8,3,2200
+D,624803794,1017,948,0,66535,284,-3,0,0,0,0,01,8,3,2200
+D,624804805,1011,948,0,66535,281,-3,0,0,0,0,01,8,3,2200
+D,624805790,985,948,0,66535,283,-2,0,0,0,0,01,8,3,2200
+D,624806786,996,948,0,66535,267,-2,0,0,0,0,01,8,3,2200
+D,624807930,1144,948,0,66535,406,-2,0,0,0,0,01,8,3,2200
+D,624808795,865,948,0,66535,268,-2,0,0,0,0,01,8,3,2200
+D,624809727,932,948,0,66535,218,-2,0,0,0,0,01,8,3,2200
+D,624810745,1018,948,0,66535,229,-2,0,0,0,0,01,8,3,2200
+D,624811733,988,948,0,66535,218,-2,0,0,0,0,01,8,3,2200
+D,624812741,1008,948,0,66535,233,-2,0,0,0,0,01,8,3,2200
+D,624813744,1003,948,0,66535,235,-2,0,0,0,0,01,8,3,2200
+D,624814754,1010,948,0,66535,246,-2,0,0,0,0,01,8,3,2200
+D,624815740,986,948,0,66535,225,-2,0,0,0,0,01,8,3,2200
+D,624816913,1173,948,0,66535,368,-2,0,0,0,0,01,8,3,2200
+D,624817997,1084,948,0,66535,457,-1,0,0,0,0,01,8,3,2200
+D,624818872,875,948,0,66535,354,-1,0,0,0,0,01,8,3,2200
+D,624819787,915,948,0,66535,264,-1,0,0,0,0,01,8,3,2200
+D,624820814,1027,949,1,66534,290,-2,-8,0,0,0,01,8,3,2200
+D,624821802,988,948,-1,66535,274,-2,0,0,0,0,01,8,3,2200
+D,624822814,1012,948,0,66535,288,-2,0,0,0,0,01,8,3,2200
+D,624823796,982,949,1,66534,272,-2,-8,0,0,0,01,8,3,2200
+D,624824818,1022,949,0,66534,296,-2,-8,0,0,0,01,8,3,2200
+D,624825791,973,948,-1,66535,275,-2,0,0,0,0,01,8,3,2200
+D,624826812,1021,948,0,66535,287,-2,0,0,0,0,01,8,3,2200
+D,624827946,1134,948,0,66535,403,-2,0,0,0,0,01,8,3,2200
+D,624828802,856,948,0,66535,276,-2,0,0,0,0,01,8,3,2200
+D,624829748,946,948,0,66535,221,-2,0,0,0,0,01,8,3,2200
+D,624830746,998,948,0,66535,230,-2,0,0,0,0,01,8,3,2200
+D,624831748,1002,948,0,66535,221,-2,0,0,0,0,01,8,3,2200
+D,624832760,1012,948,0,66535,233,-1,0,0,0,0,01,8,3,2200
+D,624833744,984,948,0,66535,234,-1,0,0,0,0,01,8,3,2200
+D,624834743,999,948,0,66535,232,-1,0,0,0,0,01,8,3,2200
+D,624835753,1010,949,1,66534,226,-2,-8,0,0,0,01,8,3,2200
+D,624836916,1163,949,0,66534,378,-2,-8,0,0,0,01,8,3,2200
+D,624837992,1076,949,0,66534,450,-2,-8,0,0,0,01,8,3,2200
+D,624838873,881,948,-1,66535,359,-2,0,0,0,0,01,8,3,2200
+D,624839790,917,948,0,66535,270,-2,0,0,0,0,01,8,3,2200
+D,624840809,1019,949,1,66534,287,-2,-8,0,0,0,01,8,3,2200
+D,624841793,984,948,-1,66535,275,-2,0,0,0,0,01,8,3,2200
+D,624842817,1024,948,0,66535,289,-2,0,0,0,0,01,8,3,2200
+D,624843792,975,948,0,66535,273,-2,0,0,0,0,01,8,3,2200
+D,624844810,1018,948,0,66535,288,-2,0,0,0,0,01,8,3,2200
+D,624845786,976,948,0,66535,268,-2,0,0,0,0,01,8,3,2200
+D,624846824,1038,949,1,66534,300,-2,-8,0,0,0,01,8,3,2200
+D,624847933,1109,948,-1,66535,410,-2,0,0,0,0,01,8,3,2200
+D,624848794,861,948,0,66535,275,-2,0,0,0,0,01,8,3,2200
+D,624849736,942,948,0,66535,227,-2,0,0,0,0,01,8,3,2200
+D,624850740,1004,948,0,66535,231,-2,0,0,0,0,01,8,3,2200
+D,624851753,1013,949,1,66534,226,-2,0,0,0,0,01,8,3,2200
+D,624852741,988,948,-1,66535,233,-2,0,0,0,0,01,8,3,2200
+D,624853744,1003,948,0,66535,235,-2,0,0,0,0,01,8,3,2200
+D,624854745,1001,949,1,66534,232,-2,0,0,0,0,01,8,3,2200
+D,624855734,989,948,-1,66535,226,-1,8,0,0,0,01,8,3,2200
+D,624856925,1191,948,0,66535,370,-1,0,0,0,0,01,8,3,2200
+D,624857976,1051,948,0,66535,455,-1,0,0,0,0,01,8,3,2200
+D,624858875,899,948,0,66535,364,-1,0,0,0,0,01,8,3,2200
+D,624859792,917,948,0,66535,273,-1,0,0,0,0,01,8,3,2200
+D,624860793,1001,948,0,66535,274,-1,0,0,0,0,01,8,3,2200
+D,624861797,1004,948,0,66535,270,-1,0,0,0,0,01,8,3,2200
+D,624862804,1007,948,0,66535,280,-1,0,0,0,0,01,8,3,2200
+D,624863792,988,948,0,66535,268,-1,0,0,0,0,01,8,3,2200
+D,624864792,1000,948,0,66535,278,-1,0,0,0,0,01,8,3,2200
+D,624865804,1012,948,0,66535,282,0,8,0,0,0,01,8,3,2200
+D,624866803,999,948,0,66535,277,0,8,0,0,0,01,8,3,2200
+D,624867905,1102,948,0,66535,379,0,8,0,0,0,01,8,3,2200
+D,624868825,920,948,0,66535,313,0,8,0,0,0,01,8,3,2200
+D,624869746,921,948,0,66535,219,0,0,0,0,0,01,8,3,2200
+D,624870740,994,948,0,66535,231,0,0,0,0,0,01,8,3,2200
+D,624871725,985,948,0,66535,217,1,8,0,0,0,01,8,3,2200
+D,624872746,1021,948,0,66535,231,1,0,0,0,0,01,8,3,2200
+D,624873736,990,948,0,66535,227,1,0,0,0,0,01,8,3,2200
+D,624874741,1005,948,0,66535,233,1,0,0,0,0,01,8,3,2200
+D,624875725,984,948,0,66535,217,1,0,0,0,0,01,8,3,2200
+D,624876934,1209,948,0,66535,335,1,8,0,0,0,01,8,3,2200
+D,624877969,1035,948,0,66535,455,1,0,0,0,0,01,8,3,2200
+D,624878887,918,948,0,66535,359,1,0,0,0,0,01,8,3,2200
+D,624879796,909,948,0,66535,278,1,0,0,0,0,01,8,3,2200
+D,624880821,1025,948,0,66535,293,1,0,0,0,0,01,8,3,2200
+D,624882135,1314,948,0,66535,303,1,8,0,0,0,01,8,3,2200
+D,624882796,661,948,0,66535,275,1,0,0,0,0,01,8,3,2200
+D,624883799,1003,948,0,66535,284,1,0,0,0,0,01,8,3,2200
+D,624884818,1019,948,0,66535,296,1,8,0,0,0,01,8,3,2200
+D,624885794,976,948,0,66535,275,1,0,0,0,0,01,8,3,2200
+D,624886802,1008,948,0,66535,282,1,0,0,0,0,01,8,3,2200
+D,624887950,1148,948,0,66535,390,1,0,0,0,0,01,8,3,2200
+D,624888784,834,948,0,66535,275,1,0,0,0,0,01,8,3,2200
+D,624889734,950,948,0,66535,224,1,0,0,0,0,01,8,3,2200
+D,624890759,1025,948,0,66535,243,1,0,0,0,0,01,8,3,2200
+D,624891735,976,948,0,66535,227,1,0,0,0,0,01,8,3,2200
+D,624892740,1005,948,0,66535,232,1,0,0,0,0,01,8,3,2200
+D,624893747,1007,948,0,66535,237,1,0,0,0,0,01,8,3,2200
+D,624894739,992,948,0,66535,230,1,0,0,0,0,01,8,3,2200
+D,624895737,998,948,0,66535,229,1,0,0,0,0,01,8,3,2200
+D,624896906,1169,948,0,66535,370,1,0,0,0,0,01,8,3,2200
+D,624897975,1069,948,0,66535,458,1,0,0,0,0,01,8,3,2200
+D,624898895,920,948,0,66535,368,1,0,0,0,0,01,8,3,2200
+D,624899783,888,948,0,66535,267,1,0,0,0,0,01,8,3,2200
+D,624900803,1020,948,0,66535,283,1,0,0,0,0,01,8,3,2200
+D,624901797,994,948,0,66535,285,1,0,0,0,0,01,8,3,2200
+D,624902822,1025,948,0,66535,294,1,0,0,0,0,01,8,3,2200
+D,624903785,963,948,0,66535,263,1,0,0,0,0,01,8,3,2200
+D,624904809,1024,948,0,66535,284,1,0,0,0,0,01,8,3,2200
+D,624905788,979,948,0,66535,270,1,0,0,0,0,01,8,3,2200
+D,624906803,1015,948,0,66535,287,1,0,0,0,0,01,8,3,2200
+D,624907924,1121,948,0,66535,403,1,0,0,0,0,01,8,3,2200
+D,624908793,869,948,0,66535,273,1,0,0,0,0,01,8,3,2200
+D,624909730,937,948,0,66535,221,1,0,0,0,0,01,8,3,2200
+D,624910750,1020,948,0,66535,230,1,0,0,0,0,01,8,3,2200
+D,624911729,979,948,0,66535,221,0,0,0,0,0,01,8,3,2200
+D,624912765,1036,948,0,66535,246,0,0,0,0,0,01,8,3,2200
+D,624913751,986,948,0,66535,235,0,0,0,0,0,01,8,3,2200
+D,624914752,1001,948,0,66535,233,0,0,0,0,0,01,8,3,2200
+D,624915734,982,948,0,66535,225,0,0,0,0,0,01,8,3,2200
+D,624916895,1161,948,0,66535,371,0,0,0,0,0,01,8,3,2200
+D,624917981,1086,948,0,66535,454,0,0,0,0,0,01,8,3,2200
+D,624918879,898,948,0,66535,365,0,0,0,0,0,01,8,3,2200
+D,624919777,898,948,0,66535,263,0,0,0,0,0,01,8,3,2200
+D,624920816,1039,948,0,66535,296,0,0,0,0,0,01,8,3,2200
+D,624921778,962,948,0,66535,269,0,0,0,0,0,01,8,3,2200
+D,624922824,1046,948,0,66535,297,0,0,0,0,0,01,8,3,2200
+D,624923803,979,948,0,66535,280,0,0,0,0,0,01,8,3,2200
+D,624926174,2371,947,-1,66536,398,1,8,0,0,0,01,9,5,800
+D,624926731,557,948,1,66535,271,1,0,0,0,0,01,9,5,800
+D,624927044,313,948,0,66535,227,1,0,0,0,0,01,9,5,800
+D,624927933,889,948,0,66535,409,1,0,0,0,0,01,9,5,800
+D,624928797,864,948,0,66535,273,1,0,0,0,0,01,9,5,800
+D,624929736,939,948,0,66535,220,1,0,0,0,0,01,9,5,800
+D,624930745,1009,948,0,66535,221,1,0,0,0,0,01,9,5,800
+D,624931745,1000,948,0,66535,221,1,0,0,0,0,01,9,5,800
+D,624932738,993,948,0,66535,223,1,0,0,0,0,01,9,5,800
+D,624933765,1027,948,0,66535,243,1,0,0,0,0,01,9,5,800
+D,624934767,1002,948,0,66535,243,1,0,0,0,0,01,9,5,800
+D,624935753,986,948,0,66535,229,1,0,0,0,0,01,9,5,800
+D,624936869,1116,948,0,66535,355,1,0,0,0,0,01,9,5,800
+D,624937993,1124,948,0,66535,458,1,0,0,0,0,01,9,5,800
+D,624938924,931,948,0,66535,394,1,0,0,0,0,01,9,5,800
+D,624939808,884,948,0,66535,280,1,0,0,0,0,01,9,5,800
+D,624940795,987,948,0,66535,270,1,0,0,0,0,01,9,5,800
+D,624941800,1005,947,-1,66536,282,1,8,0,0,0,01,9,5,800
+D,624942802,1002,947,0,66536,272,1,8,0,0,0,01,9,5,800
+D,624943792,990,947,0,66536,275,1,8,0,0,0,01,9,5,800
+D,624944807,1015,947,0,66536,298,2,8,0,0,0,01,9,5,800
+D,624945789,982,947,0,66536,276,2,8,0,0,0,01,9,5,800
+D,624946789,1000,947,0,66536,265,2,8,0,0,0,01,9,5,800
+D,624947954,1165,947,0,66536,415,2,8,0,0,0,01,9,5,800
+D,624948818,864,947,0,66536,291,3,8,0,0,0,01,9,5,800
+D,624949731,913,947,0,66536,218,3,8,0,0,0,01,9,5,800
+D,624950739,1008,947,0,66536,222,3,8,0,0,0,01,9,5,800
+D,624951733,994,947,0,66536,217,3,8,0,0,0,01,9,5,800
+D,624952754,1021,947,0,66536,225,3,8,0,0,0,01,9,5,800
+D,624953763,1009,947,0,66536,237,4,8,0,0,0,01,9,5,800
+D,624954749,986,947,0,66536,222,4,8,0,0,0,01,9,5,800
+D,624955749,1000,947,0,66536,228,4,8,0,0,0,01,9,5,800
+D,624956894,1145,947,0,66536,364,4,8,0,0,0,01,9,5,800
+D,624958010,1116,947,0,66536,467,4,8,0,0,0,01,9,5,800
+D,624958926,916,947,0,66536,388,4,8,0,0,0,01,9,5,800
+D,624959797,871,947,0,66536,284,5,8,0,0,0,01,9,5,800
+D,624960775,978,947,0,66536,265,5,8,0,0,0,01,9,5,800
+D,624961817,1042,947,0,66536,295,5,8,0,0,0,01,9,5,800
+D,624962804,987,947,0,66536,279,5,8,0,0,0,01,9,5,800
+D,624963805,1001,947,0,66536,281,5,8,0,0,0,01,9,5,800
+D,624964800,995,947,0,66536,274,5,8,0,0,0,01,9,5,800
+D,624965814,1014,947,0,66536,286,5,8,0,0,0,01,9,5,800
+D,624966804,990,947,0,66536,273,5,8,0,0,0,01,9,5,800
+D,624967916,1112,947,0,66536,406,5,8,0,0,0,01,9,5,800
+D,624968827,911,947,0,66536,297,6,8,0,0,0,01,9,5,800
+D,624969746,919,947,0,66536,224,6,8,0,0,0,01,9,5,800
+D,624970734,988,947,0,66536,221,6,8,0,0,0,01,9,5,800
+D,624971738,1004,947,0,66536,222,6,8,0,0,0,01,9,5,800
+D,624972739,1001,947,0,66536,226,6,0,0,0,0,01,9,5,800
+D,624973755,1016,947,0,66536,239,5,0,0,0,0,01,9,5,800
+D,624974739,984,947,0,66536,223,5,0,0,0,0,01,9,5,800
+D,624975740,1001,947,0,66536,222,5,0,0,0,0,01,9,5,800
+D,624976896,1156,947,0,66536,364,5,0,0,0,0,01,9,5,800
+D,624978006,1110,946,-1,66537,477,5,8,0,0,0,01,9,5,800
+D,624978877,871,946,0,66537,348,5,8,0,0,0,01,9,5,800
+D,624979801,924,946,0,66537,276,5,8,0,0,0,01,9,5,800
+D,624980817,1016,946,0,66537,295,5,8,0,0,0,01,9,5,800
+D,624982198,1381,946,0,66537,344,5,8,0,0,0,01,9,5,800
+D,624982789,591,946,0,66537,260,5,8,0,0,0,01,9,5,800
+D,624983794,1005,946,0,66537,274,6,8,0,0,0,01,9,5,800
+D,624984818,1024,946,0,66537,292,6,8,0,0,0,01,9,5,800
+D,624985791,973,946,0,66537,278,6,8,0,0,0,01,9,5,800
+D,624986822,1031,946,0,66537,297,6,8,0,0,0,01,9,5,800
+D,624987810,988,946,0,66537,295,6,8,0,0,0,01,9,5,800
+D,624988855,1045,946,0,66537,331,6,8,0,0,0,01,9,5,800
+D,624989746,891,946,0,66537,227,6,8,0,0,0,01,9,5,800
+D,624990738,992,946,0,66537,225,6,8,0,0,0,01,9,5,800
+D,624991743,1005,946,0,66537,221,6,8,0,0,0,01,9,5,800
+D,624992758,1015,946,0,66537,240,6,8,0,0,0,01,9,5,800
+D,624993741,983,946,0,66537,228,6,8,0,0,0,01,9,5,800
+D,624994754,1013,946,0,66537,224,6,8,0,0,0,01,9,5,800
+D,624995737,983,946,0,66537,221,6,8,0,0,0,01,9,5,800
+D,624996867,1130,946,0,66537,350,7,8,0,0,0,01,9,5,800
+D,624997978,1111,946,0,66537,464,7,8,0,0,0,01,9,5,800
+D,624998900,922,946,0,66537,380,7,8,0,0,0,01,9,5,800
+D,624999796,896,946,0,66537,278,7,8,0,0,0,01,9,5,800
+D,625000803,1007,946,0,66537,278,7,8,0,0,0,01,9,5,800
+D,625001789,986,946,0,66537,278,7,8,0,0,0,01,9,5,800
+D,625002801,1012,946,0,66537,273,7,8,0,0,0,01,9,5,800
+D,625003796,995,946,0,66537,277,7,8,0,0,0,01,9,5,800
+D,625004809,1013,946,0,66537,279,7,8,0,0,0,01,9,5,800
+D,625005807,998,946,0,66537,279,7,8,0,0,0,01,9,5,800
+D,625006796,989,946,0,66537,271,7,8,0,0,0,01,9,5,800
+D,625007918,1122,946,0,66537,391,7,8,0,0,0,01,9,5,800
+D,625008825,907,945,-1,66538,299,7,8,0,0,0,01,9,5,800
+D,625009742,917,945,0,66538,220,7,8,0,0,0,01,9,5,800
+D,625010759,1017,945,0,66538,237,7,8,0,0,0,01,9,5,800
+D,625011743,984,945,0,66538,227,7,8,0,0,0,01,9,5,800
+D,625012739,996,945,0,66538,226,7,8,0,0,0,01,9,5,800
+D,625013761,1022,945,0,66538,239,7,8,0,0,0,01,9,5,800
+D,625014750,989,945,0,66538,226,7,8,0,0,0,01,9,5,800
+D,625015748,998,945,0,66538,219,7,8,0,0,0,01,9,5,800
+D,625016855,1107,945,0,66538,342,7,8,0,0,0,01,9,5,800
+D,625018010,1155,945,0,66538,476,7,8,0,0,0,01,9,5,800
+D,625018901,891,945,0,66538,374,7,8,0,0,0,01,9,5,800
+D,625019795,894,945,0,66538,285,7,8,0,0,0,01,9,5,800
+D,625020778,983,945,0,66538,269,7,8,0,0,0,01,9,5,800
+D,625021812,1034,945,0,66538,289,7,8,0,0,0,01,9,5,800
+D,625022805,993,945,0,66538,275,8,8,0,0,0,01,9,5,800
+D,625023793,988,945,0,66538,277,8,8,0,0,0,01,9,5,800
+D,625024795,1002,945,0,66538,268,8,8,0,0,0,01,9,5,800
+D,625025797,1002,945,0,66538,284,8,8,0,0,0,01,9,5,800
+D,625026800,1003,945,0,66538,276,8,8,0,0,0,01,9,5,800
+D,625027927,1127,945,0,66538,385,8,8,0,0,0,01,9,5,800
+D,625028824,897,945,0,66538,295,8,8,0,0,0,01,9,5,800
+D,625029735,911,945,0,66538,217,8,8,0,0,0,01,9,5,800
+D,625030746,1011,945,0,66538,222,8,8,0,0,0,01,9,5,800
+D,625031735,989,945,0,66538,218,8,8,0,0,0,01,9,5,800
+D,625032774,1039,945,0,66538,245,8,8,0,0,0,01,9,5,800
+D,625033757,983,945,0,66538,241,8,8,0,0,0,01,9,5,800
+D,625034747,990,945,0,66538,223,8,8,0,0,0,01,9,5,800
+D,625035745,998,945,0,66538,221,8,8,0,0,0,01,9,5,800
+D,625036845,1100,945,0,66538,324,8,8,0,0,0,01,9,5,800
+D,625037994,1149,945,0,66538,479,8,8,0,0,0,01,9,5,800
+D,625038923,929,945,0,66538,391,7,0,0,0,0,01,9,5,800
+D,625039811,888,945,0,66538,283,7,0,0,0,0,01,9,5,800
+D,625040798,987,944,-1,66539,270,7,8,0,0,0,01,9,5,800
+D,625041807,1009,944,0,66539,283,7,8,0,0,0,01,9,5,800
+D,625042801,994,944,0,66539,277,7,8,0,0,0,01,9,5,800
+D,625043803,1002,944,0,66539,279,7,8,0,0,0,01,9,5,800
+D,625044800,997,944,0,66539,279,7,8,0,0,0,01,9,5,800
+D,625045815,1015,944,0,66539,285,7,8,0,0,0,01,9,5,800
+D,625046793,978,944,0,66539,277,7,8,0,0,0,01,9,5,800
+D,625047926,1133,944,0,66539,398,7,8,0,0,0,01,9,5,800
+D,625048817,891,944,0,66539,286,7,8,0,0,0,01,9,5,800
+D,625049735,918,944,0,66539,219,7,8,0,0,0,01,9,5,800
+D,625050733,998,944,0,66539,217,7,8,0,0,0,01,9,5,800
+D,625051737,1004,944,0,66539,222,7,8,0,0,0,01,9,5,800
+D,625052747,1010,944,0,66539,221,8,8,0,0,0,01,9,5,800
+D,625053764,1017,944,0,66539,254,8,8,0,0,0,01,9,5,800
+D,625054739,975,944,0,66539,226,8,8,0,0,0,01,9,5,800
+D,625055739,1000,944,0,66539,222,8,8,0,0,0,01,9,5,800
+D,625056834,1095,944,0,66539,325,8,8,0,0,0,01,9,5,800
+D,625058007,1173,944,0,66539,477,8,8,0,0,0,01,9,5,800
+D,625058907,900,944,0,66539,378,8,8,0,0,0,01,9,5,800
+D,625059799,892,944,0,66539,284,8,8,0,0,0,01,9,5,800
+D,625060779,980,944,0,66539,271,8,8,0,0,0,01,9,5,800
+D,625061798,1019,944,0,66539,283,8,8,0,0,0,01,9,5,800
+D,625062788,990,944,0,66539,280,8,8,0,0,0,01,9,5,800
+D,625063806,1018,944,0,66539,280,8,8,0,0,0,01,9,5,800
+D,625064792,986,944,0,66539,273,8,8,0,0,0,01,9,5,800
+D,625065818,1026,944,0,66539,290,8,8,0,0,0,01,9,5,800
+D,625066791,973,944,0,66539,279,8,8,0,0,0,01,9,5,800
+D,625067944,1153,944,0,66539,400,8,8,0,0,0,01,9,5,800
+D,625068809,865,944,0,66539,280,8,8,0,0,0,01,9,5,800
+D,625069746,937,944,0,66539,221,8,8,0,0,0,01,9,5,800
+D,625070735,989,944,0,66539,222,8,8,0,0,0,01,9,5,800
+D,625071731,996,944,0,66539,218,7,0,0,0,0,01,9,5,800
+D,625072750,1019,944,0,66539,226,7,0,0,0,0,01,9,5,800
+D,625073766,1016,943,-1,66540,240,7,8,0,0,0,01,9,5,800
+D,625074736,970,944,1,66539,223,7,0,0,0,0,01,9,5,800
+D,625075760,1024,943,-1,66540,234,7,8,0,0,0,01,9,5,800
+D,625076870,1110,943,0,66540,343,7,8,0,0,0,01,9,5,800
+D,625078002,1132,943,0,66540,482,7,8,0,0,0,01,9,5,800
+D,625078872,870,943,0,66540,351,7,8,0,0,0,01,9,5,800
+D,625079807,935,943,0,66540,278,7,8,0,0,0,01,9,5,800
+D,625080802,995,943,0,66540,277,7,8,0,0,0,01,9,5,800
+D,625082155,1353,943,0,66540,320,7,8,0,0,0,01,9,5,800
+D,625082767,612,943,0,66540,258,7,8,0,0,0,01,9,5,800
+D,625083805,1038,943,0,66540,275,7,8,0,0,0,01,9,5,800
+D,625084823,1018,943,0,66540,297,7,8,0,0,0,01,9,5,800
+D,625085796,973,943,0,66540,266,7,8,0,0,0,01,9,5,800
+D,625086799,1003,943,0,66540,285,7,8,0,0,0,01,9,5,800
+D,625087930,1131,943,0,66540,405,7,8,0,0,0,01,9,5,800
+D,625088823,893,943,0,66540,296,7,8,0,0,0,01,9,5,800
+D,625089733,910,943,0,66540,220,7,8,0,0,0,01,9,5,800
+D,625090733,1000,943,0,66540,217,7,8,0,0,0,01,9,5,800
+D,625091735,1002,943,0,66540,221,7,8,0,0,0,01,9,5,800
+D,625092746,1011,943,0,66540,220,7,8,0,0,0,01,9,5,800
+D,625093762,1016,943,0,66540,240,7,8,0,0,0,01,9,5,800
+D,625094742,980,943,0,66540,218,8,8,0,0,0,01,9,5,800
+D,625095742,1000,943,0,66540,221,8,8,0,0,0,01,9,5,800
+D,625096879,1137,943,0,66540,352,8,8,0,0,0,01,9,5,800
+D,625097970,1091,943,0,66540,459,8,8,0,0,0,01,9,5,800
+D,625098876,906,943,0,66540,344,8,8,0,0,0,01,9,5,800
+D,625099784,908,943,0,66540,276,8,8,0,0,0,01,9,5,800
+D,625100803,1019,943,0,66540,295,8,8,0,0,0,01,9,5,800
+D,625101798,995,943,0,66540,269,8,8,0,0,0,01,9,5,800
+D,625102814,1016,943,0,66540,288,8,8,0,0,0,01,9,5,800
+D,625103795,981,943,0,66540,267,7,0,0,0,0,01,9,5,800
+D,625104809,1014,943,0,66540,293,7,8,0,0,0,01,9,5,800
+D,625105798,989,943,0,66540,269,7,0,0,0,0,01,9,5,800
+D,625106821,1023,943,0,66540,293,7,0,0,0,0,01,9,5,800
+D,625107821,1000,943,0,66540,291,7,0,0,0,0,01,9,5,800
+D,625108858,1037,943,0,66540,333,6,0,0,0,0,01,9,5,800
+D,625109744,886,943,0,66540,225,6,0,0,0,0,01,9,5,800
+D,625110752,1008,942,-1,66541,222,6,8,0,0,0,01,9,5,800
+D,625111739,987,942,0,66541,223,6,8,0,0,0,01,9,5,800
+D,625112755,1016,942,0,66541,240,6,8,0,0,0,01,9,5,800
+D,625113755,1000,942,0,66541,226,6,8,0,0,0,01,9,5,800
+D,625114739,984,942,0,66541,223,6,8,0,0,0,01,9,5,800
+D,625115747,1008,942,0,66541,221,6,8,0,0,0,01,9,5,800
+D,625116902,1155,942,0,66541,370,7,8,0,0,0,01,9,5,800
+D,625117987,1085,942,0,66541,454,7,8,0,0,0,01,9,5,800
+D,625118893,906,942,0,66541,366,7,8,0,0,0,01,9,5,800
+D,625119818,925,942,0,66541,288,7,8,0,0,0,01,9,5,800
+D,625120781,963,942,0,66541,270,7,8,0,0,0,01,9,5,800
+D,625121815,1034,942,0,66541,286,7,8,0,0,0,01,9,5,800
+D,625122780,965,942,0,66541,271,7,8,0,0,0,01,9,5,800
+D,625123803,1023,942,0,66541,281,7,8,0,0,0,01,9,5,800
+D,625124801,998,942,0,66541,280,7,8,0,0,0,01,9,5,800
+D,625125806,1005,942,0,66541,278,7,8,0,0,0,01,9,5,800
+D,625126795,989,942,0,66541,268,7,8,0,0,0,01,9,5,800
+D,625127913,1118,942,0,66541,396,7,8,0,0,0,01,9,5,800
+D,625128828,915,942,0,66541,300,7,8,0,0,0,01,9,5,800
+D,625129752,924,942,0,66541,232,7,8,0,0,0,01,9,5,800
+D,625130764,1012,942,0,66541,242,7,8,0,0,0,01,9,5,800
+D,625131740,976,942,0,66541,219,7,8,0,0,0,01,9,5,800
+D,625132737,997,942,0,66541,224,7,8,0,0,0,01,9,5,800
+D,625133761,1024,942,0,66541,242,7,8,0,0,0,01,9,5,800
+D,625134747,986,942,0,66541,223,7,8,0,0,0,01,9,5,800
+D,625135749,1002,942,0,66541,223,7,8,0,0,0,01,9,5,800
+D,625136842,1093,942,0,66541,328,7,8,0,0,0,01,9,5,800
+D,625138028,1186,942,0,66541,482,7,8,0,0,0,01,9,5,800
+D,625138872,844,942,0,66541,364,7,8,0,0,0,01,9,5,800
+D,625139810,938,942,0,66541,286,7,8,0,0,0,01,9,5,800
+D,625140796,986,942,0,66541,277,7,0,0,0,0,01,9,5,800
+D,625141806,1010,942,0,66541,292,7,0,0,0,0,01,9,5,800
+D,625142810,1004,942,0,66541,281,7,0,0,0,0,01,9,5,800
+D,625143816,1006,942,0,66541,285,6,0,0,0,0,01,9,5,800
+D,625144800,984,942,0,66541,271,6,0,0,0,0,01,9,5,800
+D,625145816,1016,942,0,66541,288,6,0,0,0,0,01,9,5,800
+D,625146812,996,942,0,66541,281,6,0,0,0,0,01,9,5,800
+D,625147927,1115,942,0,66541,376,5,0,0,0,0,01,9,5,800
+D,625148819,892,942,0,66541,291,5,0,0,0,0,01,9,5,800
+D,625149734,915,942,0,66541,218,5,0,0,0,0,01,9,5,800
+D,625150742,1008,942,0,66541,222,5,0,0,0,0,01,9,5,800
+D,625151760,1018,942,0,66541,231,5,0,0,0,0,01,9,5,800
+D,625152751,991,942,0,66541,235,4,0,0,0,0,01,9,5,800
+D,625153750,999,942,0,66541,237,4,0,0,0,0,01,9,5,800
+D,625154739,989,942,0,66541,223,4,0,0,0,0,01,9,5,800
+D,625155736,997,942,0,66541,220,4,0,0,0,0,01,9,5,800
+D,625156902,1166,942,0,66541,378,4,0,0,0,0,01,9,5,800
+D,625157998,1096,942,0,66541,472,4,0,0,0,0,01,9,5,800
+D,625158879,881,942,0,66541,366,3,0,0,0,0,01,9,5,800
+D,625159808,929,942,0,66541,279,3,0,0,0,0,01,9,5,800
+D,625160802,994,942,0,66541,272,3,0,0,0,0,01,9,5,800
+D,625161791,989,942,0,66541,277,3,0,0,0,0,01,9,5,800
+D,625162789,998,942,0,66541,282,3,0,0,0,0,01,9,5,800
+D,625163803,1014,942,0,66541,284,3,0,0,0,0,01,9,5,800
+D,625164788,985,942,0,66541,280,3,0,0,0,0,01,9,5,800
+D,625165812,1024,942,0,66541,285,3,0,0,0,0,01,9,5,800
+D,625166789,977,942,0,66541,274,3,0,0,0,0,01,9,5,800
+D,625167923,1134,942,0,66541,390,2,0,0,0,0,01,9,5,800
+D,625168828,905,942,0,66541,299,2,0,0,0,0,01,9,5,800
+D,625169744,916,942,0,66541,219,2,0,0,0,0,01,9,5,800
+D,625170750,1006,942,0,66541,221,2,0,0,0,0,01,9,5,800
+D,625171743,993,942,0,66541,219,2,0,0,0,0,01,9,5,800
+D,625172738,995,942,0,66541,225,2,0,0,0,0,01,9,5,800
+D,625173773,1035,942,0,66541,248,2,0,0,0,0,01,9,5,800
+D,625174756,983,942,0,66541,229,2,0,0,0,0,01,9,5,800
+D,625175738,982,942,0,66541,222,2,0,0,0,0,01,9,5,800
+D,625176868,1130,942,0,66541,341,2,0,0,0,0,01,9,5,800
+D,625178021,1153,942,0,66541,478,2,0,0,0,0,01,9,5,800
+D,625178895,874,942,0,66541,365,2,0,0,0,0,01,9,5,800
+D,625179815,920,942,0,66541,287,1,0,0,0,0,01,9,5,800
+D,625180790,975,942,0,66541,265,1,0,0,0,0,01,9,5,800
+D,625182137,1347,942,0,66541,315,1,0,0,0,0,01,9,5,800
+D,625182796,659,942,0,66541,278,1,0,0,0,0,01,9,5,800
+D,625183787,991,942,0,66541,268,1,0,0,0,0,01,9,5,800
+D,625184810,1023,941,-1,66542,287,2,8,0,0,0,01,9,5,800
+D,625185801,991,942,1,66541,284,1,0,0,0,0,01,9,5,800
+D,625186815,1014,942,0,66541,287,1,0,0,0,0,01,9,5,800
+D,625187929,1114,942,0,66541,394,1,0,0,0,0,01,9,5,800
+D,625188827,898,942,0,66541,304,1,0,0,0,0,01,9,5,800
+D,625189734,907,942,0,66541,218,1,0,0,0,0,01,9,5,800
+D,625190737,1003,942,0,66541,219,1,0,0,0,0,01,9,5,800
+D,625191735,998,942,0,66541,219,1,0,0,0,0,01,9,5,800
+D,625192749,1014,941,-1,66542,223,1,8,0,0,0,01,9,5,800
+D,625193763,1014,941,0,66542,238,2,8,0,0,0,01,9,5,800
+D,625194745,982,942,1,66541,220,2,0,0,0,0,01,9,5,800
+D,625195749,1004,942,0,66541,220,2,0,0,0,0,01,9,5,800
+D,625196891,1142,941,-1,66542,362,2,8,0,0,0,01,9,5,800
+D,625198012,1121,941,0,66542,469,2,8,0,0,0,01,9,5,800
+D,625198887,875,941,0,66542,368,2,8,0,0,0,01,9,5,800
+D,625199792,905,942,1,66541,281,2,0,0,0,0,01,9,5,800
+D,625200797,1005,942,0,66541,273,2,0,0,0,0,01,9,5,800
+D,625201802,1005,942,0,66541,281,2,0,0,0,0,01,9,5,800
+D,625202795,993,942,0,66541,276,2,0,0,0,0,01,9,5,800
+D,625203805,1010,941,-1,66542,277,2,8,0,0,0,01,9,5,800
+D,625204796,991,941,0,66542,277,2,8,0,0,0,01,9,5,800
+D,625205797,1001,942,1,66541,283,2,0,0,0,0,01,9,5,800
+D,625206799,1002,941,-1,66542,283,3,8,0,0,0,01,9,5,800
+D,625207930,1131,941,0,66542,395,3,8,0,0,0,01,9,5,800
+D,625208817,887,941,0,66542,290,3,8,0,0,0,01,9,5,800
+D,625209733,916,941,0,66542,220,3,8,0,0,0,01,9,5,800
+D,625210737,1004,941,0,66542,221,3,8,0,0,0,01,9,5,800
+D,625211735,998,942,1,66541,219,3,0,0,0,0,01,9,5,800
+D,625212752,1017,942,0,66541,223,3,0,0,0,0,01,9,5,800
+D,625213769,1017,942,0,66541,242,3,0,0,0,0,01,9,5,800
+D,625214734,965,941,-1,66542,221,3,8,0,0,0,01,9,5,800
+D,625215738,1004,941,0,66542,222,3,0,0,0,0,01,9,5,800
+D,625216867,1129,942,1,66541,340,3,0,0,0,0,01,9,5,800
+D,625218023,1156,942,0,66541,492,3,0,0,0,0,01,9,5,800
+D,625218876,853,942,0,66541,351,3,0,0,0,0,01,9,5,800
+D,625219791,915,941,-1,66542,280,3,8,0,0,0,01,9,5,800
+D,625220806,1015,942,1,66541,275,3,0,0,0,0,01,9,5,800
+D,625221789,983,942,0,66541,270,3,0,0,0,0,01,9,5,800
+D,625222808,1019,942,0,66541,278,2,-8,0,0,0,01,9,5,800
+D,625223786,978,942,0,66541,268,2,-8,0,0,0,01,9,5,800
+D,625224803,1017,942,0,66541,284,2,0,0,0,0,01,9,5,800
+D,625225791,988,942,0,66541,274,2,0,0,0,0,01,9,5,800
+D,625226784,993,942,0,66541,272,2,0,0,0,0,01,9,5,800
+D,625227887,1103,941,-1,66542,352,2,0,0,0,0,01,9,5,800
+D,625228831,944,941,0,66542,317,1,0,0,0,0,01,9,5,800
+D,625229736,905,942,1,66541,222,1,-8,0,0,0,01,9,5,800
+D,625230750,1014,942,0,66541,227,1,0,0,0,0,01,9,5,800
+D,625231742,992,942,0,66541,220,1,0,0,0,0,01,9,5,800
+D,625232745,1003,942,0,66541,234,1,0,0,0,0,01,9,5,800
+D,625233747,1002,942,0,66541,236,1,0,0,0,0,01,9,5,800
+D,625234738,991,942,0,66541,226,1,-8,0,0,0,01,9,5,800
+D,625235738,1000,942,0,66541,224,0,-8,0,0,0,01,9,5,800
+D,625236849,1111,942,0,66541,323,0,-8,0,0,0,01,9,5,800
+D,625238030,1181,942,0,66541,485,0,-8,0,0,0,01,9,5,800
+D,625238945,915,942,0,66541,399,-1,-8,0,0,0,01,9,5,800
+D,625239796,851,942,0,66541,279,-1,-8,0,0,0,01,9,5,800
+D,625240781,985,942,0,66541,268,-1,-8,0,0,0,01,9,5,800
+D,625241802,1021,942,0,66541,279,-1,0,0,0,0,01,9,5,800
+D,625242787,985,942,0,66541,275,-1,0,0,0,0,01,9,5,800
+D,625243809,1022,942,0,66541,279,-1,0,0,0,0,01,9,5,800
+D,625244799,990,942,0,66541,267,-1,-8,0,0,0,01,9,5,800
+D,625245805,1006,942,0,66541,285,-2,-8,0,0,0,01,9,5,800
+D,625246791,986,942,0,66541,270,-2,-8,0,0,0,01,9,5,800
+D,625247952,1161,942,0,66541,406,-2,0,0,0,0,01,9,5,800
+D,625248786,834,942,0,66541,274,-2,0,0,0,0,01,9,5,800
+D,625249771,985,942,0,66541,238,-2,0,0,0,0,01,9,5,800
+D,625250743,972,942,0,66541,232,-2,-8,0,0,0,01,9,5,800
+D,625251740,997,942,0,66541,223,-2,0,0,0,0,01,9,5,800
+D,625252740,1000,942,0,66541,228,-2,0,0,0,0,01,9,5,800
+D,625253755,1015,942,0,66541,241,-2,0,0,0,0,01,9,5,800
+D,625254740,985,942,0,66541,225,-2,0,0,0,0,01,9,5,800
+D,625255742,1002,942,0,66541,226,-2,0,0,0,0,01,9,5,800
+D,625256899,1157,942,0,66541,361,-1,0,0,0,0,01,9,5,800
+D,625258013,1114,942,0,66541,482,-2,-8,0,0,0,01,9,5,800
+D,625258871,858,942,0,66541,350,-2,-8,0,0,0,01,9,5,800
+D,625259814,943,942,0,66541,286,-2,0,0,0,0,01,9,5,800
+D,625260804,990,942,0,66541,282,-2,0,0,0,0,01,9,5,800
+D,625261817,1013,942,0,66541,290,-2,0,0,0,0,01,9,5,800
+D,625262803,986,942,0,66541,279,-2,0,0,0,0,01,9,5,800
+D,625263819,1016,942,0,66541,286,-2,0,0,0,0,01,9,5,800
+D,625264798,979,942,0,66541,286,-2,0,0,0,0,01,9,5,800
+D,625265810,1012,942,0,66541,281,-2,0,0,0,0,01,9,5,800
+D,625266801,991,942,0,66541,276,-1,0,0,0,0,01,9,5,800
+D,625267923,1122,942,0,66541,388,-1,0,0,0,0,01,9,5,800
+D,625268828,905,942,0,66541,301,-1,0,0,0,0,01,9,5,800
+D,625269740,912,942,0,66541,224,-1,0,0,0,0,01,9,5,800
+D,625270751,1011,942,0,66541,223,-1,0,0,0,0,01,9,5,800
+D,625271743,992,942,0,66541,231,-1,0,0,0,0,01,9,5,800
+D,625272751,1008,942,0,66541,238,-1,0,0,0,0,01,9,5,800
+D,625273751,1000,942,0,66541,243,-1,0,0,0,0,01,9,5,800
+D,625274738,987,942,0,66541,225,-1,0,0,0,0,01,9,5,800
+D,625275740,1002,942,0,66541,226,-1,0,0,0,0,01,9,5,800
+D,625276886,1146,942,0,66541,348,-1,0,0,0,0,01,9,5,800
+D,625277988,1102,942,0,66541,477,-1,0,0,0,0,01,9,5,800
+D,625278901,913,942,0,66541,368,-1,0,0,0,0,01,9,5,800
+D,625279809,908,942,0,66541,287,-1,0,0,0,0,01,9,5,800
+D,625280783,974,942,0,66541,271,-1,0,0,0,0,01,9,5,800
+D,625282167,1384,942,0,66541,335,-1,0,0,0,0,01,9,5,800
+D,625282801,634,942,0,66541,276,-1,0,0,0,0,01,9,5,800
+D,625283781,980,942,0,66541,268,-1,0,0,0,0,01,9,5,800
+D,625284826,1045,942,0,66541,297,-1,0,0,0,0,01,9,5,800
+D,625285789,963,942,0,66541,270,-1,0,0,0,0,01,9,5,800
+D,625286812,1023,942,0,66541,283,-1,0,0,0,0,01,9,5,800
+D,625287869,1057,942,0,66541,359,-1,0,0,0,0,01,9,5,800
+D,625288827,958,942,0,66541,309,-1,0,0,0,0,01,9,5,800
+D,625289736,909,942,0,66541,224,-1,0,0,0,0,01,9,5,800
+D,625290745,1009,942,0,66541,225,-1,0,0,0,0,01,9,5,800
+D,625291739,994,942,0,66541,222,-1,0,0,0,0,01,9,5,800
+D,625292740,1001,942,0,66541,231,-1,0,0,0,0,01,9,5,800
+D,625293769,1029,942,0,66541,248,0,0,0,0,0,01,9,5,800
+D,625294744,975,942,0,66541,233,0,0,0,0,0,01,9,5,800
+D,625295739,995,942,0,66541,222,0,0,0,0,0,01,9,5,800
+D,625296830,1091,942,0,66541,313,0,0,0,0,0,01,9,5,800
+D,625298016,1186,942,0,66541,462,0,0,0,0,0,01,9,5,800
+D,625298911,895,942,0,66541,377,0,0,0,0,0,01,9,5,800
+D,625299812,901,942,0,66541,286,0,0,0,0,0,01,9,5,800
+D,625300788,976,942,0,66541,278,0,0,0,0,0,01,9,5,800
+D,625301788,1000,942,0,66541,279,0,0,0,0,0,01,9,5,800
+D,625302794,1006,942,0,66541,282,0,0,0,0,0,01,9,5,800
+D,625303789,995,942,0,66541,277,0,0,0,0,0,01,9,5,800
+D,625304833,1044,942,0,66541,307,0,0,0,0,0,01,9,5,800
+D,625305776,943,942,0,66541,256,0,0,0,0,0,01,9,5,800
+D,625306803,1027,942,0,66541,295,0,0,0,0,0,01,9,5,800
+D,625307903,1100,943,1,66540,389,-1,-8,0,0,0,01,9,5,800
+D,625308809,906,943,0,66540,301,-1,-8,0,0,0,01,9,5,800
+D,625309753,944,943,0,66540,226,-1,-8,0,0,0,01,9,5,800
+D,625310740,987,943,0,66540,227,-1,-8,0,0,0,01,9,5,800
+D,625311738,998,943,0,66540,223,-2,-8,0,0,0,01,9,5,800
+D,625312742,1004,943,0,66540,231,-2,-8,0,0,0,01,9,5,800
+D,625313749,1007,943,0,66540,238,-2,-8,0,0,0,01,9,5,800
+D,625314748,999,943,0,66540,237,-2,-8,0,0,0,01,9,5,800
+D,625315756,1008,943,0,66540,245,-3,-8,0,0,0,01,9,5,800
+D,625316848,1092,943,0,66540,325,-3,-8,0,0,0,01,9,5,800
+D,625318018,1170,943,0,66540,480,-3,-8,0,0,0,01,9,5,800
+D,625318873,855,943,0,66540,362,-3,-8,0,0,0,01,9,5,800
+D,625319800,927,943,0,66540,280,-3,-8,0,0,0,01,9,5,800
+D,625320805,1005,943,0,66540,276,-4,-8,0,0,0,01,9,5,800
+D,625321802,997,943,0,66540,277,-4,-8,0,0,0,01,9,5,800
+D,625322814,1012,943,0,66540,285,-4,-8,0,0,0,01,9,5,800
+D,625323799,985,943,0,66540,274,-4,-8,0,0,0,01,9,5,800
+D,625324794,995,943,0,66540,278,-4,-8,0,0,0,01,9,5,800
+D,625325821,1027,943,0,66540,308,-4,-8,0,0,0,01,9,5,800
+D,625326820,999,943,0,66540,293,-5,-8,0,0,0,01,9,5,800
+D,625327933,1113,943,0,66540,399,-5,-8,0,0,0,01,9,5,800
+D,625328818,885,943,0,66540,290,-5,-8,0,0,0,01,9,5,800
+D,625329755,937,943,0,66540,225,-5,-8,0,0,0,01,9,5,800
+D,625330738,983,943,0,66540,224,-5,-8,0,0,0,01,9,5,800
+D,625331742,1004,943,0,66540,225,-5,-8,0,0,0,01,9,5,800
+D,625332738,996,943,0,66540,226,-5,-8,0,0,0,01,9,5,800
+D,625333757,1019,943,0,66540,244,-5,-8,0,0,0,01,9,5,800
+D,625334740,983,943,0,66540,225,-5,-8,0,0,0,01,9,5,800
+D,625335751,1011,943,0,66540,228,-6,-8,0,0,0,01,9,5,800
+D,625336844,1093,943,0,66540,328,-6,-8,0,0,0,01,9,5,800
+D,625338054,1210,943,0,66540,483,-5,0,0,0,0,01,9,5,800
+D,625338852,798,943,0,66540,334,-5,0,0,0,0,01,9,5,800
+D,625339790,938,943,0,66540,277,-5,0,0,0,0,01,9,5,800
+D,625340807,1017,943,0,66540,296,-5,0,0,0,0,01,9,5,800
+D,625341809,1002,943,0,66540,291,-5,0,0,0,0,01,9,5,800
+D,625342804,995,943,0,66540,288,-4,0,0,0,0,01,9,5,800
+D,625343815,1011,943,0,66540,285,-4,0,0,0,0,01,9,5,800
+D,625344822,1007,943,0,66540,294,-4,0,0,0,0,01,9,5,800
+D,625345804,982,943,0,66540,288,-4,0,0,0,0,01,9,5,800
+D,625346820,1016,943,0,66540,290,-4,0,0,0,0,01,9,5,800
+D,625347944,1124,944,1,66539,380,-4,-8,0,0,0,01,9,5,800
+D,625348800,856,943,-1,66540,276,-4,0,0,0,0,01,9,5,800
+D,625349741,941,943,0,66540,228,-4,0,0,0,0,01,9,5,800
+D,625350735,994,943,0,66540,227,-4,0,0,0,0,01,9,5,800
+D,625351751,1016,944,1,66539,228,-4,-8,0,0,0,01,9,5,800
+D,625352744,993,944,0,66539,230,-4,-8,0,0,0,01,9,5,800
+D,625353766,1022,944,0,66539,242,-4,-8,0,0,0,01,9,5,800
+D,625354736,970,944,0,66539,228,-4,-8,0,0,0,01,9,5,800
+D,625355752,1016,944,0,66539,228,-4,-8,0,0,0,01,9,5,800
+D,625356848,1096,944,0,66539,311,-5,-8,0,0,0,01,9,5,800
+D,625357967,1119,944,0,66539,447,-5,-8,0,0,0,01,9,5,800
+D,625358827,860,944,0,66539,317,-5,-8,0,0,0,01,9,5,800
+D,625359794,967,944,0,66539,285,-5,-8,0,0,0,01,9,5,800
+D,625360814,1020,944,0,66539,301,-5,-8,0,0,0,01,9,5,800
+D,625361817,1003,944,0,66539,291,-5,-8,0,0,0,01,9,5,800
+D,625362816,999,944,0,66539,292,-5,-8,0,0,0,01,9,5,800
+D,625363824,1008,944,0,66539,291,-5,-8,0,0,0,01,9,5,800
+D,625364816,992,944,0,66539,298,-5,-8,0,0,0,01,9,5,800
+D,625365815,999,944,0,66539,290,-6,-8,0,0,0,01,9,5,800
+D,625366822,1007,944,0,66539,291,-6,-8,0,0,0,01,9,5,800
+D,625367827,1005,944,0,66539,317,-6,-8,0,0,0,01,9,5,800
+D,625368786,959,944,0,66539,261,-6,-8,0,0,0,01,9,5,800
+D,625369748,962,944,0,66539,235,-6,-8,0,0,0,01,9,5,800
+D,625370748,1000,944,0,66539,225,-6,-8,0,0,0,01,9,5,800
+D,625371739,991,944,0,66539,228,-6,-8,0,0,0,01,9,5,800
+D,625372752,1013,944,0,66539,240,-6,-8,0,0,0,01,9,5,800
+D,625373751,999,944,0,66539,231,-6,-8,0,0,0,01,9,5,800
+D,625374736,985,944,0,66539,225,-6,-8,0,0,0,01,9,5,800
+D,625375750,1014,944,0,66539,228,-6,-8,0,0,0,01,9,5,800
+D,625376839,1089,944,0,66539,325,-6,-8,0,0,0,01,9,5,800
+D,625377999,1160,944,0,66539,465,-6,0,0,0,0,01,9,5,800
+D,625378851,852,944,0,66539,318,-6,-8,0,0,0,01,9,5,800
+D,625379803,952,944,0,66539,276,-6,-8,0,0,0,01,9,5,800
+D,625380816,1013,944,0,66539,308,-6,-8,0,0,0,01,9,5,800
+D,625382220,1404,944,0,66539,354,-6,0,0,0,0,01,9,5,800
+D,625382784,564,944,0,66539,264,-6,0,0,0,0,01,9,5,800
+D,625383798,1014,944,0,66539,286,-6,0,0,0,0,01,9,5,800
+D,625384802,1004,944,0,66539,287,-5,0,0,0,0,01,9,5,800
+D,625385812,1010,944,0,66539,293,-5,0,0,0,0,01,9,5,800
+D,625386794,982,944,0,66539,275,-5,0,0,0,0,01,9,5,800
+D,625387876,1082,944,0,66539,329,-5,0,0,0,0,01,9,5,800
+D,625388795,919,944,0,66539,264,-5,0,0,0,0,01,9,5,800
+D,625389740,945,945,1,66538,228,-5,-8,0,0,0,01,9,5,800
+D,625390756,1016,944,-1,66539,228,-5,0,0,0,0,01,9,5,800
+D,625391765,1009,944,0,66539,253,-4,0,0,0,0,01,9,5,800
+D,625392765,1000,944,0,66539,236,-4,0,0,0,0,01,9,5,800
+D,625393766,1001,944,0,66539,238,-4,0,0,0,0,01,9,5,800
+D,625394756,990,945,1,66538,228,-4,-8,0,0,0,01,9,5,800
+D,625395744,988,944,-1,66539,227,-4,0,0,0,0,01,9,5,800
+D,625396845,1101,945,1,66538,328,-4,-8,0,0,0,01,9,5,800
+D,625397977,1132,945,0,66538,460,-4,-8,0,0,0,01,9,5,800
+D,625398846,869,945,0,66538,315,-4,-8,0,0,0,01,9,5,800
+D,625399782,936,945,0,66538,274,-5,-8,0,0,0,01,9,5,800
+D,625400815,1033,945,0,66538,296,-5,-8,0,0,0,01,9,5,800
+D,625401820,1005,945,0,66538,290,-5,-8,0,0,0,01,9,5,800
+D,625402832,1012,945,0,66538,303,-5,-8,0,0,0,01,9,5,800
+D,625403803,971,945,0,66538,286,-5,-8,0,0,0,01,9,5,800
+D,625404824,1021,945,0,66538,299,-5,-8,0,0,0,01,9,5,800
+D,625405798,974,945,0,66538,278,-5,-8,0,0,0,01,9,5,800
+D,625406825,1027,945,0,66538,297,-5,-8,0,0,0,01,9,5,800
+D,625407836,1011,945,0,66538,316,-6,-8,0,0,0,01,9,5,800
+D,625408784,948,945,0,66538,265,-6,-8,0,0,0,01,9,5,800
+D,625409753,969,945,0,66538,231,-6,-8,0,0,0,01,9,5,800
+D,625410736,983,945,0,66538,225,-6,-8,0,0,0,01,9,5,800
+D,625411750,1014,945,0,66538,228,-6,-8,0,0,0,01,9,5,800
+D,625412771,1021,945,0,66538,256,-6,-8,0,0,0,01,9,5,800
+D,625413769,998,945,0,66538,257,-6,-8,0,0,0,01,9,5,800
+D,625414748,979,945,0,66538,225,-6,-8,0,0,0,01,9,5,800
+D,625415741,993,945,0,66538,229,-6,-8,0,0,0,01,9,5,800
+D,625416833,1092,945,0,66538,322,-6,-8,0,0,0,01,9,5,800
+D,625418005,1172,945,0,66538,461,-6,-8,0,0,0,01,9,5,800
+D,625418840,835,945,0,66538,312,-6,-8,0,0,0,01,9,5,800
+D,625419801,961,945,0,66538,279,-6,0,0,0,0,01,9,5,800
+D,625420817,1016,945,0,66538,293,-6,-8,0,0,0,01,9,5,800
+D,625421794,977,945,0,66538,286,-6,-8,0,0,0,01,9,5,800
+D,625422824,1030,945,0,66538,295,-6,-8,0,0,0,01,9,5,800
+D,625423805,981,945,0,66538,291,-6,-8,0,0,0,01,9,5,800
+D,625424809,1004,945,0,66538,296,-6,0,0,0,0,01,9,5,800
+D,625425820,1011,945,0,66538,303,-6,-8,0,0,0,01,9,5,800
+D,625426789,969,945,0,66538,271,-6,-8,0,0,0,01,9,5,800
+D,625427858,1069,945,0,66538,313,-6,0,0,0,0,01,9,5,800
+D,625428796,938,945,0,66538,265,-6,0,0,0,0,01,9,5,800
+D,625429738,942,945,0,66538,228,-6,0,0,0,0,01,9,5,800
+D,625430744,1006,945,0,66538,224,-5,0,0,0,0,01,9,5,800
+D,625431736,992,945,0,66538,228,-5,0,0,0,0,01,9,5,800
+D,625432760,1024,945,0,66538,233,-5,0,0,0,0,01,9,5,800
+D,625433748,988,945,0,66538,239,-5,0,0,0,0,01,9,5,800
+D,625434772,1024,945,0,66538,255,-5,0,0,0,0,01,9,5,800
+D,625435737,965,945,0,66538,225,-4,0,0,0,0,01,9,5,800
+D,625436852,1115,945,0,66538,322,-4,0,0,0,0,01,9,5,800
+D,625437981,1129,945,0,66538,461,-4,0,0,0,0,01,9,5,800
+D,625438837,856,945,0,66538,316,-4,0,0,0,0,01,9,5,800
+D,625439805,968,945,0,66538,277,-4,0,0,0,0,01,9,5,800
+D,625440819,1014,946,1,66537,295,-4,-8,0,0,0,01,9,5,800
+D,625441795,976,946,0,66537,287,-4,-8,0,0,0,01,9,5,800
+D,625442827,1032,946,0,66537,297,-4,-8,0,0,0,01,9,5,800
+D,625443812,985,946,0,66537,291,-4,-8,0,0,0,01,9,5,800
+D,625444826,1014,946,0,66537,294,-5,-8,0,0,0,01,9,5,800
+D,625445809,983,946,0,66537,291,-5,-8,0,0,0,01,9,5,800
+D,625446815,1006,946,0,66537,290,-5,-8,0,0,0,01,9,5,800
+D,625447859,1044,946,0,66537,320,-5,-8,0,0,0,01,9,5,800
+D,625448782,923,946,0,66537,263,-5,-8,0,0,0,01,9,5,800
+D,625449744,962,946,0,66537,228,-5,-8,0,0,0,01,9,5,800
+D,625450753,1009,946,0,66537,225,-5,-8,0,0,0,01,9,5,800
+D,625451741,988,946,0,66537,228,-5,-8,0,0,0,01,9,5,800
+D,625452744,1003,946,0,66537,232,-5,-8,0,0,0,01,9,5,800
+D,625453753,1009,946,0,66537,239,-6,-8,0,0,0,01,9,5,800
+D,625454735,982,946,0,66537,224,-6,-8,0,0,0,01,9,5,800
+D,625455749,1014,946,0,66537,228,-6,-8,0,0,0,01,9,5,800
+D,625456867,1118,946,0,66537,325,-6,-8,0,0,0,01,9,5,800
+D,625457947,1080,946,0,66537,427,-6,-8,0,0,0,01,9,5,800
+D,625458863,916,946,0,66537,341,-6,-8,0,0,0,01,9,5,800
+D,625459796,933,946,0,66537,278,-6,-8,0,0,0,01,9,5,800
+D,625460822,1026,946,0,66537,295,-6,-8,0,0,0,01,9,5,800
+D,625461795,973,946,0,66537,286,-6,-8,0,0,0,01,9,5,800
+D,625462819,1024,946,0,66537,292,-6,-8,0,0,0,01,9,5,800
+D,625463815,996,946,0,66537,288,-6,-8,0,0,0,01,9,5,800
+D,625464814,999,946,0,66537,289,-6,-8,0,0,0,01,9,5,800
+D,625465805,991,946,0,66537,288,-7,-8,0,0,0,01,9,5,800
+D,625466818,1013,946,0,66537,291,-7,-8,0,0,0,01,9,5,800
+D,625467932,1114,946,0,66537,356,-7,-8,0,0,0,01,9,5,800
+D,625468773,841,946,0,66537,257,-7,-8,0,0,0,01,9,5,800
+D,625469739,966,946,0,66537,228,-7,-8,0,0,0,01,9,5,800
+D,625470749,1010,946,0,66537,225,-7,-8,0,0,0,01,9,5,800
+D,625471738,989,946,0,66537,227,-7,0,0,0,0,01,9,5,800
+D,625472735,997,946,0,66537,227,-6,0,0,0,0,01,9,5,800
+D,625473754,1019,946,0,66537,243,-6,0,0,0,0,01,9,5,800
+D,625474737,983,946,0,66537,224,-6,0,0,0,0,01,9,5,800
+D,625475749,1012,946,0,66537,228,-6,0,0,0,0,01,9,5,800
+D,625476839,1090,946,0,66537,323,-5,0,0,0,0,01,9,5,800
+D,625477995,1156,946,0,66537,455,-5,0,0,0,0,01,9,5,800
+D,625478841,846,946,0,66537,332,-5,0,0,0,0,01,9,5,800
+D,625479790,949,946,0,66537,281,-5,0,0,0,0,01,9,5,800
+D,625480828,1038,946,0,66537,303,-5,0,0,0,0,01,9,5,800
+D,625482188,1360,946,0,66537,321,-4,0,0,0,0,01,9,5,800
+D,625482781,593,946,0,66537,264,-4,0,0,0,0,01,9,5,800
+D,625483809,1028,946,0,66537,279,-4,0,0,0,0,01,9,5,800
+D,625484812,1003,946,0,66537,294,-4,0,0,0,0,01,9,5,800
+D,625485788,976,946,0,66537,278,-4,0,0,0,0,01,9,5,800
+D,625486818,1030,946,0,66537,290,-4,0,0,0,0,01,9,5,800
+D,625487907,1089,946,0,66537,361,-3,0,0,0,0,01,9,5,800
+D,625488803,896,946,0,66537,282,-3,0,0,0,0,01,9,5,800
+D,625489775,972,946,0,66537,246,-3,0,0,0,0,01,9,5,800
+D,625490740,965,946,0,66537,231,-3,0,0,0,0,01,9,5,800
+D,625491752,1012,946,0,66537,228,-3,0,0,0,0,01,9,5,800
+D,625492748,996,947,1,66536,230,-3,-8,0,0,0,01,9,5,800
+D,625493755,1007,946,-1,66537,243,-3,0,0,0,0,01,9,5,800
+D,625494739,984,946,0,66537,225,-3,0,0,0,0,01,9,5,800
+D,625495749,1010,947,1,66536,227,-3,-8,0,0,0,01,9,5,800
+D,625496846,1097,947,0,66536,322,-3,-8,0,0,0,01,9,5,800
+D,625497986,1140,947,0,66536,460,-4,-8,0,0,0,01,9,5,800
+D,625498842,856,946,-1,66537,310,-3,0,0,0,0,01,9,5,800
+D,625499816,974,947,1,66536,296,-4,-8,0,0,0,01,9,5,800
+D,625500836,1020,947,0,66536,305,-4,-8,0,0,0,01,9,5,800
+D,625501804,968,947,0,66536,279,-4,-8,0,0,0,01,9,5,800
+D,625502833,1029,947,0,66536,301,-4,-8,0,0,0,01,9,5,800
+D,625503805,972,946,-1,66537,287,-4,0,0,0,0,01,9,5,800
+D,625504829,1024,946,0,66537,300,-4,0,0,0,0,01,9,5,800
+D,625505813,984,947,1,66536,282,-4,-8,0,0,0,01,9,5,800
+D,625506806,993,947,0,66536,287,-4,-8,0,0,0,01,9,5,800
+D,625507858,1052,947,0,66536,309,-4,-8,0,0,0,01,9,5,800
+D,625508786,928,947,0,66536,267,-4,-8,0,0,0,01,9,5,800
+D,625509754,968,947,0,66536,231,-5,-8,0,0,0,01,9,5,800
+D,625510789,1035,947,0,66536,266,-5,-8,0,0,0,01,9,5,800
+D,625511746,957,947,0,66536,236,-5,-8,0,0,0,01,9,5,800
+D,625512764,1018,947,0,66536,236,-5,-8,0,0,0,01,9,5,800
+D,625513761,997,947,0,66536,239,-5,-8,0,0,0,01,9,5,800
+D,625514751,990,947,0,66536,228,-5,-8,0,0,0,01,9,5,800
+D,625515740,989,947,0,66536,227,-5,-8,0,0,0,01,9,5,800
+D,625516850,1110,947,0,66536,321,-5,-8,0,0,0,01,9,5,800
+D,625517986,1136,947,0,66536,463,-5,-8,0,0,0,01,9,5,800
+D,625518830,844,947,0,66536,315,-6,-8,0,0,0,01,9,5,800
+D,625519803,973,947,0,66536,277,-6,-8,0,0,0,01,9,5,800
+D,625520822,1019,947,0,66536,296,-6,-8,0,0,0,01,9,5,800
+D,625521806,984,947,0,66536,289,-6,-8,0,0,0,01,9,5,800
+D,625522827,1021,947,0,66536,296,-6,0,0,0,0,01,9,5,800
+D,625523820,993,947,0,66536,299,-6,-8,0,0,0,01,9,5,800
+D,625524810,990,947,0,66536,292,-6,-8,0,0,0,01,9,5,800
+D,625525822,1012,947,0,66536,292,-6,0,0,0,0,01,9,5,800
+D,625526789,967,947,0,66536,269,-5,0,0,0,0,01,9,5,800
+D,625527833,1044,947,0,66536,317,-5,0,0,0,0,01,9,5,800
+D,625528786,953,947,0,66536,265,-5,0,0,0,0,01,9,5,800
+D,625529755,969,947,0,66536,232,-5,-8,0,0,0,01,9,5,800
+D,625530737,982,947,0,66536,224,-5,0,0,0,0,01,9,5,800
+D,625531751,1014,947,0,66536,228,-5,0,0,0,0,01,9,5,800
+D,625532773,1022,947,0,66536,255,-4,0,0,0,0,01,9,5,800
+D,625533767,994,947,0,66536,239,-4,0,0,0,0,01,9,5,800
+D,625534755,988,947,0,66536,228,-4,-8,0,0,0,01,9,5,800
+D,625535737,982,947,0,66536,224,-5,-8,0,0,0,01,9,5,800
+D,625536853,1116,947,0,66536,327,-4,0,0,0,0,01,9,5,800
+D,625538015,1162,947,0,66536,450,-4,0,0,0,0,01,9,5,800
+D,625538819,804,947,0,66536,310,-4,0,0,0,0,01,9,5,800
+D,625539797,978,947,0,66536,278,-4,0,0,0,0,01,9,5,800
+D,625540813,1016,947,0,66536,290,-4,0,0,0,0,01,9,5,800
+D,625541802,989,947,0,66536,283,-4,0,0,0,0,01,9,5,800
+D,625542822,1020,947,0,66536,291,-3,0,0,0,0,01,9,5,800
+D,625543820,998,947,0,66536,288,-3,0,0,0,0,01,9,5,800
+D,625544804,984,947,0,66536,290,-3,0,0,0,0,01,9,5,800
+D,625545806,1002,947,0,66536,287,-3,0,0,0,0,01,9,5,800
+D,625546807,1001,947,0,66536,289,-3,0,0,0,0,01,9,5,800
+D,625547873,1066,947,0,66536,311,-3,0,0,0,0,01,9,5,800
+D,625548785,912,947,0,66536,265,-3,0,0,0,0,01,9,5,800
+D,625549749,964,947,0,66536,231,-3,0,0,0,0,01,9,5,800
+D,625550735,986,947,0,66536,224,-3,0,0,0,0,01,9,5,800
+D,625551749,1014,947,0,66536,228,-2,0,0,0,0,01,9,5,800
+D,625552742,993,947,0,66536,229,-2,0,0,0,0,01,9,5,800
+D,625553758,1016,947,0,66536,242,-2,0,0,0,0,01,9,5,800
+D,625554768,1010,947,0,66536,250,-2,0,0,0,0,01,9,5,800
+D,625555739,971,947,0,66536,230,-2,0,0,0,0,01,9,5,800
+D,625556842,1103,947,0,66536,324,-2,0,0,0,0,01,9,5,800
+D,625558009,1167,947,0,66536,458,-2,0,0,0,0,01,9,5,800
+D,625558837,828,947,0,66536,323,-2,0,0,0,0,01,9,5,800
+D,625559807,970,947,0,66536,279,-2,0,0,0,0,01,9,5,800
+D,625560808,1001,947,0,66536,296,-2,0,0,0,0,01,9,5,800
+D,625561806,998,947,0,66536,286,-2,0,0,0,0,01,9,5,800
+D,625562811,1005,947,0,66536,297,-2,0,0,0,0,01,9,5,800
+D,625563806,995,947,0,66536,289,-1,0,0,0,0,01,9,5,800
+D,625564827,1021,947,0,66536,297,-1,0,0,0,0,01,9,5,800
+D,625565803,976,947,0,66536,293,-1,0,0,0,0,01,9,5,800
+D,625566793,990,947,0,66536,276,-1,0,0,0,0,01,9,5,800
+D,625567856,1063,947,0,66536,337,-1,0,0,0,0,01,9,5,800
+D,625568789,933,947,0,66536,269,-1,0,0,0,0,01,9,5,800
+D,625569746,957,947,0,66536,224,-1,0,0,0,0,01,9,5,800
+D,625570733,987,947,0,66536,225,-1,0,0,0,0,01,9,5,800
+D,625571737,1004,947,0,66536,223,-1,0,0,0,0,01,9,5,800
+D,625572740,1003,947,0,66536,232,-1,0,0,0,0,01,9,5,800
+D,625573752,1012,947,0,66536,239,-1,0,0,0,0,01,9,5,800
+D,625574736,984,947,0,66536,224,-1,0,0,0,0,01,9,5,800
+D,625575748,1012,947,0,66536,228,-1,0,0,0,0,01,9,5,800
+D,625576852,1104,947,0,66536,324,-1,0,0,0,0,01,9,5,800
+D,625578049,1197,947,0,66536,479,-1,0,0,0,0,01,9,5,800
+D,625578849,800,947,0,66536,327,-1,0,0,0,0,01,9,5,800
+D,625579808,959,947,0,66536,280,-1,0,0,0,0,01,9,5,800
+D,625580806,998,947,0,66536,297,-1,0,0,0,0,01,9,5,800
+D,625582146,1340,947,0,66536,318,-1,0,0,0,0,01,9,5,800
+D,625582788,642,947,0,66536,266,-1,0,0,0,0,01,9,5,800
+D,625583809,1021,947,0,66536,289,-1,0,0,0,0,01,9,5,800
+D,625584809,1000,947,0,66536,295,-1,0,0,0,0,01,9,5,800
+D,625585812,1003,947,0,66536,287,-1,0,0,0,0,01,9,5,800
+D,625586813,1001,947,0,66536,284,-1,0,0,0,0,01,9,5,800
+D,625587890,1077,947,0,66536,371,-1,0,0,0,0,01,9,5,800
+D,625588791,901,947,0,66536,270,-1,0,0,0,0,01,9,5,800
+D,625589755,964,947,0,66536,227,-1,0,0,0,0,01,9,5,800
+D,625590736,981,947,0,66536,224,-1,0,0,0,0,01,9,5,800
+D,625591749,1013,947,0,66536,228,0,0,0,0,0,01,9,5,800
+D,625592742,993,947,0,66536,229,0,0,0,0,0,01,9,5,800
+D,625593752,1010,947,0,66536,239,0,0,0,0,0,01,9,5,800
+D,625594739,987,947,0,66536,228,0,0,0,0,0,01,9,5,800
+D,625595751,1012,947,0,66536,228,0,0,0,0,0,01,9,5,800
+D,625596834,1083,947,0,66536,324,0,0,0,0,0,01,9,5,800
+D,625597981,1147,947,0,66536,431,0,0,0,0,0,01,9,5,800
+D,625598866,885,947,0,66536,343,0,0,0,0,0,01,9,5,800
+D,625599816,950,947,0,66536,291,0,0,0,0,0,01,9,5,800
+D,625600815,999,947,0,66536,298,0,0,0,0,0,01,9,5,800
+D,625601814,999,947,0,66536,292,0,0,0,0,0,01,9,5,800
+D,625602821,1007,947,0,66536,289,0,0,0,0,0,01,9,5,800
+D,625603813,992,947,0,66536,293,0,0,0,0,0,01,9,5,800
+D,625604818,1005,947,0,66536,290,0,0,0,0,0,01,9,5,800
+D,625605805,987,947,0,66536,292,0,0,0,0,0,01,9,5,800
+D,625606813,1008,947,0,66536,289,0,0,0,0,0,01,9,5,800
+D,625607926,1113,947,0,66536,353,0,0,0,0,0,01,9,5,800
+D,625608825,899,947,0,66536,288,0,0,0,0,0,01,9,5,800
+D,625609744,919,947,0,66536,232,0,0,0,0,0,01,9,5,800
+D,625610736,992,947,0,66536,225,0,0,0,0,0,01,9,5,800
+D,625611749,1013,947,0,66536,228,0,0,0,0,0,01,9,5,800
+D,625612743,994,947,0,66536,230,0,0,0,0,0,01,9,5,800
+D,625613751,1008,947,0,66536,240,0,0,0,0,0,01,9,5,800
+D,625614736,985,947,0,66536,224,0,0,0,0,0,01,9,5,800
+D,625615748,1012,947,0,66536,228,0,0,0,0,0,01,9,5,800
+D,625616833,1085,947,0,66536,325,0,0,0,0,0,01,9,5,800
+D,625618014,1181,947,0,66536,481,0,0,0,0,0,01,9,5,800
+D,625618833,819,947,0,66536,322,0,0,0,0,0,01,9,5,800
+D,625619809,976,947,0,66536,285,0,0,0,0,0,01,9,5,800
+D,625620826,1017,947,0,66536,302,0,0,0,0,0,01,9,5,800
+D,625621816,990,947,0,66536,288,0,0,0,0,0,01,9,5,800
+D,625622819,1003,947,0,66536,294,0,0,0,0,0,01,9,5,800
+D,625623819,1000,947,0,66536,288,0,0,0,0,0,01,9,5,800
+D,625624822,1003,947,0,66536,303,0,0,0,0,0,01,9,5,800
+D,625625815,993,947,0,66536,288,0,0,0,0,0,01,9,5,800
+# DIAG n=2304 wrapped=1
+SPIN#2 FRICTION_REJECT bounds fitC=-0.0842 fitB=0.1796 pairs=51 reason=reserve
+SPIN#2 RESERVE targetW=11 targetAngle=229.5 runway=421.0 natStop=401.0 speed=0.400 q=4 urgent=0
+SPIN#2 FRICTION_REJECT bounds fitC=-0.0842 fitB=0.1796 pairs=51 reason=power
+# PULSEFIRST TORQUE_ON arm_us=24691 pulses=26 hz=1192.4 requested=1216 current=2200 EN=0 DIR=1 targetW=11 remain=416.9 a=200 phase_unverified=1
+# RAMP_STOP a=200 remain=414.1 lead=418.9 fas=0.380
+SPIN#2 SUMMARY dir=-1 peak=0.983 releaseMs=893 relAngle=167.3 relSpeed=0.876 targetW=11 targetAngle=229.5 runway=421.0 natStop=401.0 fricC=0.3529 fricB=0.0605 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.025 maxDecel=1.938 final=222.6 finalW=11 err=6.9 quality=4 result=EDGE_SAFE fault=NONE fitRej=2 fitsCW=20 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.5 frozen=0
+# HOLD released: pushed 1.85 deg off anchor after 2778 ms
+SPIN#3 START dir=+1 omega=0.220 wedge=11
+SPIN#3 RELEASE speed=0.931 peak=1.012 angle=158.7
+SPIN#3 RELEASE speed=0.930 peak=1.047 angle=298.3
+SPIN#3 FRICTION dir=+1 fitC=0.6328 fitB=0.0216 pairs=52 -> c=0.5589 b=0.0347 fits=21
+SPIN#3 RESERVE targetW=10 targetAngle=215.2 runway=287.6 natStop=293.6 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=22589 pulses=26 hz=1197.3 requested=1216 current=2200 EN=0 DIR=0 targetW=10 remain=284.0 a=293 phase_unverified=1
+# RAMP_STOP a=293 remain=280.1 lead=287.1 fas=0.380
+SPIN#3 SUMMARY dir=+1 peak=1.047 releaseMs=1309 relAngle=298.3 relSpeed=0.930 targetW=10 targetAngle=215.2 runway=287.6 natStop=293.6 fricC=0.5589 fricB=0.0347 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.011 maxDecel=0.501 final=221.4 finalW=11 err=6.2 quality=3 result=EDGE_SAFE fault=NONE fitRej=2 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=2.7 frozen=0
+# HOLD released: pushed 2.46 deg off anchor after 140434 ms
+SPIN#4 START dir=-1 omega=-0.270 wedge=10
+SPIN#4 RELEASE speed=0.712 peak=0.774 angle=317.6
+SPIN#4 FRICTION_REJECT bounds fitC=2.2777 fitB=-0.3291 pairs=21 reason=reserve
+SPIN#4 RESERVE targetW=14 targetAngle=289.2 runway=407.5 natStop=400.5 speed=0.400 q=4 urgent=0
+SPIN#4 FRICTION_REJECT bounds fitC=2.2777 fitB=-0.3291 pairs=21 reason=power
+# PULSEFIRST TORQUE_ON arm_us=25741 pulses=26 hz=1199.6 requested=1216 current=2200 EN=0 DIR=1 targetW=14 remain=403.5 a=207 phase_unverified=1
+# RAMP_STOP a=207 remain=400.9 lead=405.2 fas=0.380
+ANOMALY code=MOTOR_FIGHT detail=wheel far below field speed: field frozen, wheel held state=CONTROLLED_DECEL angle=278.5 wedge=13 omega=0.020 cmd=0.339 (motor keeps control)
+SPIN#4 SUMMARY dir=-1 peak=0.774 releaseMs=971 relAngle=317.6 relSpeed=0.712 targetW=14 targetAngle=289.2 runway=407.5 natStop=400.5 fricC=0.3529 fricB=0.0605 tkSpeed=0.392 cmdMax=0.380 cmdMin=0.339 rise=0.000 maxDecel=7.640 final=281.8 finalW=14 err=7.4 quality=4 result=EDGE_SAFE fault=MOTOR_FIGHT fitRej=4 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=1 syncErr=38.9 frozen=1
+# HOLD released: pushed 2.20 deg off anchor after 4056 ms
+SPIN#5 START dir=-1 omega=-0.269 wedge=13
+SPIN#5 RELEASE speed=1.110 peak=1.215 angle=123.6
+SPIN#5 FRICTION_REJECT contact alpha=2.692 reason=reserve
+SPIN#5 RESERVE targetW=10 targetAngle=214.0 runway=392.3 natStop=398.3 speed=0.399 q=3 urgent=0
+# CAPTURE_ABANDON reason=pulse-first observation rejected attempts=1 abandons=1; retry in 60 ms
+# PULSEFIRST reject=8 hz=1199.7 requested=1216
+SPIN#5 RESERVE targetW=6 targetAngle=126.1 runway=113.6 natStop=119.6 speed=0.207 q=3 urgent=0
+SPIN#5 HAND? 0.644 -> 0.218 rev/s in 375 ms = 1.13 rev/s2 (motor+friction max ~0.4); alarm if it now stops
+SPIN#5 HAND-STOP (free coast): alarm + red strobe; wheel stays where the hand left it (angle 242.4 wedge 12)
+SPIN#5 SUMMARY dir=-1 peak=1.215 releaseMs=400 relAngle=123.6 relSpeed=1.110 targetW=6 targetAngle=126.1 runway=113.6 natStop=119.6 fricC=0.3529 fricB=0.0605 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=242.4 finalW=12 err=-116.3 quality=3 result=GUEST_STOPPED fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=0 captureAbandoned=1 attempts=2 anomalies=0 syncErr=0.0 frozen=0
+SPIN#5 LANDED-DARE wedge=12 THIS IS A FAILURE result=GUEST_STOPPED fault=NONE
+SPIN#6 START dir=-1 omega=-0.201 wedge=11
+SPIN#6 RELEASE speed=0.399 peak=0.433 angle=165.1
+SPIN#6 RESERVE targetW=6 targetAngle=132.7 runway=392.4 natStop=398.4 speed=0.399 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=22748 pulses=26 hz=1193.1 requested=1216 current=2200 EN=0 DIR=1 targetW=6 remain=388.8 a=214 phase_unverified=1
+# RAMP_STOP a=214 remain=384.3 lead=391.7 fas=0.380
+SPIN#6 SUMMARY dir=-1 peak=0.433 releaseMs=448 relAngle=165.1 relSpeed=0.399 targetW=6 targetAngle=132.7 runway=392.4 natStop=398.4 fricC=0.3529 fricB=0.0605 tkSpeed=0.396 cmdMax=0.380 cmdMin=0.000 rise=0.017 maxDecel=0.884 final=125.0 finalW=6 err=7.7 quality=3 result=EDGE_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=4.0 frozen=0
+# HOLD released: pushed 1.32 deg off anchor after 2151 ms
+MANUAL-ADJUST travel=-76.0deg durMs=3394 wedge=2 (no spin, no motor)
+SPIN#7 START dir=-1 omega=-0.210 wedge=1
+SPIN#7 RELEASE speed=0.276 peak=0.301 angle=346.9
+SPIN#7 RESERVE targetW=6 targetAngle=129.8 runway=217.1 natStop=205.1 speed=0.276 q=4 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23726 pulses=19 hz=862.7 requested=866 current=2200 EN=0 DIR=1 targetW=6 remain=214.6 a=197 phase_unverified=1
+# RAMP_STOP a=197 remain=212.3 lead=216.5 fas=0.271
+SPIN#7 SUMMARY dir=-1 peak=0.301 releaseMs=482 relAngle=346.9 relSpeed=0.276 targetW=6 targetAngle=129.8 runway=217.1 natStop=205.1 fricC=0.3529 fricB=0.0605 tkSpeed=0.272 cmdMax=0.271 cmdMin=0.000 rise=0.035 maxDecel=0.508 final=126.1 finalW=6 err=3.6 quality=4 result=CONTROLLED_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=4.0 frozen=0
+# HOLD released: pushed 1.23 deg off anchor after 601 ms
+SPIN#8 START dir=-1 omega=-0.239 wedge=6
+SPIN#8 RELEASE speed=0.584 peak=0.635 angle=324.2
+SPIN#8 RESERVE targetW=13 targetAngle=280.4 runway=394.7 natStop=400.7 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=23869 pulses=26 hz=1198.9 requested=1216 current=2200 EN=0 DIR=1 targetW=13 remain=390.9 a=213 phase_unverified=1
+# RAMP_STOP a=213 remain=387.4 lead=393.7 fas=0.380
+SPIN#8 RE-PUSH mid-control: wheel 0.417 vs field 0.096 rev/s; released as a new spin
+SPIN#8 SUMMARY dir=-1 peak=0.635 releaseMs=750 relAngle=324.2 relSpeed=0.584 targetW=13 targetAngle=280.4 runway=394.7 natStop=400.7 fricC=0.3529 fricB=0.0605 tkSpeed=0.399 cmdMax=0.380 cmdMin=0.097 rise=0.152 maxDecel=2.977 final=278.7 finalW=13 err=1.7 quality=3 result=GUEST_RESPUN fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=19.6 frozen=0
+SPIN#9 START dir=-1 omega=-0.417 wedge=13
+SPIN#9 RELEASE speed=0.441 peak=0.479 angle=188.3
+SPIN#9 RESERVE targetW=5 targetAngle=104.3 runway=394.7 natStop=400.7 speed=0.400 q=3 urgent=0
+# PULSEFIRST TORQUE_ON arm_us=22447 pulses=26 hz=1199.7 requested=1216 current=2200 EN=0 DIR=1 targetW=5 remain=391.2 a=213 phase_unverified=1
+# RAMP_STOP a=213 remain=388.0 lead=393.7 fas=0.380
+SPIN#9 SUMMARY dir=-1 peak=0.479 releaseMs=548 relAngle=188.3 relSpeed=0.441 targetW=5 targetAngle=104.3 runway=394.7 natStop=400.7 fricC=0.3529 fricB=0.0605 tkSpeed=0.398 cmdMax=0.380 cmdMin=0.000 rise=0.037 maxDecel=2.460 final=84.3 finalW=4 err=20.0 quality=3 result=EDGE_SAFE fault=NONE fitRej=5 fitsCW=21 fitsCCW=36 captureAttempted=1 captureEnergized=1 captureAbandoned=0 attempts=1 anomalies=0 syncErr=12.3 frozen=0
