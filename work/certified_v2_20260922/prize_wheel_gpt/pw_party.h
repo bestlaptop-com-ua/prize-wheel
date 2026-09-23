@@ -33,7 +33,7 @@
 #define PW_S3_ENABLE 1   /* fitRej= + fit counts appended to SPIN SUMMARY      */
 
 #define PW_WIFI_ENABLE    0 /* SoftAP + telnet mirror/commands (WIFI_TASK.md)     */
-#define PW_FX_AUDIO_ENABLE 1 /* v2: I2S -> PCM5102A (MSB/LJ, 32-bit slots) -> TPA3116 */
+#define PW_FX_AUDIO_ENABLE 0 /* v2: DFPlayer removed; pending I2S/PCM5102A port  */
 #define PW_FX_LED_ENABLE   1 /* WS2812B helix on GPIO4 (LED_HANDOFF.md)        */
 
 /* ------------------------------ WiFi ------------------------------------- */
@@ -61,7 +61,7 @@
 #define PW_DFP_TX_PIN 15       /* ESP32 TX -> 1 kOhm series -> DFPlayer RX    */
 #define PW_DFP_RX_PIN 18       /* DFPlayer TX -> ESP32 RX (optional, unread)  */
 #define PW_DFP_BAUD   9600
-#define PW_DFP_VOLUME 30       /* 0..30; live-adjust with V<n> + Enter; 30 = gain 1.0 */
+#define PW_DFP_VOLUME 20       /* 0..30; live-adjust with V<n> + Enter        */
 #define PW_DFP_CMD_GAP_MS 120  /* global command rate limit (FX_TASK.md)      */
 #define PW_DFP_BOOT_DELAY_MS 2500
 #define PW_FX_IDLE_AMBIENCE 0  /* 1 = loop track 5 while idle (optional)      */
@@ -90,14 +90,12 @@
 
 /* --------------------- sanctioned-fix helper macros ----------------------- */
 #define PW_S1_NVS_KEY "fltLatch"
-bool pwPersistFaultLatch(uint8_t code);
-bool pwClearFaultLatch();
 #if PW_S1_ENABLE
-#define PW_S1_PERSIST(code) pwPersistFaultLatch((uint8_t)(code))
-#define PW_S1_CLEAR()       pwClearFaultLatch()
+#define PW_S1_PERSIST(code) preferences.putUChar(PW_S1_NVS_KEY, (uint8_t)(code))
+#define PW_S1_CLEAR()       preferences.putUChar(PW_S1_NVS_KEY, 0)
 #else
 #define PW_S1_PERSIST(code) do {} while (0)
-#define PW_S1_CLEAR()       true
+#define PW_S1_CLEAR()       do {} while (0)
 #endif
 
 #if PW_S3_ENABLE

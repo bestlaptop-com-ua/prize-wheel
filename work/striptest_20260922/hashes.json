@@ -1,0 +1,10 @@
+{
+  "boot_app0_flashed.bin": "f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0",
+  "striptest.ino.bin": "dfea40ecff2eab27f18ef0f14a83b3284783afd159513070f6c0af814b95ffbd",
+  "striptest.ino.bootloader.bin": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b",
+  "striptest.ino.bootloader_flashed.bin": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b",
+  "striptest.ino.merged.bin": "2736faa16eda81d4f8a43f3d3b8c713e9cf1bff7a05d376ee7b9ddfae373ee19",
+  "striptest.ino.partitions.bin": "ace02503447d0f470692e65fa76002f2d77a92dc81cd3813d8aa66718d716da9",
+  "striptest.ino.partitions_flashed.bin": "ace02503447d0f470692e65fa76002f2d77a92dc81cd3813d8aa66718d716da9",
+  "striptest.ino_flashed.bin": "66645ec15c46fda83191b1c346ae29fa54043237479fe20c72e73f236f634e89"
+}

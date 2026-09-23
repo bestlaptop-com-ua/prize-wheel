@@ -1,6 +1,10 @@
 {
-  "prize_wheel_gpt.ino.bin": "312326bb63d42d5e74bd96d530ef8753d87ed63427b91210d3e2a26acb947ca9",
+  "boot_app0_flashed.bin": "f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0",
+  "prize_wheel_gpt.ino.bin": "298c5267a3da2638e6fc2f320478d5fb05b016590b3bb9969a404a9cd44848bf",
   "prize_wheel_gpt.ino.bootloader.bin": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b",
-  "prize_wheel_gpt.ino.merged.bin": "8c25dc5a6f1c142c0528b988d810e26d1081a9abc0290f9431bf9d4e74df249c",
-  "prize_wheel_gpt.ino.partitions.bin": "ace02503447d0f470692e65fa76002f2d77a92dc81cd3813d8aa66718d716da9"
+  "prize_wheel_gpt.ino.bootloader_flashed.bin": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b",
+  "prize_wheel_gpt.ino.merged.bin": "de9e5e220904b55be052595b5aa8f0cfb9b416a7b7b6c6cd5ba1ccc201db69fe",
+  "prize_wheel_gpt.ino.partitions.bin": "ace02503447d0f470692e65fa76002f2d77a92dc81cd3813d8aa66718d716da9",
+  "prize_wheel_gpt.ino.partitions_flashed.bin": "ace02503447d0f470692e65fa76002f2d77a92dc81cd3813d8aa66718d716da9",
+  "prize_wheel_gpt.ino_flashed.bin": "3380f75108f25912ae5dc3b56d2c21f28a527fe8e7b5db33c6c317d29da2fe83"
 }

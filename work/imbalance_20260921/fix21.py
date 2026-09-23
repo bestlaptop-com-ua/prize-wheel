@@ -1,0 +1,4 @@
+p=open('apply_imbalance.py').read()
+p=p.replace("    (DST / 'pw_capture_arm.h').write_bytes((arm.replace('\\n', '\\r\\n') if crlf else arm).encode('utf-8'))",
+"    (DST / 'pw_capture_arm.h').write_bytes((arm.replace('\\n', '\\r\\n') if crlf else arm).encode('utf-8'))\n    lease = (SRC / 'pw_capture_lease.h').read_bytes().decode('utf-8').replace('\\r\\n', '\\n')\n    assert lease.count('static constexpr uint64_t ARM_US = 150000;') == 1\n    lease = lease.replace('static constexpr uint64_t ARM_US = 150000;', 'static constexpr uint64_t ARM_US = 400000;  // 2026-09-22: 150 ms expired on a loop stall; unpowered stepping while proving sync is harmless')\n    (DST / 'pw_capture_lease.h').write_bytes((lease.replace('\\n', '\\r\\n') if crlf else lease).encode('utf-8'))")
+open('apply_imbalance.py','w').write(p)

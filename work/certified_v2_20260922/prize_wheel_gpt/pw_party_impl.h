@@ -32,9 +32,6 @@ static uint32_t pwOverBudgetPasses = 0; /* FX+WiFi passes > 2000 us, boot      *
 static uint32_t pwBudgetPasses = 0;
 
 /* ------------------------------ DFPlayer ---------------------------------- */
-/* Transport replaced by the I2S sample player (pw_audio_i2s.h); the command  */
-/* queue and cue logic below are unchanged.                                   */
-#include "pw_audio_i2s.h"
 #define PW_DFP_CMD_PLAY_MP3   0x12  /* play /mp3/NNNN.mp3 by number            */
 #define PW_DFP_CMD_LOOP_CUR   0x19  /* arg 0 = repeat current track, 1 = stop  */
 #define PW_DFP_CMD_STOP       0x16
@@ -52,13 +49,13 @@ static void pwDfpSendNow(uint8_t cmd, uint16_t arg) {
   /* 10-byte DFPlayer frame, feedback disabled: pure fire-and-forget.  The
    * 10 bytes land in the UART1 hardware FIFO and drain at 9600 baud in ~10 ms,
    * far inside the 120 ms command gap, so this write can never block. */
-  switch (cmd) {
-    case PW_DFP_CMD_PLAY_MP3: pwI2sPlay(arg); break;
-    case PW_DFP_CMD_LOOP_CUR: pwI2sSetLoop(arg == 0); break;
-    case PW_DFP_CMD_STOP:     pwI2sStop(); break;
-    case PW_DFP_CMD_VOLUME:   pwI2sSetVolume(arg); break;
-    default: break;
-  }
+  uint8_t f[10];
+  f[0] = 0x7E; f[1] = 0xFF; f[2] = 0x06; f[3] = cmd; f[4] = 0x00;
+  f[5] = (uint8_t)(arg >> 8); f[6] = (uint8_t)(arg & 0xFF);
+  uint16_t ck = (uint16_t)(0 - (0xFF + 0x06 + cmd + 0x00 + f[5] + f[6]));
+  f[7] = (uint8_t)(ck >> 8); f[8] = (uint8_t)(ck & 0xFF);
+  f[9] = 0xEF;
+  Serial1.write(f, 10);
 #else
   (void)cmd; (void)arg;
 #endif
@@ -98,23 +95,6 @@ static CRGB pwLeds[PW_NUM_LEDS];
 static volatile uint8_t pwFxMode = PWL_STANDBY;
 static volatile float pwFxOmega = 0.0f;          /* signed rev/s, live encoder */
 static volatile uint32_t pwFxCelebrateAtMs = 0;  /* celebrate window start     */
-static volatile int8_t pwFxWedge = -1;           /* wedge index under pointer  */
-static volatile int8_t pwFxCelebrateWedge = -1;  /* landing wedge index        */
-#if PW_FX_LED_ENABLE
-/* Wedge colours by LABEL (index+1), from the physical wheel (2026-09-22):
- * 1 G, 2 B, 3 Y, 4 R, 5 P, 6 LB, 7 G, 8 Y, 9 R, 10 G, 11 B, 12 Y, 13 R,
- * 14 P, 15 B, 16 G, 17 Y, 18 R.                                            */
-#define PWC_G  CRGB(0, 255, 0)
-#define PWC_B  CRGB(0, 0, 255)
-#define PWC_Y  CRGB(255, 190, 0)
-#define PWC_R  CRGB(255, 0, 0)
-#define PWC_P  CRGB(255, 0, 110)
-#define PWC_LB CRGB(0, 140, 255)
-static const CRGB PW_WEDGE_RGB[18] = {
-  PWC_G, PWC_B, PWC_Y, PWC_R, PWC_P, PWC_LB, PWC_G, PWC_Y, PWC_R,
-  PWC_G, PWC_B, PWC_Y, PWC_R, PWC_P, PWC_B, PWC_G, PWC_Y, PWC_R };
-static inline CRGB pwWedgeColor(int8_t w) { return (w >= 0 && w < 18) ? PW_WEDGE_RGB[w] : CRGB(255, 255, 255); }
-#endif
 static volatile bool pwLedEnabled = (PW_FX_LED_ENABLE != 0);
 static bool pwLedTaskRunning = false;
 
@@ -132,10 +112,9 @@ static void pwLedRenderStandby(uint32_t nowMs) {
   }
 }
 
-static void pwLedRenderSpin(float bandPhase, int8_t wedge) {
+static void pwLedRenderSpin(float bandPhase) {
   /* 5 colour bands travelling along the helix; speed AND direction from the
    * live encoder omega so the lights can never contradict the wheel.          */
-  (void)wedge;
   uint16_t phase = (uint16_t)((int32_t)bandPhase & 0xFFFF);
   for (int i = 0; i < PW_NUM_LEDS; ++i) {
     uint8_t hue = (uint8_t)(((uint32_t)i * 5u * 256u / PW_NUM_LEDS) - phase);
@@ -144,7 +123,7 @@ static void pwLedRenderSpin(float bandPhase, int8_t wedge) {
   }
 }
 
-static void pwLedRenderCelebrate(uint32_t elapsedMs, int8_t wedge) {
+static void pwLedRenderCelebrate(uint32_t elapsedMs) {
   uint8_t bright = (uint8_t)(PW_LED_CELEBRATE_BRIGHT -
       (uint32_t)(PW_LED_CELEBRATE_BRIGHT - PW_LED_STANDBY_BRIGHT) * elapsedMs / PW_LED_CELEBRATE_MS);
   uint32_t phase = elapsedMs / 250;
@@ -153,8 +132,7 @@ static void pwLedRenderCelebrate(uint32_t elapsedMs, int8_t wedge) {
     for (int n = 0; n < PW_NUM_LEDS / 8; ++n)
       pwLeds[random16(PW_NUM_LEDS)] = CHSV(0, 0, bright);
   } else {                                         /* full-strip colour slam   */
-    CRGB c = pwWedgeColor(wedge); c.nscale8_video(bright);   /* landing wedge colour */
-    fill_solid(pwLeds, PW_NUM_LEDS, c);
+    fill_solid(pwLeds, PW_NUM_LEDS, CHSV((uint8_t)(phase * 37), 255, bright));
   }
 }
 
@@ -181,12 +159,12 @@ static void pwFxLedTask(void*) {
     if (!pwLedEnabled) {
       fill_solid(pwLeds, PW_NUM_LEDS, CRGB::Black);
     } else if (celebrating) {
-      pwLedRenderCelebrate(nowMs - celAt, pwFxCelebrateWedge);
+      pwLedRenderCelebrate(nowMs - celAt);
     } else if (mode == PWL_FAULT) {
       pwLedRenderFault();
     } else if (mode == PWL_SPIN) {
       bandPhase += pwFxOmega * PW_LED_BAND_SPEED * dt * 256.0f;
-      pwLedRenderSpin(bandPhase, pwFxWedge);
+      pwLedRenderSpin(bandPhase);
     } else {
       pwLedRenderStandby(nowMs);
     }
@@ -239,7 +217,6 @@ static void pwFxService(uint32_t nowMs) {
       pwDfpQueue(PW_DFP_CMD_STOP, 0);                /* short pause, then...   */
       pwRatchetOn = false;
       pwFanfareAtMs = nowMs + PW_FX_LANDED_PAUSE_MS; /* ...fanfare             */
-      pwFxCelebrateWedge = (int8_t)spin.finalWedge;
       pwFxCelebrateAtMs = pwFanfareAtMs;             /* LEDs sync to fanfare   */
     }
   }
@@ -305,7 +282,6 @@ static void pwFxService(uint32_t nowMs) {
 
   /* ---- LED mode scalars (volatile handoff to the core-0 task) ------------ */
   pwFxOmega = encoderVelocityValid ? omega : 0.0f;
-  pwFxWedge = (int8_t)currentWedge();
   if (faulted) {
     pwFxMode = PWL_FAULT;
   } else if (speed > 0.05f ||
@@ -548,12 +524,6 @@ bool pwPartyCommandChar(char c) {
     case 't':
       pwPrintBudget();
       return true;
-    case 'P':
-      pwDfpFlush();
-      pwDfpSendNow(PW_DFP_CMD_PLAY_MP3, PW_TRK_FANFARE);   /* speaker test, bypasses gate */
-      Serial.printf("# audio test: fanfare (audio %s, i2s task %s, gain %.2f)\n",
-                    pwAudioEnabled ? "ON" : "OFF", pwI2sRunning ? "running" : "NOT RUNNING", (double)pwI2sGain);
-      return true;
     case 'a':
       pwAudioEnabled = !pwAudioEnabled;
       if (!pwAudioEnabled) {
@@ -579,8 +549,8 @@ void pwPartyHelpLines() {
   Serial.println(F(
     " --- party additions ---\n"
     " t  FX/WiFi loop-budget max-tracker (resets window)\n"
-    " a  audio on/off   P  play fanfare (speaker test)   l  LEDs on/off   w  network status\n"
-    " V<n>+Enter  audio volume 0-30 (e.g. V18)"));
+    " a  audio on/off   l  LEDs on/off   w  network status\n"
+    " V<n>+Enter  DFPlayer volume 0-30 (e.g. V18)"));
 }
 
 /* ------------------------------ lifecycle ---------------------------------- */
@@ -590,19 +560,26 @@ void pwPartyBegin() {
     Serial.println(F("# WARN: last reset was BROWNOUT - check 5V rail under WiFi+LED load"));
   }
 
-  // S1 restore now runs immediately after preferences.begin(), before any
-  // driver/encoder health check can replace the saved first fault.
+#if PW_S1_ENABLE
+  /* S1: a fault latched before power-off stays latched.  Only 'r' clears it
+   * (and a passing attended probe for DIR_CAL, mirroring the RAM latch).     */
+  uint8_t stored = preferences.getUChar(PW_S1_NVS_KEY, 0);
+  if (stored != 0 && stored <= (uint8_t)FC_LANDING_UNSAFE &&
+      state != ST_FAULT_LATCHED) {
+    faultCode = (FaultCode)stored;
+    state = ST_FAULT_LATCHED;
+    stateEnteredMs = millis();
+    Serial.printf("# S1: latched fault %s restored from NVS; takeover locked until r\n",
+                  faultName(faultCode));
+  }
+#endif
 
 #if PW_FX_AUDIO_ENABLE
-  if (pwI2sBegin()) {
-    pwDfpReadyAtMs = millis();
-    pwDfpQueue(PW_DFP_CMD_VOLUME, PW_DFP_VOLUME);
-    Serial.printf("# fx: I2S audio bck=15 lrck=16 dout=17, %d Hz, MSB/32-bit, vol=%d, %d samples in flash\n",
-                  (int)PW_SAMPLE_RATE, (int)PW_DFP_VOLUME, (int)PW_NUM_SAMPLES);
-  } else {
-    pwAudioEnabled = false;
-    Serial.println(F("# fx: I2S init FAILED; audio disabled (wheel unaffected)"));
-  }
+  Serial1.begin(PW_DFP_BAUD, SERIAL_8N1, PW_DFP_RX_PIN, PW_DFP_TX_PIN);
+  pwDfpReadyAtMs = millis() + PW_DFP_BOOT_DELAY_MS;
+  pwDfpQueue(PW_DFP_CMD_VOLUME, PW_DFP_VOLUME);
+  Serial.printf("# fx: DFPlayer on UART1 tx=%d rx=%d vol=%d (tracks /mp3/0001..0006)\n",
+                PW_DFP_TX_PIN, PW_DFP_RX_PIN, (int)PW_DFP_VOLUME);
 #endif
 
 #if PW_FX_LED_ENABLE

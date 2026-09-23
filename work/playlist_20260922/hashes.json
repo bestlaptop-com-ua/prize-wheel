@@ -1,0 +1,10 @@
+{
+  "boot_app0_flashed.bin": "f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0",
+  "playlist.ino.bin": "33e8c5232551c27d7a89065df5d746cf5309991ff0261bca6a504dd8407997a2",
+  "playlist.ino.bootloader.bin": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b",
+  "playlist.ino.bootloader_flashed.bin": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b",
+  "playlist.ino.merged.bin": "181b261788c1ce26fcde2c64a0b35e6755f4f540a8a3677b9137c9dffa9806cd",
+  "playlist.ino.partitions.bin": "ace02503447d0f470692e65fa76002f2d77a92dc81cd3813d8aa66718d716da9",
+  "playlist.ino.partitions_flashed.bin": "ace02503447d0f470692e65fa76002f2d77a92dc81cd3813d8aa66718d716da9",
+  "playlist.ino_flashed.bin": "52645108719c67692a8f86dba72490f5f35de20a97926002188322e00e39f412"
+}

@@ -1,0 +1,11 @@
+[
+  "C:\\Users\\Mill\\AppData\\Local\\Programs\\arduino-ide\\resources\\app\\lib\\backend\\resources\\arduino-cli.exe",
+  "upload",
+  "--fqbn",
+  "esp32:esp32:esp32s3:CDCOnBoot=default,FlashSize=16M,PSRAM=opi,PartitionScheme=app3M_fat9M_16MB,UploadSpeed=921600",
+  "--port",
+  "COM7",
+  "--input-dir",
+  "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\fmttest_20260922\\firmware",
+  "C:\\Users\\Mill\\Desktop\\prize-wheel\\work\\fmttest_20260922\\fmttest"
+]

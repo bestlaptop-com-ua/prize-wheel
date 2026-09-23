@@ -7,7 +7,7 @@
 // can only remove torque; it cannot enable or replenish a capture attempt.
 class PwCaptureLease {
  public:
-  static constexpr uint64_t ARM_US = 150000;
+  static constexpr uint64_t ARM_US = 400000;  // 2026-09-22: 150 ms expired on a loop stall; unpowered stepping while proving sync is harmless
   bool begin(gpio_num_t pin) {
     pin_ = pin;
     esp_timer_create_args_t args = {};

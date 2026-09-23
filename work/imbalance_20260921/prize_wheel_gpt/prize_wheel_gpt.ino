@@ -203,7 +203,8 @@ const float NATURAL_SHAVE_MARGIN_DEG  = 5.0f;   // brake shaves, never adds
 // the target (owner spec).  Applies to the wedge-uniform pass; the weak-spin
 // assist passes may still slip briefly by design.
 const float COUPLE_MARGIN             = 1.05f;
-const float SAFE_EDGE_MARGIN_DEG = 4.5f;  // margin at safe|safe boundaries (scatter widened, owner req 2026-08-06; was 8.0 uniform)
+const float SAFE_EDGE_MARGIN_DEG = 4.5f;  // margin at safe|safe boundaries (scatter widened, owner req 2026-08-06; was 8.0 uniform)
+
 const float DARE_EDGE_MARGIN_DEG = 8.0f;  // margin at dare-facing boundaries - the certified value, unchanged
 const float LANDING_INTERIOR_MIN_DEG  = 5.0f;   // verification margin
 const float DARE_PROXIMITY_FAULT_DEG  = 2.0f;   // settle this close to a dare
@@ -241,8 +242,8 @@ const float STOP_GATE_EXTRA_DEG       = 2.0f;
 const float OVERSHOOT_TOL_DEG         = 4.0f;
 // Above the phase-capture snap transient (~0.03-0.075 rev/s observed), below
 // any deliberate pull; the fault still needs a sustained rise.
-const float SPEEDUP_NOISE_REV_S       = 0.050f;
-const uint16_t SPEEDUP_FAULT_MS       = 400;    // latch fault after this
+const float SPEEDUP_NOISE_REV_S       = 0.150f;  // was 0.050: rotor hunting tripped it
+const uint16_t SPEEDUP_FAULT_MS       = 800;    // was 400    // latch fault after this
 const float FIGHT_SPEED_FRACTION      = 0.45f;
 const uint16_t FIGHT_GRACE_MS         = 150;
 const uint16_t FIGHT_CONFIRM_MS       = 150;
@@ -282,10 +283,10 @@ const uint16_t HOLD2_MS               = 1200;
 // set by the commanded profile.  (600/450 only over-braked under the old
 // continuously-trailing law, which forced multi-pole slip at any current.)
 const uint16_t CUR_PRECHARGE_MA = 350;  // legacy stage retained for the explicit direction probe
-const uint16_t CUR_CAPTURE_MA   = 2800; // 2026-09-22: 2240 proved 20% headroom; party runs at 2800
-const uint16_t CUR_BRAKE_MA     = 2800; // retain capture torque through braking/settling
+const uint16_t CUR_CAPTURE_MA   = 2200; // 2026-09-22: wheel balanced; 2240 already had margin unbalanced. Less regen/heat.
+const uint16_t CUR_BRAKE_MA     = 2200; // retain capture torque through braking/settling
 const uint16_t CUR_TAPER_MA     = 1100;  // final taper / settle watch
-const uint16_t CUR_HOLD1_MA     = 1650; // continuous hold: gravity (0.57 rad/s2) beats friction 3:1
+const uint16_t CUR_HOLD1_MA     = 800;  // continuous hold; balanced wheel needs little, driver stays cool
 const uint16_t CUR_HOLD2_MA     = 300;   // ...to freewheel
 
 // --- direction probe ---
@@ -1157,7 +1158,8 @@ TargetChoice chooseSafeTarget(int dir, float curAngle, float speedRevS) {
   out.decelCapSps2 = DECEL_CEILING_SPS2;
   out.quality = 0;
 
-  // Per-edge margins: dare-facing edges keep the certified 8.0; safe|safe edges
+  // Per-edge margins: dare-facing edges keep the certified 8.0; safe|safe edges
+
   // relax to 4.5 so landings scatter visibly instead of clustering mid-wedge.
   float latencyDeg = speedRevS * ENGAGE_LATENCY_S * 360.0f;
   float naturalDeg = naturalStopDistanceDeg(speedRevS, dir);
@@ -1932,9 +1934,25 @@ void abandonCapture(const char* reason) {
       reason, captureCycle.attempted(), captureCycle.energized());
 }
 
+static uint32_t drvHealthRetries = 0;
 bool captureDriverHealthy() {
-  const uint32_t drv = driver.DRV_STATUS();
-  const uint8_t gst = (uint8_t)driver.GSTAT();
+  uint32_t drv = driver.DRV_STATUS();
+  uint8_t gst = (uint8_t)driver.GSTAT();
+  // 2026-09-22: a marginal SPI link glitches under vibration; one bad
+  // transaction (all-ones) must not abandon the capture. Re-read up to 2x.
+  for (int i = 0; i < 2 && (drv == 0xFFFFFFFFUL || drv == 0 || gst == 0xFF); ++i) {
+    ++drvHealthRetries; delayMicroseconds(200);
+    drv = driver.DRV_STATUS(); gst = (uint8_t)driver.GSTAT();
+  }
+  // 2026-09-22: a supply blip resets the driver (GSTAT reset=1, config lost).
+  // With outputs OFF that is recoverable: re-apply the config and re-read,
+  // instead of abandoning every capture until someone types r.
+  if (gst == 0x01 && driver.version() == 0x30 && digitalRead(PIN_EN) == HIGH) {
+    driverConfig();
+    Serial.println(F("# driver reset flag seen with outputs off: config re-applied"));
+    drv = driver.DRV_STATUS();
+    gst = (uint8_t)driver.GSTAT();
+  }
   return drv != 0 && drv != 0xFFFFFFFFUL && !(drv & 0x1E000000UL) && gst == 0 &&
          driver.version() == 0x30 && driver.microsteps() == MICROSTEPS;
 }
@@ -1943,13 +1961,13 @@ bool captureDriverHealthy() {
 // changes targetCountsMT, selects another wedge, resets STEP or enables EN.
 bool prepareCapturePlan(uint32_t hz, float forward) {
   const float remaining = remainingTargetDeg();
-  if (!isfinite(forward) || forward < 0.02f || forward > CAPTURE_MAX_WHEEL_REV_S ||
+  if (!isfinite(forward) || forward < 0.02f || forward > CAPTURE_MAX_WHEEL_REV_S + 0.05f ||  // same launch tolerance as launchCapture
       hz < 40 || hz > 2400 || !isfinite(remaining) || remaining < 7.0f ||
       isDare(spin.targetWedge)) return false;
   // Preserve production's brake-reachable policy even if the inherited model
   // is pessimistic. Do not use the diagnostic's distant gentle-test target.
   const float naturalRemaining = naturalStopDistanceDeg(forward, takeoverDir);
-  if (!isfinite(naturalRemaining) || remaining > naturalRemaining * 1.03f + 3.0f) return false;
+  if (!isfinite(naturalRemaining) || remaining > naturalRemaining * 1.10f + 5.0f) return false;  // shadow targets sit at natural-6: a 2.5% speed drop while arming moves natural by 5%
   const PwBrakePlan plan = pwPlanBrake(hz, remaining, WHEEL_USTEPS_PER_REV, planDecelCapSps2);
   if (!plan.feasible || (spin.targetQuality == 0 &&
       plan.decelRevS2 > naturalDecelRevS2(forward, takeoverDir))) return false;
@@ -1972,10 +1990,16 @@ bool launchCapture(uint32_t nowMs) {
   }
   const int fasSign = fasSignForEncoderDirection(takeoverDir);
   const float forward = omega * (float)takeoverDir;
-  if (!fasSign || !stepper || stepper->isRunning() ||
-      digitalRead(PIN_EN) != HIGH || !encoderMotionReady() ||
-      !isfinite(forward) || forward < 0.02f || forward > CAPTURE_MAX_WHEEL_REV_S ||
-      !captureDriverHealthy()) {
+  const bool preRun = stepper && stepper->isRunning();
+  const bool preEn = digitalRead(PIN_EN) == HIGH;
+  const bool preEnc = encoderMotionReady();
+  const bool preSpd = isfinite(forward) && forward >= 0.02f && forward <= CAPTURE_MAX_WHEEL_REV_S + 0.05f;  // +0.05 launch tolerance (encoder jitter); cmd is clamped at CAPTURE_MAX_CMD anyway
+  const bool preDrv = fasSign && stepper && !preRun && preEn && preEnc && preSpd && captureDriverHealthy();
+  if (!fasSign || !stepper || preRun || !preEn || !preEnc || !preSpd || !preDrv) {
+    Serial.printf("# prereq fail: sign=%d run=%d en=%d enc=%d spd=%d(%.3f) drv=%d drvStatus=%08lX gstat=%02X ver=%02X retries=%lu\n",
+                  fasSign, (int)preRun, (int)preEn, (int)preEnc, (int)preSpd, forward, (int)preDrv,
+                  (unsigned long)driver.DRV_STATUS(), (unsigned)(uint8_t)driver.GSTAT(),
+                  (unsigned)driver.version(), (unsigned long)drvHealthRetries);
     abandonCapture("capture arming prerequisites"); return false;
   }
   captureEntryHz = (uint32_t)floorf(fminf(TRAIL_FRACTION * forward,
@@ -2357,6 +2381,7 @@ void landingVerdict() {
       stepper && !stepper->isRunning());
   closeSpin(result);
   holdAnchorValid = false; holdDeflectSinceMs = 0;
+  if (stepper) stepper->forceStop();   // 2026-09-22: no pulse generator activity in hold, ever
   setCurrentStage(CS_HOLD1);
   state = ST_SOFT_HOLD;
   stateEnteredMs = millis();
@@ -3096,6 +3121,10 @@ void loop() {
 
     case ST_SOFT_HOLD: {
       if (!controlDriverSafe(nowMs)) break;
+      if (stepper && stepper->isRunning()) {
+        stepper->forceStop();
+        Serial.println(F("# HOLD: pulse generator was running; force-stopped"));
+      }
       // Persistent hold (2026-09-21): the unbalanced wheel rolls off any landing
       // on a slope once freewheeled, so holding torque stays on until the next
       // guest push. Release on sustained motion OR on a deflection from the
@@ -3181,6 +3210,22 @@ void loop() {
         if (spinOpen && !encoderPositionFresh() &&
             nowMs - stateEnteredMs > 5000) {
           closeSpin(spinOpenedDuringFault ? RES_CONTROL_LOCKED : RES_FAULTED);
+        }
+      }
+      // Auto-clear: SUSTAINED_SPEEDUP is a control-loop trip, not a hardware
+      // fault.  Once the wheel has rested 3 s with no open spin record, take
+      // the normal 'r' path (driver check + reconfig verify + S1 clear).
+      {
+        static uint32_t autoRestSinceMs = 0;
+        static uint32_t autoClearCount = 0;
+        bool resting = encoderMotionReady() && fabsf(omega) <= STILL_REV_S &&
+                       !(stepper && stepper->isRunning()) && !spinOpen;
+        if (faultCode != FC_SUSTAINED_SPEEDUP || !resting) autoRestSinceMs = 0;
+        else if (autoRestSinceMs == 0) autoRestSinceMs = nowMs;
+        else if (nowMs - autoRestSinceMs >= 3000) {
+          autoRestSinceMs = 0;
+          Serial.printf("# auto-clear #%lu: SUSTAINED_SPEEDUP after 3 s rest\n", (unsigned long)++autoClearCount);
+          handleCommandChar('r');
         }
       }
       break;

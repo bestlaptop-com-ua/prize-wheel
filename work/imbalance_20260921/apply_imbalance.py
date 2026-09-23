@@ -318,7 +318,7 @@ edit('plan hz ceiling',
 
 edit('persistent hold current',
      'const uint16_t CUR_HOLD1_MA     = 550;  // fade...\n',
-     'const uint16_t CUR_HOLD1_MA     = 1650; // continuous hold: gravity (0.57 rad/s2) beats friction 3:1\n')
+     'const uint16_t CUR_HOLD1_MA     = 800;  // continuous hold; balanced wheel needs little, driver stays cool\n')
 
 edit('persistent hold state',
      '      // Fade the hold torque so release is imperceptible, then float.\n'
@@ -418,8 +418,8 @@ edit('friction seeds from 2026-09-21 coasts',
 edit('capture/brake current 2800',
      'const uint16_t CUR_CAPTURE_MA   = 2200;\n'
      'const uint16_t CUR_BRAKE_MA     = 2200; // retain capture torque through braking/settling\n',
-     'const uint16_t CUR_CAPTURE_MA   = 2800; // 2026-09-22: 2240 proved 20% headroom; party runs at 2800\n'
-     'const uint16_t CUR_BRAKE_MA     = 2800; // retain capture torque through braking/settling\n')
+     'const uint16_t CUR_CAPTURE_MA   = 2200; // 2026-09-22: wheel balanced; 2240 already had margin unbalanced. Less regen/heat.\n'
+     'const uint16_t CUR_BRAKE_MA     = 2200; // retain capture torque through braking/settling\n')
 
 
 edit('recovery state enum',
@@ -605,7 +605,41 @@ edit('persist takeover toggle',
 
 edit('plan natural tolerance',
      '  if (!isfinite(naturalRemaining) || remaining > naturalRemaining) return false;\n',
-     '  if (!isfinite(naturalRemaining) || remaining > naturalRemaining * 1.03f + 3.0f) return false;\n')
+     '  if (!isfinite(naturalRemaining) || remaining > naturalRemaining * 1.10f + 5.0f) return false;  // shadow targets sit at natural-6: a 2.5% speed drop while arming moves natural by 5%\n')
+
+
+edit('auto-reconfig after driver power blip',
+     'bool captureDriverHealthy() {\n'
+     '  const uint32_t drv = driver.DRV_STATUS();\n'
+     '  const uint8_t gst = (uint8_t)driver.GSTAT();\n',
+     'bool captureDriverHealthy() {\n'
+     '  uint32_t drv = driver.DRV_STATUS();\n'
+     '  uint8_t gst = (uint8_t)driver.GSTAT();\n'
+     '  // 2026-09-22: a supply blip resets the driver (GSTAT reset=1, config lost).\n'
+     '  // With outputs OFF that is recoverable: re-apply the config and re-read,\n'
+     '  // instead of abandoning every capture until someone types r.\n'
+     '  if (gst == 0x01 && driver.version() == 0x30 && digitalRead(PIN_EN) == HIGH) {\n'
+     '    driverConfig();\n'
+     '    Serial.println(F("# driver reset flag seen with outputs off: config re-applied"));\n'
+     '    drv = driver.DRV_STATUS();\n'
+     '    gst = (uint8_t)driver.GSTAT();\n'
+     '  }\n')
+
+
+edit('hold entry force-stops pulses',
+     '  setCurrentStage(CS_HOLD1);\n',
+     '  if (stepper) stepper->forceStop();   // 2026-09-22: no pulse generator activity in hold, ever\n'
+     '  setCurrentStage(CS_HOLD1);\n')
+
+edit('hold tick force-stops pulses',
+     '    case ST_SOFT_HOLD: {\n'
+     '      if (!controlDriverSafe(nowMs)) break;\n',
+     '    case ST_SOFT_HOLD: {\n'
+     '      if (!controlDriverSafe(nowMs)) break;\n'
+     '      if (stepper && stepper->isRunning()) {\n'
+     '        stepper->forceStop();\n'
+     '        Serial.println(F("# HOLD: pulse generator was running; force-stopped"));\n'
+     '      }\n')
 
 
 def main():
@@ -640,6 +674,10 @@ def main():
     for name, old, new in HEADER_EDITS:
         arm = arm.replace(old, new)
     (DST / 'pw_capture_arm.h').write_bytes((arm.replace('\n', '\r\n') if crlf else arm).encode('utf-8'))
+    lease = (SRC / 'pw_capture_lease.h').read_bytes().decode('utf-8').replace('\r\n', '\n')
+    assert lease.count('static constexpr uint64_t ARM_US = 150000;') == 1
+    lease = lease.replace('static constexpr uint64_t ARM_US = 150000;', 'static constexpr uint64_t ARM_US = 400000;  // 2026-09-22: 150 ms expired on a loop stall; unpowered stepping while proving sync is harmless')
+    (DST / 'pw_capture_lease.h').write_bytes((lease.replace('\n', '\r\n') if crlf else lease).encode('utf-8'))
     manifest = {str(p.relative_to(OUT)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in sorted(DST.iterdir()) if p.is_file()}
     (OUT / 'source_manifest.json').write_text(json.dumps(manifest, indent=2))
