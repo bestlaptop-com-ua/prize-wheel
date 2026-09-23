@@ -1,0 +1,238 @@
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\i2s_manager.cpp: In static member function 'static I2sManager* I2sManager::create(gpio_num_t, gpio_num_t, gpio_num_t)':
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\i2s_manager.cpp:53:3: warning: missing initializer for member 'i2s_std_clk_config_t::ext_clk_freq_hz' [-Wmissing-field-initializers]
+   53 |   };
+      |   ^
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\i2s_manager.cpp:53:3: warning: missing initializer for member 'i2s_std_clk_config_t::bclk_div' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp: In member function 'void StepperQueue::init_mcpwm_pcnt(uint8_t, uint8_t)':
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:266:73: warning: missing initializer for member 'mcpwm_timer_config_t::<unnamed struct>::allow_pd' [-Wmissing-field-initializers]
+  266 |       .flags = {.update_period_on_empty = 0, .update_period_on_sync = 0}};
+      |                                                                         ^
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:274:78: warning: missing initializer for member 'mcpwm_operator_config_t::<unnamed struct>::update_gen_action_on_sync' [-Wmissing-field-initializers]
+  274 |                                                 .update_dead_time_on_tep = 0}};
+      |                                                                              ^
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:274:78: warning: missing initializer for member 'mcpwm_operator_config_t::<unnamed struct>::update_dead_time_on_sync' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:289:65: warning: missing initializer for member 'mcpwm_generator_config_t::<unnamed struct>::io_loop_back' [-Wmissing-field-initializers]
+  289 |                                       .flags = {.invert_pwm = 0}};
+      |                                                                 ^
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:289:65: warning: missing initializer for member 'mcpwm_generator_config_t::<unnamed struct>::io_od_mode' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:289:65: warning: missing initializer for member 'mcpwm_generator_config_t::<unnamed struct>::pull_up' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:289:65: warning: missing initializer for member 'mcpwm_generator_config_t::<unnamed struct>::pull_down' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp: In member function 'void StepperQueue::connect_mcpwm_pcnt()':
+C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:339:16: warning: 'void gpio_iomux_in(uint32_t, uint32_t)' is deprecated: Please use `gpio_iomux_input` instead [-Wdeprecated-declarations]
+  339 |   gpio_iomux_in(step_pin, signal);
+      |   ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~
+In file included from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32/esp32-hal-gpio.h:30,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32/esp32-hal.h:115,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32/Arduino.h:44,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src/fas_arch/arduino_esp32.h:5,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src/fas_arch/common.h:70,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src/FastAccelStepper.h:4,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src/fas_queue/stepper_queue.h:6,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastAccelStepper\src\pd_esp32\StepperISR_idf5_esp32_mcpwm_pcnt.cpp:1:
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/esp_driver_gpio/include/driver/gpio.h:463:6: note: declared here
+  463 | void gpio_iomux_in(uint32_t gpio_num, uint32_t signal_idx) __attribute__((deprecated("Please use `gpio_iomux_input` instead")));
+      |      ^~~~~~~~~~~~~
+In file included from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/pin_esp32_native.hpp:18,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/pin_esp32.hpp:16,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/pin.h:19,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/fl/system/pin.cpp.hpp:30,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/fl/system/_build.cpp.hpp:9,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src\fl\build\fl.system+.cpp:10:
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/pin_esp32_native_impl.hpp: In function 'void fl::platforms::{anonymous}::initADC1()':
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/pin_esp32_native_impl.hpp:122:9: warning: missing initializer for member 'adc_oneshot_unit_init_cfg_t::clk_src' [-Wmissing-field-initializers]
+  122 |         };
+      |         ^
+In file included from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/_build.cpp.hpp:7,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/_build.cpp.hpp:30,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/_build.cpp.hpp:23,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/_build.cpp.hpp:7,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/_build.cpp.hpp:23,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src\fl\build\platforms+.cpp:10:
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::descriptors' [-Wmissing-field-initializers]
+  117 |         },
+      |         ^
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::min_key_size' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::cpfd' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::descriptors' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::min_key_size' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::cpfd' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::access_cb' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::arg' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::descriptors' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::flags' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::min_key_size' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::val_handle' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:117:9: warning: missing initializer for member 'ble_gatt_chr_def::cpfd' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:120:1: warning: missing initializer for member 'ble_gatt_svc_def::includes' [-Wmissing-field-initializers]
+  120 | };
+      | ^
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:120:1: warning: missing initializer for member 'ble_gatt_svc_def::uuid' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:120:1: warning: missing initializer for member 'ble_gatt_svc_def::includes' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/ble/ble_esp32.cpp.hpp:120:1: warning: missing initializer for member 'ble_gatt_svc_def::characteristics' [-Wmissing-field-initializers]
+In file included from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/_build.cpp.hpp:8,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/_build.cpp.hpp:31:
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/gpio_isr_rx_mcpwm.cpp.hpp: In member function 'virtual bool fl::GpioIsrRxMcpwm::begin(const fl::RxConfig&)':
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/gpio_isr_rx_mcpwm.cpp.hpp:482:13: warning: missing initializer for member 'gptimer_config_t::intr_priority' [-Wmissing-field-initializers]
+  482 |             };
+      |             ^
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/gpio_isr_rx_mcpwm.cpp.hpp:482:13: warning: missing initializer for member 'gptimer_config_t::flags' [-Wmissing-field-initializers]
+In file included from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/_build.cpp.hpp:9:
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/mcpwm_timer.cpp.hpp: In function 'int mcpwm_timer_init(DualIsrContext*, int)':
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/mcpwm_timer.cpp.hpp:222:5: warning: missing initializer for member 'mcpwm_capture_timer_config_t::flags' [-Wmissing-field-initializers]
+  222 |     };
+      |     ^
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/mcpwm_timer.cpp.hpp:264:5: warning: missing initializer for member 'mcpwm_capture_channel_config_t::intr_priority' [-Wmissing-field-initializers]
+  264 |     };
+      |     ^
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/mcpwm_timer.cpp.hpp:264:5: warning: missing initializer for member 'mcpwm_capture_channel_config_t::extra_capture_channel_flags::keep_io_conf_at_exit' [-Wmissing-field-initializers]
+In file included from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/ota/_build.cpp.hpp:7,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/_build.cpp.hpp:25:
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/ota/ota_impl.cpp.hpp: In function 'void* fl::platforms::{anonymous}::startHttpServer(fl::platforms::OTAHttpContext*)':
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/ota/ota_impl.cpp.hpp:617:5: warning: missing initializer for member 'httpd_uri::is_websocket' [-Wmissing-field-initializers]
+  617 |     };
+      |     ^
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/ota/ota_impl.cpp.hpp:617:5: warning: missing initializer for member 'httpd_uri::handle_ws_control_frames' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/ota/ota_impl.cpp.hpp:617:5: warning: missing initializer for member 'httpd_uri::supported_subprotocol' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/ota/ota_impl.cpp.hpp:626:5: warning: missing initializer for member 'httpd_uri::is_websocket' [-Wmissing-field-initializers]
+  626 |     };
+      |     ^
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/ota/ota_impl.cpp.hpp:626:5: warning: missing initializer for member 'httpd_uri::handle_ws_control_frames' [-Wmissing-field-initializers]
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/ota/ota_impl.cpp.hpp:626:5: warning: missing initializer for member 'httpd_uri::supported_subprotocol' [-Wmissing-field-initializers]
+In file included from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/teensy4/drivers/lpuart/lpuart_peripheral_mock.cpp.hpp:18,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/teensy4/drivers/lpuart/_build.cpp.hpp:11,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/teensy4/drivers/_build.cpp.hpp:7,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/teensy4/_build.cpp.hpp:6,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/_build.cpp.hpp:6,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/_build.cpp.hpp:8,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/_build.cpp.hpp:24,
+                 from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/_build.cpp.hpp:25:
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/teensy4/drivers/lpuart/lpuart_peripheral_mock.h: In constructor 'fl::LPUARTPeripheralMock::LPUARTPeripheralMock()':
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/teensy4/drivers/lpuart/lpuart_peripheral_mock.h:188:10: warning: 'fl::LPUARTPeripheralMock::mForceCreateFailure' will be initialized after [-Wreorder]
+  188 |     bool mForceCreateFailure;
+      |          ^~~~~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/teensy4/drivers/lpuart/lpuart_peripheral_mock.h:187:25: warning:   'fl::LPUARTInstanceMock* fl::LPUARTPeripheralMock::mLastInstance' [-Wreorder]
+  187 |     LPUARTInstanceMock* mLastInstance;
+      |                         ^~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/shared/mock/arm/teensy4/drivers/lpuart/lpuart_peripheral_mock.h:87:5: warning:   when initialized here [-Wreorder]
+   87 |     LPUARTPeripheralMock() FL_NOEXCEPT : mForceCreateFailure(false), mLastInstance(nullptr) {}
+      |     ^~~~~~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/mcpwm_timer.cpp.hpp: At global scope:
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/gpio_isr_rx/mcpwm_timer.cpp.hpp:76:20: warning: 'MCPWM_TIMER_TAG' defined but not used [-Wunused-variable]
+   76 | static const char* MCPWM_TIMER_TAG = "mcpwm_timer";
+      |                    ^~~~~~~~~~~~~~~
+In file included from C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/_build.cpp.hpp:23:
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:311:13: warning: 'void fl::detail::addI2sIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  311 | static void addI2sIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:296:13: warning: 'void fl::detail::addLcdClocklessIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  296 | static void addLcdClocklessIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:281:13: warning: 'void fl::detail::addLcdSpiIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  281 | static void addLcdSpiIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:266:13: warning: 'void fl::detail::addI2sSpiIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  266 | static void addI2sSpiIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:246:13: warning: 'void fl::detail::addRmtIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  246 | static void addRmtIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:232:13: warning: 'void fl::detail::addUartIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  232 | static void addUartIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:222:13: warning: 'void fl::detail::addSpiIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  222 | static void addSpiIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:207:13: warning: 'void fl::detail::addLcdRgbIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  207 | static void addLcdRgbIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:197:13: warning: 'void fl::detail::addParlioIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  197 | static void addParlioIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~~~~
+C:\Users\Mill\Documents\Arduino\libraries\FastLED\src/platforms/esp/32/drivers/channel_manager_esp32.cpp.hpp:134:13: warning: 'void fl::detail::addSpiHardwareIfPossible(fl::ChannelManager&)' defined but not used [-Wunused-function]
+  134 | static void addSpiHardwareIfPossible(ChannelManager& manager) FL_NOEXCEPT {
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~
+In file included from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/tusb.h:59,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32\esp32-hal-tinyusb.h:27,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32\USBMSC.cpp:20:
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h: In function 'bool tuh_cdc_set_dtr(uint8_t, bool, tuh_xfer_cb_t, uintptr_t)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h:154:58: warning: missing initializer for member 'cdc_line_control_state_t::<unnamed struct>::rts' [-Wmissing-field-initializers]
+  154 |   cdc_line_control_state_t line_state = {.dtr = dtr_state};
+      |                                                          ^
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h: In function 'bool tuh_cdc_set_rts(uint8_t, bool, tuh_xfer_cb_t, uintptr_t)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h:162:58: warning: missing initializer for member 'cdc_line_control_state_t::<unnamed struct>::dtr' [-Wmissing-field-initializers]
+  162 |   cdc_line_control_state_t line_state = {.rts = rts_state};
+      |                                                          ^
+In file included from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/tusb.h:59,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32\esp32-hal-tinyusb.h:27,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32\USB.cpp:22:
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h: In function 'bool tuh_cdc_set_dtr(uint8_t, bool, tuh_xfer_cb_t, uintptr_t)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h:154:58: warning: missing initializer for member 'cdc_line_control_state_t::<unnamed struct>::rts' [-Wmissing-field-initializers]
+  154 |   cdc_line_control_state_t line_state = {.dtr = dtr_state};
+      |                                                          ^
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h: In function 'bool tuh_cdc_set_rts(uint8_t, bool, tuh_xfer_cb_t, uintptr_t)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h:162:58: warning: missing initializer for member 'cdc_line_control_state_t::<unnamed struct>::dtr' [-Wmissing-field-initializers]
+  162 |   cdc_line_control_state_t line_state = {.rts = rts_state};
+      |                                                          ^
+In file included from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/tusb.h:59,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32\esp32-hal-tinyusb.h:27,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32\USBCDC.cpp:21:
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h: In function 'bool tuh_cdc_set_dtr(uint8_t, bool, tuh_xfer_cb_t, uintptr_t)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h:154:58: warning: missing initializer for member 'cdc_line_control_state_t::<unnamed struct>::rts' [-Wmissing-field-initializers]
+  154 |   cdc_line_control_state_t line_state = {.dtr = dtr_state};
+      |                                                          ^
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h: In function 'bool tuh_cdc_set_rts(uint8_t, bool, tuh_xfer_cb_t, uintptr_t)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/arduino_tinyusb/tinyusb/src/class/cdc/cdc_host.h:162:58: warning: missing initializer for member 'cdc_line_control_state_t::<unnamed struct>::dtr' [-Wmissing-field-initializers]
+  162 |   cdc_line_control_state_t line_state = {.rts = rts_state};
+      |                                                          ^
+In file included from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spi_flash_ll.h:17,
+                 from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.10\cores\esp32\Esp.cpp:41:
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h: In function 'void gpspi_flash_ll_read_phase(spi_dev_t*)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::doutdin' [-Wmissing-field-initializers]
+  191 |     };
+      |     ^
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::reserved1' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::qpi_mode' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::opi_mode' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::tsck_i_edge' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::cs_hold' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::cs_setup' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::rsck_i_edge' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::ck_out_edge' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::reserved10' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::fwrite_dual' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::fwrite_quad' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::fwrite_oct' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::usr_conf_nxt' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::reserved16' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::sio' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::reserved18' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::usr_miso_highpart' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::usr_mosi_highpart' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::usr_dummy_idle' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:191:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::usr_dummy' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h: In function 'void gpspi_flash_ll_set_command(spi_dev_t*, uint8_t, uint32_t)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:309:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::reserved16' [-Wmissing-field-initializers]
+  309 |     };
+      |     ^
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/gpspi_flash_ll.h:309:5: warning: missing initializer for member 'spi_dev_s::<unnamed union>::<unnamed struct>::mst_rempty_err_end_en' [-Wmissing-field-initializers]
+In file included from C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spi_flash_ll.h:18:
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h: In function 'void spimem_flash_ll_read_phase(spi_mem_dev_t*)':
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::reserved0' [-Wmissing-field-initializers]
+  425 |     };
+      |     ^
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::cs_hold' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::cs_setup' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::reserved8' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::ck_out_edge' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::reserved10' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::fwrite_dual' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::fwrite_quad' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::fwrite_dio' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::fwrite_qio' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::reserved16' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::usr_miso_highpart' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::usr_mosi_highpart' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::usr_dummy_idle' [-Wmissing-field-initializers]
+C:\Users\Mill\AppData\Local\Arduino15\packages\esp32\tools\esp32s3-libs\3.3.10/include/hal/esp32s3/include/hal/spimem_flash_ll.h:425:5: warning: missing initializer for member 'spi_mem_dev_s::<unnamed union>::<unnamed struct>::usr_dummy' [-Wmissing-field-initializers]
+Sketch uses 1693571 bytes (53%) of program storage space. Maximum is 3145728 bytes.
+Global variables use 119696 bytes (36%) of dynamic memory, leaving 207984 bytes for local variables. Maximum is 327680 bytes.

@@ -6482,3 +6482,36 @@ SPIN#20 RESERVE targetW=17 targetAngle=358.5 runway=89.9 natStop=95.9 speed=0.16
 # CAPTURE_ABANDON reason=pulse-first observation rejected attempted=1 energized=0; no retry until fresh rest
 # PULSEFIRST reject=2 hz=0.0 requested=496
 SPIN#20 SUMMARY dir=-1 peak=0.175 releaseMs=540 relAngle=88.3 relSpeed=0.161 targetW=17 targetAngle=358.5 runway=89.9 natStop=95.9 fricC=0.2677 fricB=0.0570 tkSpeed=0.000 cmdMax=0.000 cmdMin=0.000 rise=0.000 maxDecel=0.000 final=226.3 finalW=11 err=132.1 quality=3 result=NO_REACHABLE_SAFE fault=NONE fitRej=3 fitsCW=1 fitsCCW=1 captureAttempted=1 captureEnergized=0 captureAbandoned=1
+
+>> [Claude] s
+# state=IDLE_STOPPED fault=NONE angle=225.88 wedge=11 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=597 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1947 stage=0 cmd=0.000 savedFaultRaw=0
+
+>> [Claude] ?
+# build: imbalance-model-20260921 PARTY + forcestop-guard-20260922; based on plywood-capture-review-20260920; takeover defaults OFF
+
+=== PRIZE WHEEL (correctness redesign) ===
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 17|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ D  print driver registers (read-only)
+ g  print imbalance + encoder INL model
+ G<g>,<phiDeg>,<a1>,<b1>,<a2>,<b2>+Enter  set it (at rest; all zero clears)
+ x  clear stored direction calibration
+ r  fault reset (re-checks TMC UART)
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   P  play fanfare (speaker test)   l  LEDs on/off   w  network status
+ V<n>+Enter  audio volume 0-30 (e.g. V18)
+
+>> [Claude] s
+# state=IDLE_STOPPED fault=NONE angle=225.97 wedge=11 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=369 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1947 stage=0 cmd=0.000 savedFaultRaw=0
+
+>> [Claude] D
+# drv DRV_STATUS=811D001E GSTAT=00 IOIN=30000052 version=30 usteps=16 healthy=1
