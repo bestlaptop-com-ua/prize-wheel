@@ -14959,3 +14959,158 @@ play ambience (8.05 s)
 >> [Claude] P
 # audio test: fanfare (audio ON, i2s task running, gain 1.00)
 click run 2
+click run 3
+click run 4
+click run 5
+click run 6
+click run 7
+click run 8
+click run 9
+click run 10
+click run 11
+click run 12
+click run 13
+click run 14
+click run 15
+click run 16
+click run 17
+click run 18
+click run 19
+click run 20
+click run 21
+click run 22
+click run 23
+click run 24
+click run 25
+click run 26
+click run 27
+click run 28
+click run 29
+click run 30
+click run 31
+click run 32
+click run 33
+click run 34
+click run 35
+click run 36
+click run 37
+click run 38
+click run 39
+click run 40
+click run 41
+click run 42
+click run 43
+click run 44
+click run 45
+click run 46
+click run 47
+click run 48
+click run 49
+click run 50
+click run 51
+click run 52
+click run 53
+click run 54
+click run 55
+click run 56
+click run 57
+click run 58
+click run 59
+click run 60
+click run 61
+click run 62
+click run 63
+click run 64
+click run 65
+click run 66
+click run 67
+click run 68
+click run 69
+click run 70
+click run 71
+click run 72
+click run 73
+click run 74
+click run 75
+click run 76
+click run 77
+click run 78
+click run 79
+click run 80
+click run 81
+click run 82
+click run 83
+click run 84
+click run 85
+click run 86
+click run 87
+click run 88
+click run 89
+click run 90
+click run 91
+click run 92
+click run 93
+click run 94
+click run 95
+click run 96
+click run 97
+click run 98
+click run 99
+click run 100
+click run 101
+click run 102
+click run 103
+click run 104
+click run 105
+click run 106
+click run 107
+click run 108
+click run 109
+click run 110
+click run 111
+click run 112
+click run 113
+click run 114
+click run 115
+click run 116
+click run 117
+click run 118
+click run 119
+click run 120
+click run 121
+click run 122
+click run 123
+click run 124
+click run 125
+
+>> [Timur] !
+
+>> [Claude] ?
+# build: party6-20260925 (flash 6: a free coast that stops is held at 800 mA) on party5-20260925 (flash 5: weak pushes coast free when their stop is safe, 3.0 A) on party4-20260923 (flash 4: catch speed varies per spin 0.40/0.35/0.30/0.25) on party3-20260923 (flash 3: 2.7 A braking, holds through settle drags, SLIP log) on party-20260923 (flash 2: hand-stop alarm, carry, re-push) on failop-20260923 (stage 1a) PARTY; takeover defaults OFF
+
+=== PRIZE WHEEL (correctness redesign) ===
+ z  set current raw as wedge-0 anchor (wheel at rest, pointer on 17|0 line)
+ p  attended two-leg direction probe (safe wedge center only)
+ s  status
+ d  arm high-rate RAM capture (dumps after true stop/fault)
+ v  toggle live control logs
+ e  toggle automatic takeover
+ f  print friction model
+ F  reset friction model to seeds
+ D  print driver registers (read-only)
+ g  print imbalance + encoder INL model
+ G<g>,<phiDeg>,<a1>,<b1>,<a2>,<b2>+Enter  set it (at rest; all zero clears)
+ x  clear stored direction calibration
+ r  fault reset (re-checks TMC UART)
+ m  print dare mask
+ ?  help
+ --- party additions ---
+ t  FX/WiFi loop-budget max-tracker (resets window)
+ a  audio on/off   P  play fanfare (speaker test)   l  LEDs on/off   w  network status
+ V<n>+Enter  audio volume 0-30 (e.g. V18)
+
+>> [Claude] f
+# friction cw: c=0.4499 b=0.1169 fits=22 | ccw: c=0.3225 b=0.2020 fits=40
+
+>> [Claude] s
+# state=IDLE_STOPPED fault=NONE angle=171.56 wedge=8 omega=0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=129 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1952 stage=0 cmd=0.000 savedFaultRaw=0
