@@ -1,0 +1,7 @@
+09:03:59 compile.exit=0 sketch warnings=0
+09:04:01 upload start
+09:05:03 upload.exit=0
+09:05:18 # build: party10-20260929 (flash 10: landings 9 deg past the last peg, tick at flapper release) on party9-20260928 (flash 9: nearest safe exit, crawl dare recovery, aurora + glints standby) on party8-
+09:05:18 # state=IDLE_STOPPED fault=NONE angle=138.16 wedge=6 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=271 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1925 stage=0 cmd=0.000 savedFaultRaw=0
+09:05:18 # friction cw: c=0.1768 b=0.0907 fits=27 | ccw: c=0.3525 b=0.0722 fits=44
+09:05:18 done
