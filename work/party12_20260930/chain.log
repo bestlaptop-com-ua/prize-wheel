@@ -1,0 +1,7 @@
+09:57:22 compile.exit=0 sketch warnings=0
+09:57:25 upload start
+09:57:47 upload.exit=0
+09:58:02 # build: party12-20260930 (flash 12: wedge-uniform pick restored, every landing balances) on party11-20260930 (flash 11: firmer steered stops, brakeGain 1.4, +/- live) on party10-20260929 (flash 10: l
+09:58:02 # state=IDLE_STOPPED fault=NONE angle=68.99 wedge=3 omega=-0.0000 natStop=0.0 pos=FRESH vel=VALID age_us=733 dirCal=1(sign -1) tmc=1 takeover=1 rawZero=1925 stage=0 cmd=0.000 savedFaultRaw=0
+09:58:02 # friction cw: c=0.2475 b=0.0721 fits=31 | ccw: c=0.3440 b=0.0497 fits=54 | brakeGain=1.40
+09:58:02 done
